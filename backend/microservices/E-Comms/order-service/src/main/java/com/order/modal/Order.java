@@ -27,7 +27,7 @@ public class Order {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
 	private UUID id;
-	
+	private String orderNumber;
 	@OneToMany(cascade = CascadeType.ALL)
-	private List<OrderListItems> orderLineItemsList;
+	private List<OrderLineItems> orderLineItemsList;
 }

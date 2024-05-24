@@ -10,8 +10,8 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderlistItemDTO {
-	private UUID id;
+public class OrderLineItemsDto {
+	private Long id;
 	private String skuCode;
 	private BigDecimal price;
 	private Integer quantity;
