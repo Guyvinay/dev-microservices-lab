@@ -29,8 +29,8 @@ public class ServerCheckController {
 				private ServerCheck getServerResponse(ServerCheck ServerCheck) throws InterruptedException {
 								ServerCheck.setStartServerUTC(Instant.now().toEpochMilli());
 								Thread.sleep(100 + new Random().nextInt(101));
-								// TimeUnit.SECONDS.sleep(1);
-								// TimeUnit.MILLISECONDS.sleep(1000);
+								// TimeUnit.SECONDS.sleep(100 + new Random().nextInt(101));
+								// TimeUnit.MILLISECONDS.sleep(100 + new Random().nextInt(101));
 								// TimeUnit.HOURS.sleep(1);
 								ServerCheck.setEndServerUTC(Instant.now().toEpochMilli());
 								return ServerCheck;

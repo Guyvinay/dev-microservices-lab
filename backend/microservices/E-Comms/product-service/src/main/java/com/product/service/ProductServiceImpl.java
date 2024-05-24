@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -38,8 +39,17 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductResponse> getAllProducts(ProductRequest productRequest) {
-        return null;
+    public List<ProductResponse> getAllProducts() {
+        List<Product> products = productRepository.findAll();
+        return products.stream().map(this::mapToProductResponse).collect(Collectors.toList());
+    }
+    public ProductResponse mapToProductResponse(Product product){
+        return ProductResponse.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .description(product.getDescription())
+                .price(product.getPrice())
+                              .build();
     }
 
     @Override
