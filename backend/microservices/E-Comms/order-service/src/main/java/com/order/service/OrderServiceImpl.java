@@ -27,6 +27,14 @@ public class OrderServiceImpl implements OrderService {
 		return null;
 	}
 	
+	@Override public List<OrderResponse> getAllOrders() {
+		return null;
+	}
+	
+	@Override public OrderResponse getPlacedOrder(UUID id) {
+		return null;
+	}
+	
 	private List<OrderListItems> mapToListOrderListItems(List<OrderlistItemDTO> orderListItems) {
 		return orderListItems.stream().map(this::mapToOrderListItemFromOrderListItemDTO).collect(
 				Collectors.toList());
