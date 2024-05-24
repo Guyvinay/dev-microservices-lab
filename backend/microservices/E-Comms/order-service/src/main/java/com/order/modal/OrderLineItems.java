@@ -22,7 +22,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class OrderListItems {
+public class OrderLineItems {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)

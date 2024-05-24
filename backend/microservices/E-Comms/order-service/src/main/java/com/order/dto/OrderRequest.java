@@ -1,6 +1,6 @@
 package com.order.dto;
 
-import com.order.modal.OrderListItems;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,5 +11,5 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderRequest {
-	List<OrderlistItemDTO> orderlistItemDTOS;
+	private List<OrderLineItemsDto> orderLineItemsDtoList;
 }
