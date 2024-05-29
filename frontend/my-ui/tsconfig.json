@@ -9,6 +9,11 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
+    "paths": {
+      "my-ui-library": [
+        "./dist/my-ui-library"
+      ]
+    },
     "esModuleInterop": true,
     "sourceMap": true,
     "declaration": false,
