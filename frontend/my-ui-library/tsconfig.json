@@ -9,11 +9,6 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
-    "paths": {
-      "my-ui-library": [
-        "./dist/my-ui-library"
-      ]
-    },
     "esModuleInterop": true,
     "sourceMap": true,
     "declaration": false,
@@ -23,6 +18,11 @@
     "target": "ES2022",
     "module": "ES2022",
     "useDefineForClassFields": false,
+    "paths": {
+      "ui-components": [
+        "./dist/ui-components"
+      ]
+    },
     "lib": [
       "ES2022",
       "dom"

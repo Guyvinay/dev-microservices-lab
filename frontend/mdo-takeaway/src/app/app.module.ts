@@ -20,7 +20,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { HomeComponent } from './home/home.component';
 import { ReassignmentListComponent } from './reassignment-list/reassignment-list.component';
 import { FormsModule } from '@angular/forms';
-
+import { MaterialComponent } from './components/material/material.component';
+import { MatMenuModule } from '@angular/material/menu';
 
 @NgModule({
   declarations: [
@@ -33,7 +34,8 @@ import { FormsModule } from '@angular/forms';
     RxjsComponent,
     DrawerComponent,
     HomeComponent,
-    ReassignmentListComponent,   
+    ReassignmentListComponent,
+    MaterialComponent,   
   ],
   imports: [
     BrowserModule,
@@ -44,7 +46,8 @@ import { FormsModule } from '@angular/forms';
     MatTableModule,
     MatIconModule,
     MatButtonModule,
-    FormsModule
+    FormsModule,  
+    MatMenuModule,
   ],
   providers: [
     provideAnimationsAsync()

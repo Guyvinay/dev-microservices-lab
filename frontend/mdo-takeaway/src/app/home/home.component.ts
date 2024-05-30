@@ -21,4 +21,7 @@ export class HomeComponent {
       queryParamsHandling:'merge'
     });
   }
+  navigateToAngMaterial() {
+    this.router.navigate(['material']);
+  }
 }

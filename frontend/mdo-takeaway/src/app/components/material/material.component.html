@@ -1,0 +1,12 @@
+
+  <fieldset>
+    <legend>mat menu</legend>
+    <button mat-raised-button color="primary" [matMenuTriggerFor]="addConnectivity">
+      New
+    </button>
+    <mat-menu #addConnectivity="matMenu" class="navigation-menu">
+      <button mat-menu-item (click)="openNewConnectionFlow()">New system</button>
+      <button mat-menu-item (click)="openTableViewSettings('add-interface')">New interface</button>
+      <button mat-menu-item (click)="openTableViewSettings('add-lookup-reference')">New lookup reference</button>
+    </mat-menu>
+  </fieldset>

@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { MyUiLibraryService } from './my-ui-library.service';
+import { UiComponentsService } from './ui-components.service';
 
-describe('MyUiLibraryService', () => {
-  let service: MyUiLibraryService;
+describe('UiComponentsService', () => {
+  let service: UiComponentsService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(MyUiLibraryService);
+    service = TestBed.inject(UiComponentsService);
   });
 
   it('should be created', () => {

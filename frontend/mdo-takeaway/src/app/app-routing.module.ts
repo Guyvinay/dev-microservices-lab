@@ -4,6 +4,7 @@ import { RxjsComponent } from './components/rxjs/rxjs.component';
 import { GitComponent } from './components/git/git.component';
 import { HomeComponent } from './home/home.component';
 import { ReassignmentListComponent } from './reassignment-list/reassignment-list.component';
+import { MaterialComponent } from './components/material/material.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full' },
@@ -16,6 +17,7 @@ const routes: Routes = [
   },
   { path: 'task/reassignment-list', component: ReassignmentListComponent },
   { path: 'rxjs', component: RxjsComponent },
+  {path:'material', component:MaterialComponent},
   {path:'git', component:GitComponent}  // Wildcard route for a 404 page
 ];
 
