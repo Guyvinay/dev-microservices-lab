@@ -22,6 +22,8 @@ import { ReassignmentListComponent } from './reassignment-list/reassignment-list
 import { FormsModule } from '@angular/forms';
 import { MaterialComponent } from './components/material/material.component';
 import { MatMenuModule } from '@angular/material/menu';
+import { MyDialogComponent } from './components/my-dialog/my-dialog.component';
+import { MatDialogModule } from '@angular/material/dialog';
 
 @NgModule({
   declarations: [
@@ -35,7 +37,8 @@ import { MatMenuModule } from '@angular/material/menu';
     DrawerComponent,
     HomeComponent,
     ReassignmentListComponent,
-    MaterialComponent,   
+    MaterialComponent,
+    MyDialogComponent,   
   ],
   imports: [
     BrowserModule,
@@ -48,6 +51,7 @@ import { MatMenuModule } from '@angular/material/menu';
     MatButtonModule,
     FormsModule,  
     MatMenuModule,
+    MatDialogModule 
   ],
   providers: [
     provideAnimationsAsync()
