@@ -21,7 +21,8 @@ export class MaterialComponent implements OnInit {
 
   openDialog() {
     const dialogRef = this.matDialog.open(MyDialogComponent, {
-      data: { message: 'This is a message from the parent component' } // Pass data
+      data: { message: 'This is a message from the parent component' }, // Pass data
+      panelClass: 'fullscreen-dialog'
     });
   
     dialogRef.afterClosed().subscribe((result) => {
