@@ -1,10 +1,8 @@
 <div class="dialog-parent">
-    <p>Data from parent: {{ data.message }}</p>
-    <h5>Hi I am Component Dialog following Foo list:</h5>
-    <ul>
-        <li>Some Item</li>
-        <li>Item Second</li>
-        <li>Other In Row</li>
-    </ul>
-    <button mat-button (click)="closeDialog()">Close</button>
+    <fieldset>
+        <legend>MatDialog</legend>
+        <p>Data from parent: {{ data.message }}</p>
+        <h5>Content for MatDialog</h5>
+        <button mat-button (click)="closeDialog()">Close</button>
+    </fieldset>
 </div>

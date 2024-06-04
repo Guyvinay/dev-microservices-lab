@@ -20,25 +20,35 @@ export class MaterialComponent implements OnInit {
   }
 
   openDialog() {
+
     const dialogRef = this.matDialog.open(MyDialogComponent, {
-      data: { message: 'This is a message from the parent component' }, // Pass data
-      panelClass: 'fullscreen-dialog'
+      height: '200px',
+      width: '400px',
+      data: { message: 'Sending dialog messgae' },
     });
   
     dialogRef.afterClosed().subscribe((result) => {
       console.log('Dialog result:', result); // Handle data returned from dialog
     });
+
   }
  
   openTableViewSettings(setting: string) {
     console.log(`Opening table view settings for: ${setting}`);
-    // Add your logic to open the table view settings based on the provided setting
   }
+
   openCompDialog() {
-    const myCompDialog = this.matDialog.open(MyDialogComponent, { data: {} });
-    myCompDialog.afterClosed().subscribe((res) => {
-      // Data back from dialog
-      console.log({ res });
+
+    const myCompDialog = this.matDialog.open(MyDialogComponent, {
+      height: '200px',
+      width: '400px',
+      position : "top",
+      data: {message:'Sending dialog message'} 
     });
+
+    myCompDialog.afterClosed().subscribe((res) => {
+      console.log(res);
+    });
+
   }
 }
