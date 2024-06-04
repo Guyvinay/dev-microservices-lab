@@ -42,7 +42,6 @@ export class MaterialComponent implements OnInit {
     const myCompDialog = this.matDialog.open(MyDialogComponent, {
       height: '200px',
       width: '400px',
-      position : "top",
       data: {message:'Sending dialog message'} 
     });
 
