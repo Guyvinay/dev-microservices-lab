@@ -51,7 +51,8 @@ import { MatDialogModule } from '@angular/material/dialog';
     MatButtonModule,
     FormsModule,  
     MatMenuModule,
-    MatDialogModule 
+    MatDialogModule,
+    MatTableModule 
   ],
   providers: [
     provideAnimationsAsync()
