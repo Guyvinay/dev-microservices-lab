@@ -16,25 +16,28 @@ export class MaterialComponent implements OnInit {
   }
   openNewConnectionFlow() {
     console.log('Opening new connection flow');
+    // Add your logic to open the new connection flow
   }
 
   openDialog() {
     const dialogRef = this.matDialog.open(MyDialogComponent, {
-      data: { message: 'This is a message from the parent component' },
+      data: { message: 'This is a message from the parent component' }, // Pass data
       panelClass: 'fullscreen-dialog'
     });
   
     dialogRef.afterClosed().subscribe((result) => {
-      console.log('Dialog result:', result);
+      console.log('Dialog result:', result); // Handle data returned from dialog
     });
   }
  
   openTableViewSettings(setting: string) {
     console.log(`Opening table view settings for: ${setting}`);
+    // Add your logic to open the table view settings based on the provided setting
   }
   openCompDialog() {
     const myCompDialog = this.matDialog.open(MyDialogComponent, { data: {} });
     myCompDialog.afterClosed().subscribe((res) => {
+      // Data back from dialog
       console.log({ res });
     });
   }
