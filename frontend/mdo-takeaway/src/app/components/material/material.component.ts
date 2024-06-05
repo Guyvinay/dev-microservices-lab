@@ -9,8 +9,8 @@ import { MyDialogComponent } from '../my-dialog/my-dialog.component';
 })
 export class MaterialComponent implements OnInit {
   constructor(
-    private matDialog : MatDialog , 
-  ){}
+    private matDialog: MatDialog,
+  ) { }
   ngOnInit(): void {
     // this.openDialog();
   }
@@ -26,28 +26,14 @@ export class MaterialComponent implements OnInit {
       width: '400px',
       data: { message: 'Sending dialog messgae' },
     });
-  
+
     dialogRef.afterClosed().subscribe((result) => {
       console.log('Dialog result:', result); // Handle data returned from dialog
     });
 
   }
- 
+
   openTableViewSettings(setting: string) {
     console.log(`Opening table view settings for: ${setting}`);
-  }
-
-  openCompDialog() {
-
-    const myCompDialog = this.matDialog.open(MyDialogComponent, {
-      height: '200px',
-      width: '400px',
-      data: {message:'Sending dialog message'} 
-    });
-
-    myCompDialog.afterClosed().subscribe((res) => {
-      console.log(res);
-    });
-
   }
 }

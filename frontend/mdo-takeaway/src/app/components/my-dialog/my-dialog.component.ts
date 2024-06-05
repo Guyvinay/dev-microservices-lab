@@ -11,9 +11,9 @@ export class MyDialogComponent {
   constructor(
     public dialogRef: MatDialogRef<MyDialogComponent>, // Inject MatDialogRef
     @Inject(MAT_DIALOG_DATA) public data: any // Inject data from parent component
-  ) {}
+  ) { }
 
-  closeDialog() { 
-    this.dialogRef.close({message:this.data}); 
+  closeDialog() {
+    this.dialogRef.close({ message: this.data });
   }
 }

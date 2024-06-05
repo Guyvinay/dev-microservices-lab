@@ -1,19 +1,17 @@
-
-  <fieldset>
-    <legend>mat menu</legend>
-    <button mat-raised-button color="primary" [matMenuTriggerFor]="addConnectivity">
-      New
-    </button>
-    <mat-menu #addConnectivity="matMenu" class="navigation-menu">
-      <button mat-menu-item (click)="openNewConnectionFlow()">New system</button>
-      <button mat-menu-item (click)="openTableViewSettings('add-interface')">New interface</button>
-      <button mat-menu-item (click)="openTableViewSettings('add-lookup-reference')">New lookup reference</button>
-    </mat-menu>
-  </fieldset>
-  <fieldset>
-    <legend>Mat dialog</legend>    
-    <button mat-raised-button color="primary" (click)="openDialog()">
-      Open Dialog
-    </button>
-    <button mat-button (click)="openCompDialog()">Open Comp Modal</button>
-  </fieldset>
+<fieldset>
+  <legend>mat menu</legend>
+  <button mat-raised-button color="primary" [matMenuTriggerFor]="addConnectivity">
+    New
+  </button>
+  <mat-menu #addConnectivity="matMenu" class="navigation-menu">
+    <button mat-menu-item (click)="openNewConnectionFlow()">New system</button>
+    <button mat-menu-item (click)="openTableViewSettings('add-interface')">New interface</button>
+    <button mat-menu-item (click)="openTableViewSettings('add-lookup-reference')">New lookup reference</button>
+  </mat-menu>
+</fieldset>
+<fieldset>
+  <legend>Mat dialog</legend>
+  <button mat-raised-button color="primary" (click)="openDialog()">
+    Open Dialog
+  </button>
+</fieldset>
