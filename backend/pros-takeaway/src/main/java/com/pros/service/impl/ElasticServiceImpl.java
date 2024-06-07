@@ -40,23 +40,32 @@ public class ElasticServiceImpl implements ElasticService {
     public void saveStudent(Student student) throws IOException {
 //        String id = UUID.randomUUID().toString();
 
-        boolean isExist = checkStudentAvailability(student);
-        if (!isExist) {
-            deleteExistingStudent(student);
-            saveStudentToElastic(student);
-        } else {
-            saveStudentToElastic(student);
-        }
+//        Student  retrievedStudent = findStudentById(student.getStudentId());
+//        if (retrievedStudent!=null) {
+//            deleteExistingStudent(student);
+//            saveStudentToElastic(student);
+//        } else {
+//            saveStudentToElastic(student);
+//        }
+        saveStudentToElastic(student);
+    }
+
+    @Override
+    public Student findStudentById(String id) throws IOException {
+        Student student = null;
+        GetRequest getRequest = new GetRequest(index, id);
+        GetResponse getResponse = restHighLevelClient.get(getRequest, RequestOptions.DEFAULT);
+        student = new ObjectMapper().convertValue(getResponse, Student.class);
+        log.info("student is already availabe at index {}", getResponse);
+        return student;
     }
 
     private void saveStudentToElastic(Student student) throws IOException {
         log.info("saving to elastic ");
-        String studentString = new ObjectMapper().writeValueAsString(student);
         IndexRequest indexRequest = new IndexRequest(index);
         indexRequest.id(student.getStudentId());
-        indexRequest.source(studentString, XContentType.JSON);
-        IndexResponse indexResponse = restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
-        log.info("indexResponse {} ", indexResponse.getResult());
+        indexRequest.source( new ObjectMapper().writeValueAsString(student), XContentType.JSON);
+        restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
     }
 
     private void deleteExistingStudent(Student student) throws IOException {
@@ -68,15 +77,5 @@ public class ElasticServiceImpl implements ElasticService {
         BulkByScrollResponse bulkByScrollResponse = restHighLevelClient.deleteByQuery(deleteByQueryRequest, RequestOptions.DEFAULT);
         log.info("delete status {}", bulkByScrollResponse.getStatus());
     }
-
-    private boolean checkStudentAvailability(Student student) throws IOException {
-        GetRequest getRequest = new GetRequest(index, student.getStudentId());
-        GetResponse getResponse = restHighLevelClient.get(getRequest, RequestOptions.DEFAULT);
-        Student studentResponse = new ObjectMapper().convertValue(getResponse, Student.class);
-        log.info("student is already availabe at index {}", getResponse);
-        System.out.println(studentResponse);
-        return studentResponse.getStudentId()!=null;
-    }
-
 
 }
