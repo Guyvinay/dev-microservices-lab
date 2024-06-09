@@ -18,19 +18,19 @@ import java.util.Random;
 @CrossOrigin("*")
 public class ServerCheckController {
 
-				@PostMapping
-				public ResponseEntity<ServerCheck> getServerCheck(@RequestBody ServerCheck serverCheck) throws InterruptedException {
+    @PostMapping
+    public ResponseEntity<ServerCheck> getServerCheck(@RequestBody ServerCheck serverCheck) throws InterruptedException {
 
-								return new ResponseEntity<>(getServerResponse(serverCheck), HttpStatus.OK);
-				}
+        return new ResponseEntity<>(getServerResponse(serverCheck), HttpStatus.OK);
+    }
 
-				private ServerCheck getServerResponse(ServerCheck ServerCheck) throws InterruptedException {
-								ServerCheck.setStartServerUTC(Instant.now().toEpochMilli());
-								Thread.sleep(100 + new Random().nextInt(101));
-								// TimeUnit.SECONDS.sleep(100 + new Random().nextInt(101));
-								// TimeUnit.MILLISECONDS.sleep(100 + new Random().nextInt(101));
-								// TimeUnit.HOURS.sleep(1);
-								ServerCheck.setEndServerUTC(Instant.now().toEpochMilli());
-								return ServerCheck;
-				}
+    private ServerCheck getServerResponse(ServerCheck ServerCheck) throws InterruptedException {
+        ServerCheck.setStartServerUTC(Instant.now().toEpochMilli());
+        Thread.sleep(100 + new Random().nextInt(101));
+        // TimeUnit.SECONDS.sleep(100 + new Random().nextInt(101));
+        // TimeUnit.MILLISECONDS.sleep(100 + new Random().nextInt(101));
+        // TimeUnit.HOURS.sleep(1);
+        ServerCheck.setEndServerUTC(Instant.now().toEpochMilli());
+        return ServerCheck;
+    }
 }

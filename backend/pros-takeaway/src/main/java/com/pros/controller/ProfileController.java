@@ -24,13 +24,13 @@ public class ProfileController {
     }
 
     @GetMapping(value = "/{id}")
-    public ResponseEntity<Profile> getProfileById(@PathVariable("id")String id) throws IOException {
-        return new ResponseEntity<Profile>(profileService.findById(id),HttpStatus.ACCEPTED);
+    public ResponseEntity<Profile> getProfileById(@PathVariable("id") String id) throws IOException {
+        return new ResponseEntity<Profile>(profileService.findById(id), HttpStatus.ACCEPTED);
     }
 
     @GetMapping()
     public ResponseEntity<List<Profile>> GetAllProfiles() throws IOException {
-        return new ResponseEntity<List<Profile>>(profileService.findAllProfiles(),HttpStatus.ACCEPTED);
+        return new ResponseEntity<List<Profile>>(profileService.findAllProfiles(), HttpStatus.ACCEPTED);
     }
 
 }

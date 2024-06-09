@@ -31,12 +31,12 @@ public class StudentController {
 
     @Operation(description = "Get All Students")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "List of All Students"),
-                           @ApiResponse(responseCode = "500", description = "Something went wrong"),
-                           @ApiResponse(responseCode = "400", description = "Bad Request") }
+            @ApiResponse(responseCode = "500", description = "Something went wrong"),
+            @ApiResponse(responseCode = "400", description = "Bad Request")}
     )
     @GetMapping()
     public ResponseEntity<List<Student>> getAllStudents(
-            ) {
+    ) {
         return new ResponseEntity<>(
                 studentService.getAllStudents(),
                 HttpStatus.ACCEPTED
