@@ -24,6 +24,11 @@ public class ProducerConfig {
 								return new Queue("myQueue");
 				}
 
+	@Bean
+	public Queue crQueue() {
+		return new Queue("CR_QUEUE");
+	}
+
 				@Bean
 				public Queue highPriorityQueue() {
 								return new Queue("highPriorityQueue");

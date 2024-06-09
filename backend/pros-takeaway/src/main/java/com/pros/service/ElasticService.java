@@ -7,7 +7,8 @@ import java.io.IOException;
 
 public interface ElasticService {
 
-    public void saveStudent(Student student) throws IOException;
-    public Student findStudentById(String id) throws IOException;
+    public void saveStudent(Student student);
+    public Student findStudentById(String id);
+    public void getAllStudents();
 
 }

@@ -20,9 +20,15 @@ public class ElasticController {
     private ElasticService elasticService;
 
     @PostMapping(value = "/student")
-    public void saveStudent(@RequestBody Student student) throws IOException {
+    public void saveStudent(@RequestBody Student student) {
 
         elasticService.saveStudent(student);
+    }
+
+    @GetMapping(value = "/student")
+    public void getAllStudent() {
+
+        elasticService.getAllStudents();
     }
 
     @GetMapping(value = "/student/{id}")

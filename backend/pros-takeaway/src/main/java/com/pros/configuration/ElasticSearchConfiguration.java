@@ -19,8 +19,13 @@ public class ElasticSearchConfiguration {
         return client;
     }
 
+//    @Bean
+//    public MyElasticsearchClient elasticsearchClient() {
+//        return new MyElasticsearchClient();
+//    }
+
     @Bean
-    public ObjectMapper objectMapper(){
+    public ObjectMapper objectMapper() {
         return new ObjectMapper();
     }
 
