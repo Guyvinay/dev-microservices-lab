@@ -25,7 +25,8 @@ public class ElasticClient {
 
     private RestHighLevelClient restHighLevelClient;
 
-    public ElasticClient() {}
+    public ElasticClient() {
+    }
 
     @Bean
     public RestHighLevelClient buildElasticClient() {

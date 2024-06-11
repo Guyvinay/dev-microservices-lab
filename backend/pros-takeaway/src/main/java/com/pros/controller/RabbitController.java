@@ -14,18 +14,17 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class RabbitController {
 
-				@Autowired
-				private RabbitProducer rabbitProducer;
+    @Autowired
+    private RabbitProducer rabbitProducer;
 
-				@Autowired
-				private RabbitTemplate rabbitTemplate;
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
-				@GetMapping
-				public String send(@RequestParam String message){
-								rabbitProducer.sendMessage(message);
-								return "Message Sent Successfully";
-				}
-
+    @GetMapping
+    public String send(@RequestParam String message) {
+        rabbitProducer.sendMessage(message);
+        return "Message Sent Successfully";
+    }
 
 
 }
