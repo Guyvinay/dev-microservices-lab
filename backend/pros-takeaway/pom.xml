@@ -92,6 +92,51 @@
 			<artifactId>amqp-client</artifactId>
 			<version>5.21.0</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/net.devh/grpc-spring-boot-starter -->
+		<dependency>
+			<groupId>net.devh</groupId>
+			<artifactId>grpc-spring-boot-starter</artifactId>
+			<version>3.0.0.RELEASE</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>io.grpc</groupId>
+			<artifactId>grpc-netty-shaded</artifactId>
+			<version>1.38.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.grpc</groupId>
+			<artifactId>grpc-protobuf</artifactId>
+			<version>1.38.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.grpc</groupId>
+			<artifactId>grpc-stub</artifactId>
+			<version>1.38.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.protobuf</groupId>
+			<artifactId>protobuf-java</artifactId>
+			<version>3.17.0</version>
+		</dependency>
+
+<!--		enable getting all beans at http://localhost:8080/actuator/beans -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.rmq</groupId>
+			<artifactId>rabbit-starter</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
+
+
 	</dependencies>
 
 	<build>
