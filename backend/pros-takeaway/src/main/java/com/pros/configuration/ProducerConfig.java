@@ -10,11 +10,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
 public class ProducerConfig {
-
-    @Bean
-    public Queue queue() {
-        return new Queue("hello");
-    }
+//
+//    @Bean
+//    public Queue queue() {
+//        return new Queue("hello");
+//    }
 
     // public void sendMessage(String message){
     // 				rabbitTemplate.convertAndSend("hello", message);
