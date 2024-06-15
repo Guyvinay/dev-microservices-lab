@@ -1,6 +1,7 @@
 package com.rmq.configuration;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.connection.SimpleRoutingConnectionFactory;
@@ -53,13 +54,13 @@ public class RmqConfiguration {
 
     @Bean
     public RabbitTemplate rabbitTemplate() {
-        System.out.println("Rabbit template created");
+        log.info("Rabbit template created");
         return new RabbitTemplate(connectionFactory());
     }
 
     @Bean
     public RabbitAdmin rabbitAdmin() {
-        System.out.println("Rabbit Admin Created");
+        log.info("Rabbit Admin Created");
         return new RabbitAdmin(connectionFactory());
     }
 

@@ -20,20 +20,20 @@ public class ProducerConfig {
     // 				rabbitTemplate.convertAndSend("hello", message);
     // 				System.out.println("hello");
     // }
-    @Bean
-    public Queue myQueue() {
-        return new Queue("myQueue");
-    }
-
-    @Bean
-    public Queue crQueue() {
-        return new Queue("CR_QUEUE");
-    }
-
-    @Bean
-    public Queue highPriorityQueue() {
-        return new Queue("highPriorityQueue");
-    }
+//    @Bean
+//    public Queue myQueue() {
+//        return new Queue("myQueue");
+//    }
+//
+//    @Bean
+//    public Queue crQueue() {
+//        return new Queue("CR_QUEUE");
+//    }
+//
+//    @Bean
+//    public Queue highPriorityQueue() {
+//        return new Queue("highPriorityQueue");
+//    }
 
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {

@@ -16,21 +16,21 @@ public class RabbitConsumer {
 								System.out.println("Received Message:-"+message);
 				}
 
-				@RabbitListener(queues = "myQueue")
-				public void receiveMessage(RabbitMessage message) {
-								System.out.println("Message received from myQueue:");
-								System.out.println("Sender: " + message.getSender());
-								System.out.println("Receiver: " + message.getReceiver());
-								System.out.println("Content: " + message.getContent());
-				}
-
-				@RabbitListener(queues = "highPriorityQueue")
-				public void receiveHighPriorityMessage(RabbitMessage message) {
-								System.out.println("High priority message received from highPriorityQueue:");
-								System.out.println("Sender: " + message.getSender());
-								System.out.println("Receiver: " + message.getReceiver());
-								System.out.println("Content: " + message.getContent());
-				}
+//				@RabbitListener(queues = "myQueue")
+//				public void receiveMessage(RabbitMessage message) {
+//								System.out.println("Message received from myQueue:");
+//								System.out.println("Sender: " + message.getSender());
+//								System.out.println("Receiver: " + message.getReceiver());
+//								System.out.println("Content: " + message.getContent());
+//				}
+//
+//				@RabbitListener(queues = "highPriorityQueue")
+//				public void receiveHighPriorityMessage(RabbitMessage message) {
+//								System.out.println("High priority message received from highPriorityQueue:");
+//								System.out.println("Sender: " + message.getSender());
+//								System.out.println("Receiver: " + message.getReceiver());
+//								System.out.println("Content: " + message.getContent());
+//				}
 
 
 
