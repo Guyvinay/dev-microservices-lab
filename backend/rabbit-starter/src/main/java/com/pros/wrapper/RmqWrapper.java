@@ -18,6 +18,7 @@ public class RmqWrapper {
         this.rabbitTemplate = rabbitTemplate;
     }
 
+
     public void convertAndSend(String routingKey, Object object) {
         log.info("for tenant {} routing new message to {}", "tenantId", routingKey);
         try {

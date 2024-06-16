@@ -1,17 +1,18 @@
 package com.pros.utils;
 
 import com.pros.dto.VirtualHostDto;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.amqp.AbstractRabbitListenerContainerFactoryConfigurer;
 import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Base64;
+import java.util.*;
 
 @Slf4j
 public class VirtualHostCreation {
@@ -20,6 +21,14 @@ public class VirtualHostCreation {
 
     @Autowired
     private RestTemplate restTemplate;
+//    @Value("${rabbitmq.management.url}")
+    private String managementUrl = "http://localhost:15672/api";
+
+//    @Value("${rabbitmq.management.username}")
+    private String userName = "guest";
+
+//    @Value("${rabbitmq.management.password}")
+    private String passWord = "guest";
 
     private String hostUrl;
 
@@ -27,10 +36,18 @@ public class VirtualHostCreation {
 
     private String password;
 
+    @PostConstruct
+    public void init() {
+        System.out.println("RabbitMQ Management URL: " + managementUrl);
+        System.out.println("RabbitMQ Management Username: " + username);
+        System.out.println("RabbitMQ Management Password: " + password);
+    }
 
     public VirtualHostCreation( RabbitProperties rabbitProperties ) {
+        log.info("Rabbit Properties: {}", rabbitProperties);
         this.rabbitProperties = rabbitProperties;
-        this.hostUrl = "http://"+rabbitProperties.getAddresses()+"/api/vhosts/";
+//        this.hostUrl = "http://"+rabbitProperties.getAddresses()+"/api/vhosts/";
+        this.hostUrl = "http://localhost:15672/api/vhosts/";
         this.username = rabbitProperties.getUsername();
         this.password = rabbitProperties.getPassword();
     }
@@ -47,6 +64,7 @@ public class VirtualHostCreation {
             VirtualHostDto virtualHostDto = new VirtualHostDto();
             virtualHostDto.setName(tenantId);
             virtualHostDto.setDescription(tenantId);
+            List<String> tags =  new ArrayList<>();
             virtualHostDto.setTags(tags);
             virtualHostDto.setDefaultqueuetype(CLASSIC);
 
@@ -60,6 +78,69 @@ public class VirtualHostCreation {
             });
         } catch (Exception e) {
             System.out.println(e.getMessage());
+        }
+    }
+
+    public void createVirtualHostWithMetadata(String virtualHostName, String description, List<String> tags) throws RestClientResponseException {
+        String url = hostUrl + virtualHostName;
+
+        VirtualHostDto virtualHostDto = new VirtualHostDto();
+        virtualHostDto.setName(virtualHostName);
+        virtualHostDto.setDescription(description);
+        virtualHostDto.setTags(tags);
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add("Authorization", Base64.getEncoder().encodeToString((username + ":" + password).getBytes()));
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<VirtualHostDto> httpEntity = new HttpEntity<>(virtualHostDto, httpHeaders);
+
+        restTemplate.exchange(url, HttpMethod.PUT, httpEntity, Void.class);
+        log.info("Virtual host '" + virtualHostName + "' created successfully with metadata.");
+    }
+
+    public boolean checkVHost(String tenantId) {
+        ResponseEntity<?> responseValidate = null;
+
+        try {
+            String Url = hostUrl + tenantId;
+            log.info("Url {}", hostUrl);
+
+            HttpHeaders httpHeaders = new HttpHeaders();
+            httpHeaders.add("Authorization", Base64.getEncoder().encodeToString((username + ":" + password).getBytes()));
+
+            HttpEntity<?> httpEntity = new HttpEntity<>(null, httpHeaders);  // No body for GET
+
+            responseValidate = restTemplate.exchange(Url, HttpMethod.GET, httpEntity, new ParameterizedTypeReference<>() {});
+
+            if (responseValidate.getStatusCode() == HttpStatus.OK) {
+                return true;
+            } else {
+                log.error("Failed to check virtual host: Status code {}", responseValidate.getStatusCodeValue());
+                return false;  // Or throw a specific exception for clarity
+            }
+        } catch (RestClientResponseException e) {
+            log.error("Error checking virtual host: {}", e.getMessage());
+        } catch (Exception e) {
+            log.error("Unexpected error checking virtual host: {}", e.getMessage());
+        }
+        return (null != responseValidate) ? true : false;
+    }
+
+    public void createVirtualHostV2(String vhostName) {
+        String url = managementUrl + "/vhosts/" + vhostName;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBasicAuth(userName, passWord);
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<Void> response = restTemplate.exchange(url, HttpMethod.PUT, entity, Void.class);
+
+        if (response.getStatusCode().is2xxSuccessful()) {
+            System.out.println("Virtual host created successfully");
+        } else {
+            throw new RuntimeException("Failed to create virtual host: " + response.getStatusCode());
         }
     }
 
