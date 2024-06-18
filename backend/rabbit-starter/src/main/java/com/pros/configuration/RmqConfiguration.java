@@ -1,5 +1,6 @@
 package com.pros.configuration;
 
+import com.pros.utils.TenantRetriever;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
@@ -27,80 +28,34 @@ public class RmqConfiguration {
     @Autowired
     private RabbitProperties rabbitProperties;
 
+    @Autowired
+    private TenantRetriever tenantRetriever;
 
-    private static final Map<Object, ConnectionFactory> TENANT_CONNECTION_MAP = new ConcurrentHashMap<>();
 
-    private static Set<String> TENANT_IDS = new CopyOnWriteArraySet<>();
-/*
+    public static final Map<Object, ConnectionFactory> TENANT_CONNECTION_MAP = new ConcurrentHashMap<>();
+
+    public static Set<String> TENANT_IDS = new CopyOnWriteArraySet<>();
+
+    @Bean
     public ConnectionFactory connectionFactory() {
-        System.out.println("start creating connection factory");
-        TENANT_IDS.add("1234");
+        log.info("Connection Factory creation inits.");
+        TENANT_IDS = tenantRetriever.getAllTenants();
+        log.info("tenants found {}", TENANT_IDS);
+        CachingConnectionFactory connectionFactory = new CachingConnectionFactory(rabbitProperties.getHost(), rabbitProperties.getPort());
+        connectionFactory.setVirtualHost("/");
 
-        CachingConnectionFactory defaultConnectionFactory = createConnectionFactory("/");
-        TENANT_CONNECTION_MAP.put("public", defaultConnectionFactory);
+        TENANT_CONNECTION_MAP.put("public", connectionFactory);
 
-
-        TENANT_IDS.forEach(tenantId -> {
-            CachingConnectionFactory tenantConnectionFactory = createConnectionFactory(tenantId);
-            TENANT_CONNECTION_MAP.put(tenantId, tenantConnectionFactory);
+        TENANT_IDS.forEach(tenant -> {
+            CachingConnectionFactory cF = new CachingConnectionFactory(rabbitProperties.getHost(), rabbitProperties.getPort());
+            cF.setVirtualHost(tenant);
+            TENANT_CONNECTION_MAP.put(tenant, cF);
         });
 
         SimpleRoutingConnectionFactory simpleRoutingConnectionFactory = new SimpleRoutingConnectionFactory();
         simpleRoutingConnectionFactory.setTargetConnectionFactories(TENANT_CONNECTION_MAP);
-        log.info("connectionFactory ");
+        log.info("Connection Factory Creation finish for tenants {}", TENANT_IDS);
         return simpleRoutingConnectionFactory;
-    }
-    private CachingConnectionFactory createConnectionFactory(String virtualHost) {
-        CachingConnectionFactory connectionFactory = new CachingConnectionFactory(rabbitProperties.getHost(), rabbitProperties.getPort());
-        connectionFactory.setVirtualHost(virtualHost);
-        return connectionFactory;
-    }
-*/
-    public ConnectionFactory connectionFactory() {
-        log.info("Creating connection factory for tenant: 1234");  // Assuming "public" virtual host
-
-        CachingConnectionFactory connectionFactory = createConnectionFactory("/");  // Assuming "/" for single tenant
-
-        try {
-            // ... (Optional) Add error handling for connection establishment
-            connectionFactory.createConnection();
-            return connectionFactory;
-        } catch (Exception e) {
-            log.error("Failed to create connection for tenant: public", e);
-            // Handle connection creation failure (e.g., throw exception)
-        }
-
-        // Return null or throw an exception if connection creation fails
-        return null;
-    }
-
-    private CachingConnectionFactory createConnectionFactory(String virtualHost) {
-        CachingConnectionFactory connectionFactory = new CachingConnectionFactory(rabbitProperties.getHost(), rabbitProperties.getPort());
-        connectionFactory.setVirtualHost(virtualHost);
-        return connectionFactory;
-    }
-
-    public ConnectionFactory connectionFactoryV2() {
-        log.info("Creating connection factory for 1234");
-        return createConnectionFactoryV2("1234");
-    }
-    public CachingConnectionFactory createConnectionFactoryV2(String vHost) {
-        CachingConnectionFactory connectionFactory = new CachingConnectionFactory(rabbitProperties.getHost(),rabbitProperties.getPort());
-        connectionFactory.setVirtualHost(connectionFactory().getVirtualHost());
-        try {
-            Connection connection = connectionFactory.createConnection();
-            if (connection.isOpen()) {
-                log.info("Connection factory created");
-                return connectionFactory;
-            } else {
-                throw new IOException("Failed to open connection");
-            }
-        } catch (IOException e) {
-            log.error("Failed to create connection for tenant: {}" , e.getMessage());
-            // Handle connection creation failure (e.g., throw exception)
-        }
-        // Return null or throw an exception if connection creation fails
-        return null;
     }
 
     @Bean

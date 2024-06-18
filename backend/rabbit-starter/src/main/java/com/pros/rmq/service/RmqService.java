@@ -1,24 +1,17 @@
 package com.pros.rmq.service;
 
-import com.pros.RabbitStarterApplication;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
-import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.http.HttpResponse;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 
 public class RmqService {
 
@@ -53,8 +46,8 @@ public class RmqService {
         log.info("username: {}, password: {}, hostUrl: {}", username, password, hostUrl);
     }
 
-    public void createVirtualHostV2(String vhostName) {
-        if(checkVHost(vhostName)){
+    public void createVirtualHostAndQueues(String vhostName) {
+        if(checkVHostAvailability(vhostName)){
             log.info("virtual host already exists");
         } else {
             String url = hostUrl  + vhostName;
@@ -79,7 +72,7 @@ public class RmqService {
             }
         }
     }
-    public boolean checkVHost(String vHost) {
+    public boolean checkVHostAvailability(String vHost) {
         ResponseEntity<?> responseValidate = null;
 
         try {
