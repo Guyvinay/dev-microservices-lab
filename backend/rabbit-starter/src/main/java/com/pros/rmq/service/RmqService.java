@@ -1,10 +1,12 @@
 package com.pros.rmq.service;
 
 import com.pros.RabbitStarterApplication;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
@@ -14,13 +16,15 @@ import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.http.HttpResponse;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
 public class RmqService {
 
     private static final Logger log = LoggerFactory.getLogger(RmqService.class);
-    private String hostUrl = "http://localhost:15672/api";
+
+    private String hostUrl;
 
     private String username;
 
@@ -30,54 +34,61 @@ public class RmqService {
 
     private RabbitTemplate rabbitTemplate;
 
-    private final RestTemplate restTemplate;
+    private RestTemplate restTemplate;
 
-    private final RabbitAdmin rabbitAdmin;
+    private RabbitAdmin rabbitAdmin;
 
-    public RmqService(RabbitTemplate rabbitTemplate, RabbitProperties rabbitProperties, RestTemplate restTemplate, RabbitAdmin rabbitAdmin) {
-        this.restTemplate = restTemplate;
+    public RmqService(RabbitTemplate rabbitTemplate, RabbitProperties rabbitProperties, RabbitAdmin rabbitAdmin, RestTemplate restTemplate) {
+        this.rabbitTemplate = rabbitTemplate;
+        this.rabbitProperties = rabbitProperties;
         this.rabbitAdmin = rabbitAdmin;
+        this.restTemplate = restTemplate;
     }
-    public void createVirtualHost(String vHost) {
 
-        String url = hostUrl + "/vhosts" + vHost;
+    @PostConstruct
+    public void postConstruct() {
+        username = rabbitProperties.getUsername();
+        password = rabbitProperties.getPassword();
+        hostUrl = "http://" + rabbitProperties.getHost() + ":15672" + "/api/vhosts/";
+        log.info("username: {}, password: {}, hostUrl: {}", username, password, hostUrl);
+    }
 
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setBasicAuth("guest", "guest");
-        httpHeaders.set("Content-Type", "application/json");
-        Map<String, Object> body = new HashMap<>();
-        body.put("description", "vHost Description");
-        body.put("metadata", "metadata");
-
-        HttpEntity<Map<String, Object>> httpEntity = new HttpEntity<>(httpHeaders);
-
-        ResponseEntity<String> httpResponse =  restTemplate.exchange(url, HttpMethod.PUT, httpEntity, String.class);
-
-        if(httpResponse.getStatusCode().is2xxSuccessful()) {
-            log.info("Virtual Host created");
-//            createQueuesAndBindings(vHost);
+    public void createVirtualHostV2(String vhostName) {
+        if(checkVHost(vhostName)){
+            log.info("virtual host already exists");
         } else {
-            log.info("Virtual host creation failed");
+            String url = hostUrl  + vhostName;
+            //headers.add("Authorization", Base64.getEncoder().encodeToString((username + ":" + password).getBytes()));
+            //headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBasicAuth(username, password);
+            //Map<String, Object> body = new HashMap<>();
+            //body.put("description", "vHost Description");
+            //body.put("metadata", "metadata");
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<?> response = restTemplate.exchange(
+                    url, HttpMethod.PUT, entity, new ParameterizedTypeReference<Void>() {}
+            );
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                System.out.println("Virtual host created successfully");
+                createQueuesAndBindings(vhostName);
+            } else {
+                throw new RuntimeException("Failed to create virtual host: " + response.getStatusCode());
+            }
         }
-
     }
-
-    private void createQueuesAndBindings(String vHost) {
-        String[] queues = {"queue1", "queue2", "queue3", "queue4", "queue5"};
-        String exchange = "topic-exchange";
-
-    }
-    public boolean checkVHost(String tenantId) {
+    public boolean checkVHost(String vHost) {
         ResponseEntity<?> responseValidate = null;
 
         try {
-            String Url = hostUrl + tenantId;
-            log.info("Url {}", Url);
+            String Url = hostUrl + vHost;
+            log.info("Url: {}", Url);
 
             HttpHeaders httpHeaders = new HttpHeaders();
-            httpHeaders.setBasicAuth("guest", "guest");
-            HttpEntity<?> httpEntity = new HttpEntity<>(httpHeaders);  // No body for GET
-
+            httpHeaders.setBasicAuth(username, password);
+            HttpEntity<?> httpEntity = new HttpEntity<>(httpHeaders);
             responseValidate = restTemplate.exchange(
                     Url, HttpMethod.GET, httpEntity, new ParameterizedTypeReference<>() {}
             );
@@ -101,28 +112,10 @@ public class RmqService {
         }
     }
 
-    public void createVirtualHostV2(String vhostName) {
-        if(checkVHost(vhostName)){
-            log.info("virtual host already exists");
-        }else {
-            String url = hostUrl + "/vhosts/" + vhostName;
+    private void createQueuesAndBindings(String vHost) {
+        log.info("Queue creation for {} starts", vHost);
+        String[] queues = {"queue1", "queue2", "queue3", "queue4", "queue5"};
+        String exchange = "topic-exchange";
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setBasicAuth("guest", "guest");
-            Map<String, Object> body = new HashMap<>();
-            body.put("description", "vHost Description");
-            body.put("metadata", "metadata");
-            HttpEntity<String> entity = new HttpEntity<>(headers);
-
-            ResponseEntity<?> response = restTemplate.exchange(url, HttpMethod.PUT, entity, new ParameterizedTypeReference<Void>() {
-            });
-
-            if (response.getStatusCode().is2xxSuccessful()) {
-                System.out.println("Virtual host created successfully");
-            } else {
-                throw new RuntimeException("Failed to create virtual host: " + response.getStatusCode());
-            }
-        }
     }
-
 }

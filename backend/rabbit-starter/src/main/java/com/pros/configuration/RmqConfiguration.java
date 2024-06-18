@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.Map;
@@ -79,9 +80,6 @@ public class RmqConfiguration {
         return connectionFactory;
     }
 
-
-
-
     public ConnectionFactory connectionFactoryV2() {
         log.info("Creating connection factory for 1234");
         return createConnectionFactoryV2("1234");
@@ -115,6 +113,12 @@ public class RmqConfiguration {
     public RabbitAdmin rabbitAdmin() {
         log.info("Rabbit Admin Created");
         return new RabbitAdmin(connectionFactory());
+    }
+
+    @Bean
+    RestTemplate restTemplate() {
+        log.info("Rest Template Bean created");
+        return new RestTemplate();
     }
 
 }

@@ -45,15 +45,6 @@ public class RabbitController {
     }
     @GetMapping(value = "/createVHost/{vHost}")
     public void createVhost(@PathVariable String vHost){
-//        boolean isVhost = virtualHostCreation.checkVHost(vHost);
-//        if(isVhost) {
-//            System.out.println("Virtual Host Available");
-//        }else {
-//            virtualHostCreation.createVirtualHost(vHost);
-//        }
-//        List<String> tags = new ArrayList<>();
-//        tags.add("tasg");
-//        virtualHostCreation.createVirtualHostV2(vHost);
         rmqService.createVirtualHostV2(vHost);
     }
 

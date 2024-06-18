@@ -1,7 +1,6 @@
 package com.pros.configuration;
 
 import com.pros.rmq.service.RmqService;
-import com.pros.utils.VirtualHostCreation;
 import com.pros.wrapper.RmqWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
@@ -27,16 +26,13 @@ public class RmqBeans {
     @Autowired
     private RabbitAdmin rabbitAdmin;
 
-    @Bean
-    VirtualHostCreation virtualHostCreation() {
-        log.info("Virtual Host Bean created");
-        return new VirtualHostCreation(rabbitProperties);
-    }
-
+    @Autowired
+    private RestTemplate restTemplate;
+    
     @Bean
     RmqService rmqService() {
         log.info("RmqService bean created");
-        return new RmqService(rabbitTemplate, rabbitProperties, restTemplate(), rabbitAdmin);
+        return new RmqService(rabbitTemplate, rabbitProperties, rabbitAdmin, restTemplate);
     }
 
     @Bean
@@ -45,11 +41,7 @@ public class RmqBeans {
         return new RmqWrapper(rabbitTemplate);
     }
 
-    @Bean
-    RestTemplate restTemplate() {
-        log.info("Rest Template Bean created");
-        return new RestTemplate();
-    }
+
 
 
 }
