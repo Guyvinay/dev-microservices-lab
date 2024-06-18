@@ -4,11 +4,10 @@ import com.pros.dto.VirtualHostDto;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.amqp.AbstractRabbitListenerContainerFactoryConfigurer;
 import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
@@ -104,14 +103,16 @@ public class VirtualHostCreation {
 
         try {
             String Url = hostUrl + tenantId;
-            log.info("Url {}", hostUrl);
+            log.info("Url {}", Url);
 
             HttpHeaders httpHeaders = new HttpHeaders();
-            httpHeaders.add("Authorization", Base64.getEncoder().encodeToString((username + ":" + password).getBytes()));
+            httpHeaders.setBasicAuth(userName, passWord);
+            HttpEntity<?> httpEntity = new HttpEntity<>(httpHeaders);  // No body for GET
 
-            HttpEntity<?> httpEntity = new HttpEntity<>(null, httpHeaders);  // No body for GET
-
-            responseValidate = restTemplate.exchange(Url, HttpMethod.GET, httpEntity, new ParameterizedTypeReference<>() {});
+            responseValidate = restTemplate.exchange(
+                    Url, HttpMethod.GET, httpEntity, new ParameterizedTypeReference<>() {}
+            );
+            log.info("response entity {}", responseValidate);
 
             if (responseValidate.getStatusCode() == HttpStatus.OK) {
                 return true;
@@ -119,28 +120,37 @@ public class VirtualHostCreation {
                 log.error("Failed to check virtual host: Status code {}", responseValidate.getStatusCodeValue());
                 return false;  // Or throw a specific exception for clarity
             }
+        } catch (HttpClientErrorException.NotFound e) {
+            log.error("Virtual host not found: {}", e.getMessage());
+            return false;
         } catch (RestClientResponseException e) {
             log.error("Error checking virtual host: {}", e.getMessage());
+            return false;
         } catch (Exception e) {
             log.error("Unexpected error checking virtual host: {}", e.getMessage());
+            return false;
         }
-        return (null != responseValidate) ? true : false;
     }
 
     public void createVirtualHostV2(String vhostName) {
-        String url = managementUrl + "/vhosts/" + vhostName;
+        if(checkVHost(vhostName)){
+            log.info("virtual host already exists");
+        }else {
+            String url = managementUrl + "/vhosts/" + vhostName;
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBasicAuth(userName, passWord);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBasicAuth(userName, passWord);
 
-        HttpEntity<String> entity = new HttpEntity<>(headers);
+            HttpEntity<String> entity = new HttpEntity<>(headers);
 
-        ResponseEntity<Void> response = restTemplate.exchange(url, HttpMethod.PUT, entity, Void.class);
+            ResponseEntity<?> response = restTemplate.exchange(url, HttpMethod.PUT, entity, new ParameterizedTypeReference<Void>() {
+            });
 
-        if (response.getStatusCode().is2xxSuccessful()) {
-            System.out.println("Virtual host created successfully");
-        } else {
-            throw new RuntimeException("Failed to create virtual host: " + response.getStatusCode());
+            if (response.getStatusCode().is2xxSuccessful()) {
+                System.out.println("Virtual host created successfully");
+            } else {
+                throw new RuntimeException("Failed to create virtual host: " + response.getStatusCode());
+            }
         }
     }
 

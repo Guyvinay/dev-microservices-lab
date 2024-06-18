@@ -1,5 +1,6 @@
 package com.pros.controller;
 
+import com.pros.rmq.service.RmqService;
 import com.pros.service.RabbitProducer;
 import com.pros.utils.VirtualHostCreation;
 import com.pros.wrapper.RmqWrapper;
@@ -28,6 +29,9 @@ public class RabbitController {
     @Autowired
     private VirtualHostCreation virtualHostCreation;
 
+    @Autowired
+    private RmqService rmqService;
+
 //    @GetMapping
 //    public String send(@RequestParam String message) {
 //        rabbitProducer.sendMessage(message);
@@ -47,9 +51,10 @@ public class RabbitController {
 //        }else {
 //            virtualHostCreation.createVirtualHost(vHost);
 //        }
-        List<String> tags = new ArrayList<>();
-        tags.add("tasg");
-        virtualHostCreation.createVirtualHostV2(vHost);
+//        List<String> tags = new ArrayList<>();
+//        tags.add("tasg");
+//        virtualHostCreation.createVirtualHostV2(vHost);
+        rmqService.createVirtualHostV2(vHost);
     }
 
 
