@@ -24,6 +24,8 @@ import { MaterialComponent } from './components/material/material.component';
 import { MatMenuModule } from '@angular/material/menu';
 import { MyDialogComponent } from './components/my-dialog/my-dialog.component';
 import { MatDialogModule } from '@angular/material/dialog';
+import {MatTabsModule} from '@angular/material/tabs';
+
 
 @NgModule({
   declarations: [
@@ -52,7 +54,8 @@ import { MatDialogModule } from '@angular/material/dialog';
     FormsModule,  
     MatMenuModule,
     MatDialogModule,
-    MatTableModule 
+    MatTableModule,
+    MatTabsModule
   ],
   providers: [
     provideAnimationsAsync()
