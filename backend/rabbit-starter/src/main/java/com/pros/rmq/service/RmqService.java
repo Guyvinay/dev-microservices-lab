@@ -1,10 +1,17 @@
 package com.pros.rmq.service;
 
+import com.pros.utils.TenantRetriever;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.QueueBuilder;
+import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.rabbit.connection.SimpleResourceHolder;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
@@ -31,6 +38,9 @@ public class RmqService {
 
     private RabbitAdmin rabbitAdmin;
 
+    @Autowired
+    private TenantRetriever tenantRetriever;
+
     public RmqService(RabbitTemplate rabbitTemplate, RabbitProperties rabbitProperties, RabbitAdmin rabbitAdmin, RestTemplate restTemplate) {
         this.rabbitTemplate = rabbitTemplate;
         this.rabbitProperties = rabbitProperties;
@@ -50,28 +60,34 @@ public class RmqService {
         if(checkVHostAvailability(vhostName)){
             log.info("virtual host already exists");
         } else {
-            String url = hostUrl  + vhostName;
-            //headers.add("Authorization", Base64.getEncoder().encodeToString((username + ":" + password).getBytes()));
-            //headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpHeaders headers = new HttpHeaders();
-            headers.setBasicAuth(username, password);
-            //Map<String, Object> body = new HashMap<>();
-            //body.put("description", "vHost Description");
-            //body.put("metadata", "metadata");
-            HttpEntity<String> entity = new HttpEntity<>(headers);
-
-            ResponseEntity<?> response = restTemplate.exchange(
-                    url, HttpMethod.PUT, entity, new ParameterizedTypeReference<Void>() {}
-            );
-
-            if (response.getStatusCode().is2xxSuccessful()) {
-                System.out.println("Virtual host created successfully");
-                createQueuesAndBindings(vhostName);
-            } else {
-                throw new RuntimeException("Failed to create virtual host: " + response.getStatusCode());
-            }
+            createVirtualHost(vhostName);
+            createQueuesAndBindings(vhostName);
         }
     }
+
+    private void createVirtualHost(String vhostName) {
+        log.info("Virtual Host creation start for {}", vhostName);
+        String url = hostUrl  + vhostName;
+        //headers.add("Authorization", Base64.getEncoder().encodeToString((username + ":" + password).getBytes()));
+        //headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBasicAuth(username, password);
+        //Map<String, Object> body = new HashMap<>();
+        //body.put("description", "vHost Description");
+        //body.put("metadata", "metadata");
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<?> response = restTemplate.exchange(
+                url, HttpMethod.PUT, entity, new ParameterizedTypeReference<Void>() {}
+        );
+        if (response.getStatusCode().is2xxSuccessful()) {
+            log.info("Virtual host created successfully, {}", vhostName);
+            createQueuesAndBindings(vhostName);
+        } else {
+            throw new RuntimeException("Failed to create virtual host: " + response.getStatusCode());
+        }
+    }
+
     public boolean checkVHostAvailability(String vHost) {
         ResponseEntity<?> responseValidate = null;
 
@@ -109,6 +125,22 @@ public class RmqService {
         log.info("Queue creation for {} starts", vHost);
         String[] queues = {"queue1", "queue2", "queue3", "queue4", "queue5"};
         String exchange = "topic-exchange";
+        try {
+            SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), vHost);
+            TopicExchange topicExchange = new TopicExchange(exchange);
+            rabbitAdmin.declareExchange(topicExchange);
+            for (String q : queues) {
+                Queue queue = QueueBuilder.durable(q).build();
+                rabbitAdmin.declareQueue(queue);
+                rabbitAdmin.declareBinding(BindingBuilder.bind(queue).to(topicExchange).with(q + ".routing.key"));
+            }
+            log.info("Queues and bindings created for virtual host: {}", vHost);
+        } catch (Exception e) {
+            log.info("Exception occurred during queue creation  {}" , e.getMessage());
+            e.printStackTrace();
+        } finally {
+            SimpleResourceHolder.unbind(rabbitTemplate.getConnectionFactory());
+        }
 
     }
 }
