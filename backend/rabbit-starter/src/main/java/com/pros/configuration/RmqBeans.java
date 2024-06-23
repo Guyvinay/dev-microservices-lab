@@ -13,7 +13,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
-@ComponentScan("com.pros") // Replace with your package name
 @Slf4j
 public class RmqBeans {
 

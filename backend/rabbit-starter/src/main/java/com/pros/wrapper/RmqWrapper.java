@@ -20,9 +20,9 @@ public class RmqWrapper {
 
 
     public void convertAndSend(String routingKey, Object object) {
-        log.info("for tenant {} routing new message to {}", "tenantId", routingKey);
+        log.info("for tenant {} routing new message to {}", "vinay", routingKey);
         try {
-            SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), "tenantId");
+            SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), "vinay");
 
             Message message = MessageBuilder.withBody(new String(String.valueOf(object)).getBytes())
                     .setContentType(MessageProperties.CONTENT_TYPE_TEXT_PLAIN).setMessageId(UUID.randomUUID().toString()).build();

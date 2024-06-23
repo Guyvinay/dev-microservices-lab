@@ -1,6 +1,7 @@
 package com.pros.controller;
 
 import com.pros.rmq.service.RmqService;
+import com.pros.utils.QueueListeners;
 import com.pros.wrapper.RmqWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,7 @@ public class RabbitController {
 
     @GetMapping
     public String send(@RequestParam String message) {
-        rmqWrapper.convertAndSend("1234", message);
+        rmqWrapper.convertAndSend(QueueListeners.QUEUE1, message);
         return "Message Sent Successfully";
     }
     @GetMapping(value = "/createVHost/{vHost}")
