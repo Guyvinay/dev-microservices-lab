@@ -12,29 +12,19 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 public class RabbitController {
 
-//    @Autowired
-//    private RabbitProducer rabbitProducer;
-
-//    @Autowired
-//    private RabbitTemplate rabbitTemplate;
-
     @Autowired
     private RmqWrapper rmqWrapper;
 
     @Autowired
     private RmqService rmqService;
 
-//    @GetMapping
-//    public String send(@RequestParam String message) {
-//        rabbitProducer.sendMessage(message);
-//        return "Message Sent Successfully";
-//    }
-
     @GetMapping
     public String send(@RequestParam String message) {
         rmqWrapper.convertAndSend(QueueListeners.QUEUE1, message);
         return "Message Sent Successfully";
     }
+
+
     @GetMapping(value = "/createVHost/{vHost}")
     public void createVhost(@PathVariable String vHost){
         rmqService.createVirtualHostAndQueues(vHost);

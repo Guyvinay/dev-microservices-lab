@@ -1,5 +1,6 @@
 package com.pros.configuration;
 
+import com.pros.binding.QueueListenerBinding;
 import com.pros.rmq.service.RmqService;
 import com.pros.wrapper.RmqWrapper;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +39,11 @@ public class RmqBeans {
     RmqWrapper rmqWrapper() {
         log.info("Rmq Wrapper Bean created");
         return new RmqWrapper(rabbitTemplate);
+    }
+
+    @Bean
+    QueueListenerBinding queueListenerBinding() {
+        return new QueueListenerBinding();
     }
 
 
