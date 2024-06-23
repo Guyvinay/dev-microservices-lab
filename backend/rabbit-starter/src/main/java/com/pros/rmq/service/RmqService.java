@@ -19,6 +19,8 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Set;
+
 
 public class RmqService {
 
@@ -54,6 +56,8 @@ public class RmqService {
         password = rabbitProperties.getPassword();
         hostUrl = "http://" + rabbitProperties.getHost() + ":15672" + "/api/vhosts/";
         log.info("username: {}, password: {}, hostUrl: {}", username, password, hostUrl);
+        Set<String> tenants =  tenantRetriever.getAllTenants();
+        tenants.forEach(this::createVirtualHostAndQueues);
     }
 
     public void createVirtualHostAndQueues(String vhostName) {

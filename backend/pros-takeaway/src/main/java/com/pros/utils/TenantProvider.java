@@ -16,7 +16,7 @@ public class TenantProvider implements TenantRetriever {
     @Override
     public Set<String> getAllTenants() {
         Set<String> tenants = new HashSet<>();
-        tenants.add("vHost1");
+        tenants.add("vinay");
 //        tenants.add("vHost2");
 //        tenants.add("vHost3");
 //        tenants.add("vHost4");
