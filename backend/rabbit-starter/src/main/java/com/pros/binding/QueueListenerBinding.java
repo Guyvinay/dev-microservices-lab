@@ -2,6 +2,7 @@ package com.pros.binding;
 
 import com.pros.annotation.QueueListener;
 import com.pros.configuration.RmqConfiguration;
+import com.pros.wrapper.RmqListenerWrapper;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.*;
@@ -10,12 +11,14 @@ import org.springframework.amqp.rabbit.connection.SimpleResourceHolder;
 import org.springframework.amqp.rabbit.connection.SimpleRoutingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 
 import java.util.Arrays;
@@ -89,7 +92,7 @@ public class QueueListenerBinding {
         if (messageListener == null) {
             log.info("Listener for bean: {} not found", beanName);
         }
-
+        final GenericApplicationContext genericApplicationContext = new GenericApplicationContext();
         String queueName = beanDefinition.getMetadata().getAnnotationAttributes(QueueListener.class.getCanonicalName()).get("queue").toString();
         log.info("starting queue {} declarations ...", queueName);
         Queue queue = QueueBuilder.durable(queueName).quorum().build();
@@ -101,6 +104,23 @@ public class QueueListenerBinding {
             SimpleResourceHolder.unbind(rabbitAdmin.getRabbitTemplate().getConnectionFactory());
         }
         log.info("queue {} declaration finished", queueName);
+
+        log.info("Consumer starting...");
+        genericApplicationContext.registerBean(beanName, SimpleMessageListenerContainer.class, () -> {
+            SimpleMessageListenerContainer container = new SimpleMessageListenerContainer(
+                    RmqConfiguration.TENANT_CONNECTION_MAP.get(tenantId));
+            container.setLookupKeyQualifier(tenantId);
+            container.setMaxConcurrentConsumers(10);
+            container.setStartConsumerMinInterval(5000);
+            container.setStartConsumerMinInterval(20000);
+            container.setShutdownTimeout(20000);
+            container.setAcknowledgeMode(AcknowledgeMode.AUTO);
+            container.setMessageListener(new RmqListenerWrapper(tenantId, messageListener, applicationContext));
+            container.setQueueNames(queueName);
+            container.start();
+            return container;
+        });
+
     }
 
 }
