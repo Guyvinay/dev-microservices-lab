@@ -92,7 +92,7 @@ public class QueueListenerBinding {
         if (messageListener == null) {
             log.info("Listener for bean: {} not found", beanName);
         }
-        final GenericApplicationContext genericApplicationContext = new GenericApplicationContext();
+//        final GenericApplicationContext genericApplicationContext = (GenericApplicationContext) applicationContext;
         String queueName = beanDefinition.getMetadata().getAnnotationAttributes(QueueListener.class.getCanonicalName()).get("queue").toString();
         log.info("starting queue {} declarations ...", queueName);
         Queue queue = QueueBuilder.durable(queueName).quorum().build();
@@ -106,21 +106,19 @@ public class QueueListenerBinding {
         log.info("queue {} declaration finished", queueName);
 
         log.info("Consumer starting...");
-        genericApplicationContext.registerBean(beanName, SimpleMessageListenerContainer.class, () -> {
-            SimpleMessageListenerContainer container = new SimpleMessageListenerContainer(
-                    RmqConfiguration.TENANT_CONNECTION_MAP.get(tenantId));
+        ((GenericApplicationContext) this.applicationContext).registerBean(beanName, SimpleMessageListenerContainer.class, () -> {
+            SimpleMessageListenerContainer container = new SimpleMessageListenerContainer((ConnectionFactory) RmqConfiguration.TENANT_CONNECTION_MAP.get(tenantId));
             container.setLookupKeyQualifier(tenantId);
             container.setMaxConcurrentConsumers(10);
-            container.setStartConsumerMinInterval(5000);
-            container.setStartConsumerMinInterval(20000);
-            container.setShutdownTimeout(20000);
+            container.setStartConsumerMinInterval(5000L);
+            container.setStopConsumerMinInterval(20000L);  // Corrected setStartConsumerMinInterval to setStopConsumerMinInterval
+            container.setShutdownTimeout(20000L);
             container.setAcknowledgeMode(AcknowledgeMode.AUTO);
-            container.setMessageListener(new RmqListenerWrapper(tenantId, messageListener, applicationContext));
+            container.setMessageListener(new RmqListenerWrapper(tenantId, messageListener, this.applicationContext));
             container.setQueueNames(queueName);
             container.start();
             return container;
         });
-
     }
 
 }

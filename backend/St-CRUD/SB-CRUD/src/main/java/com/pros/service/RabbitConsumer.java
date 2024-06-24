@@ -10,7 +10,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
 @Slf4j
-@QueueListener(value = "RabbitConsumer", queue = QueueListeners.QUEUE1)
+@QueueListener(value = "RabbitConsumer", queue = QueueListeners.QUEUE2)
 public class RabbitConsumer implements MessageListener {
 
 
@@ -22,8 +22,8 @@ public class RabbitConsumer implements MessageListener {
 
 	@Override
 	public void onMessage(Message message) {
-		log.info("Message received");
-		System.out.println(message);
+		log.info("Receiving message from QUEUE2");
+		log.info("message {}", message);
 	}
 //
 //				@RabbitListener(queues = "myQueue")

@@ -20,7 +20,7 @@ public class RabbitController {
 
     @GetMapping
     public String send(@RequestParam String message) {
-        rmqWrapper.convertAndSend(QueueListeners.QUEUE1, message);
+        rmqWrapper.convertAndSend(QueueListeners.QUEUE2, message);
         return "Message Sent Successfully";
     }
 
