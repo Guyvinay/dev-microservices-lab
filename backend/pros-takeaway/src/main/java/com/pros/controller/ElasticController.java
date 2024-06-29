@@ -36,4 +36,9 @@ public class ElasticController {
         return new ResponseEntity<>(elasticService.findStudentById(id), HttpStatus.OK);
     }
 
+    @GetMapping(value = "/index")
+    public void indexRequest() {
+        elasticService.indexRequest();
+    }
+
 }

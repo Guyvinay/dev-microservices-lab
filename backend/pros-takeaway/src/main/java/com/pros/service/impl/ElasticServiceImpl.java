@@ -14,11 +14,16 @@ import org.elasticsearch.core.TimeValue;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.xcontent.XContentBuilder;
+import org.elasticsearch.xcontent.XContentFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -30,8 +35,7 @@ public class ElasticServiceImpl implements ElasticService {
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
-
-    	@Autowired
+    @Autowired
     private RestHighLevelClient restHighLevelClient;
 
     public static final String index = "localhost_drf_346377_258555_en";
@@ -40,28 +44,12 @@ public class ElasticServiceImpl implements ElasticService {
     private ObjectMapper objectMapper;
 
     @Override
-    public void saveStudent(Student student){
-
+    public void saveStudent(Student student) {
         try{
-
             elasticsearchClient.indexDocument(index, student.getStudentId(), new ObjectMapper().writeValueAsString(student));
         } catch (Exception e){
             log.info("parsing error: {}", e.getMessage());
         }
-
-
-//        IndexRequest indexRequest = new IndexRequest(index);
-//        indexRequest.id(student.getStudentId());
-//        indexRequest.setRefreshPolicy(WriteRequest.RefreshPolicy.WAIT_UNTIL);
-//
-//        try {
-//            indexRequest.source(new ObjectMapper().writeValueAsString(new ObjectMapper().convertValue(student, Map.class)), XContentType.JSON);
-//            restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
-//        } catch (JsonProcessingException e) {
-//            log.info("parse error while indexing to elastic: {} ", e.getMessage());
-//        } catch (Exception e) {
-//            log.info("unable to index to elastic: {} ", e.getMessage());
-//        }
     }
 
     @Override
@@ -103,6 +91,38 @@ public class ElasticServiceImpl implements ElasticService {
         deleteByQueryRequest.setRefresh(true);
 //        BulkByScrollResponse bulkByScrollResponse = restHighLevelClient.deleteByQuery(deleteByQueryRequest, RequestOptions.DEFAULT);
 //        log.info("delete status {}", bulkByScrollResponse.getStatus());
+    }
+
+    @Override
+    public void indexRequest() {
+        /*Map<String, Object> jsonMap = new HashMap<>();
+        jsonMap.put("user", "kimchy");
+        jsonMap.put("postDate", new Date());
+        jsonMap.put("message", "trying out Elasticsearch");
+        IndexRequest indexRequest = new IndexRequest("my-index")
+                .id("1").source(jsonMap);*/
+        XContentBuilder builder = null;
+        try {
+            builder = XContentFactory.jsonBuilder();
+            builder.startObject();
+            {
+                builder.field("user", "kimchy");
+                builder.timeField("postDate", new Date());
+                builder.field("message", "trying out Elasticsearch");
+
+            }
+            builder.endObject();
+
+        IndexRequest indexRequest = new IndexRequest("posts")
+                .id("1").source(builder);
+
+            restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
+
+        } catch (Exception e) {
+            log.info("{} ", e.getMessage());
+            e.getStackTrace();
+        }
+
     }
 
 }

@@ -47,6 +47,7 @@ public class MyElasticsearchClient {
 
     @PreDestroy
     public void destroy() throws IOException {
+        log.info("Closing Elastic Connection...");
         this.restHighLevelClient.close();
     }
 

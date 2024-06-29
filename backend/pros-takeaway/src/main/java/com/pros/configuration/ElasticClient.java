@@ -1,5 +1,6 @@
 package com.pros.configuration;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import java.util.ArrayList;
 import java.util.List;
 
-//@Configuration
+@Configuration
 public class ElasticClient {
 
     private static final Logger log = LoggerFactory.getLogger(ElasticClient.class);
@@ -38,6 +39,11 @@ public class ElasticClient {
         this.restHighLevelClient = new RestHighLevelClientBuilder(restClientBuilder.build()).build();
         log.info("Connection to elastic successful ");
         return this.restHighLevelClient;
+    }
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
     }
 
 }
