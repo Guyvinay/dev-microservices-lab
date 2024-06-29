@@ -23,9 +23,18 @@ public class RmqWrapper {
         log.info("for tenant {} routing new message to {}", "vinay", routingKey);
         try {
             SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), "vinay");
-
-            Message message = MessageBuilder.withBody(new String(String.valueOf(object)).getBytes())
-                    .setContentType(MessageProperties.CONTENT_TYPE_TEXT_PLAIN).setMessageId(UUID.randomUUID().toString()).build();
+            Message message = null;
+            if(object instanceof  byte[]) {
+                message = MessageBuilder.withBody((byte[]) object)
+                        .setContentType(MessageProperties.CONTENT_TYPE_TEXT_PLAIN)
+                        .setMessageId(UUID.randomUUID().toString())
+                        .build();
+            } else {
+                message = MessageBuilder.withBody(new String(String.valueOf(object)).getBytes())
+                        .setContentType(MessageProperties.CONTENT_TYPE_TEXT_PLAIN)
+                        .setMessageId(UUID.randomUUID().toString())
+                        .build();
+            }
             rabbitTemplate.convertAndSend(routingKey, message);
         } catch (Exception e) {
             log.info("Exception while sending message");
