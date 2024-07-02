@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+
 @RestController
 @RequestMapping(value = "rabbit")
 @Slf4j
@@ -20,7 +22,7 @@ public class RabbitController {
 
     @GetMapping
     public String send(@RequestParam String message) {
-        rmqWrapper.convertAndSend(QueueListeners.QUEUE1, message);
+        rmqWrapper.convertAndSend(QueueListeners.QUEUE1, new HashMap<String, String>().put("key","fcd"));
         return "Message Sent Successfully";
     }
 
