@@ -1,5 +1,8 @@
 package com.pros.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pros.modal.Profile;
 import com.pros.rmq.service.RmqService;
 import com.pros.utils.QueueListeners;
 import com.pros.wrapper.RmqWrapper;
@@ -8,6 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+
+import java.util.HashMap;
+import java.util.UUID;
 
 @RestController
 @RequestMapping(value = "rabbit")
@@ -22,7 +28,14 @@ public class RabbitController {
 
     @GetMapping
     public String send(@RequestParam String message) {
-        rmqWrapper.convertAndSend(QueueListeners.QUEUE1, new HashMap<String, String>().put("key","fcd"));
+        String messageStr = null;
+        Profile profile = new Profile(UUID.randomUUID().toString(), "Vinay Kumar Singh", "vinay@gmail.com", 23);
+        try {
+            messageStr = new ObjectMapper().writeValueAsString(profile);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        rmqWrapper.convertAndSend(QueueListeners.QUEUE1, messageStr);
         return "Message Sent Successfully";
     }
 

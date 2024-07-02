@@ -18,4 +18,16 @@ export class UtilsComponent {
   showInputValue(value: string): void {
     this.inputValue = value;
   }
+  downloadTextFile() {
+    const data = 'hii';
+    const blob = new Blob([data], {type:'text/plain'});
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `SampleTextDownload.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  }
 }
