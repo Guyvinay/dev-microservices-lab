@@ -64,13 +64,13 @@ public class QueueListenerBinding {
         Set<BeanDefinition> beanDefinitions = provider.findCandidateComponents(PACKAGE_TO_SCAN);
 
         for (BeanDefinition bD : beanDefinitions) {
-            if(bD instanceof AnnotatedBeanDefinition) {
+            if (bD instanceof AnnotatedBeanDefinition) {
                 AnnotatedBeanDefinition aBD = (AnnotatedBeanDefinition) bD;
                 String[] implementingInterfaces = aBD.getMetadata().getInterfaceNames();
                 Map<String, Object> annotationAttributes = aBD.getMetadata().getAnnotationAttributes(QueueListener.class.getCanonicalName());
                 String beanName = annotationAttributes.get("value").toString();
 
-                if(!Arrays.asList(implementingInterfaces).contains(MessageListener.class.getName())) {
+                if (!Arrays.asList(implementingInterfaces).contains(MessageListener.class.getName())) {
                     log.info("Listener should class should implement with MessageListener interface");
                 }
                 A_BDF.put(beanName, aBD);
@@ -106,19 +106,24 @@ public class QueueListenerBinding {
         log.info("queue {} declaration finished", queueName);
 
         log.info("Consumer starting...");
-        ((GenericApplicationContext) this.applicationContext).registerBean(beanName, SimpleMessageListenerContainer.class, () -> {
-            SimpleMessageListenerContainer container = new SimpleMessageListenerContainer((ConnectionFactory) RmqConfiguration.TENANT_CONNECTION_MAP.get(tenantId));
-            container.setLookupKeyQualifier(tenantId);
-            container.setMaxConcurrentConsumers(10);
-            container.setStartConsumerMinInterval(5000L);
-            container.setStopConsumerMinInterval(20000L);  // Corrected setStartConsumerMinInterval to setStopConsumerMinInterval
-            container.setShutdownTimeout(20000L);
-            container.setAcknowledgeMode(AcknowledgeMode.AUTO);
-            container.setMessageListener(new RmqListenerWrapper(tenantId, messageListener, this.applicationContext));
-            container.setQueueNames(queueName);
-            container.start();
-            return container;
-        });
+        String wrappedBeanName = beanName + "_" + tenantId;
+        log.info("starting consumer ... {}", wrappedBeanName);
+        ((GenericApplicationContext) this.applicationContext).registerBean(
+                wrappedBeanName,
+                SimpleMessageListenerContainer.class,
+                () -> {
+                    SimpleMessageListenerContainer container = new SimpleMessageListenerContainer((ConnectionFactory) RmqConfiguration.TENANT_CONNECTION_MAP.get(tenantId));
+                    container.setLookupKeyQualifier(tenantId);
+                    container.setMaxConcurrentConsumers(10);
+                    container.setStartConsumerMinInterval(5000L);
+                    container.setStopConsumerMinInterval(20000L);
+                    container.setShutdownTimeout(20000L);
+                    container.setAcknowledgeMode(AcknowledgeMode.AUTO);
+                    container.setMessageListener(new RmqListenerWrapper(tenantId, messageListener, this.applicationContext));
+                    container.setQueueNames(queueName);
+                    container.start();
+                    return container;
+                });
     }
 
 }

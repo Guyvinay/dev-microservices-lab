@@ -10,6 +10,8 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotationUtils;
 
+//Not in use
+
 //@Configuration
 @Slf4j
 public class QueueListenerProcessor implements BeanPostProcessor {
