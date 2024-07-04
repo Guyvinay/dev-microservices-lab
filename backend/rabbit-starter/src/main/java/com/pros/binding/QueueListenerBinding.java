@@ -46,6 +46,7 @@ public class QueueListenerBinding {
 
     private final Map<String, Object> RMQ_BEANS = new ConcurrentHashMap<>();
     private final Map<String, AnnotatedBeanDefinition> A_BDF = new ConcurrentHashMap<>();
+    private final Map<String, Map<String, SimpleMessageListenerContainer>> LISTENERS = new ConcurrentHashMap<>();
 
     private static final String PACKAGE_TO_SCAN = "com.pros";
 
@@ -92,6 +93,9 @@ public class QueueListenerBinding {
         if (messageListener == null) {
             log.info("Listener for bean: {} not found", beanName);
         }
+
+        LISTENERS.computeIfAbsent(tenantId, k -> new ConcurrentHashMap<>());
+
 //        final GenericApplicationContext genericApplicationContext = (GenericApplicationContext) applicationContext;
         String queueName = beanDefinition.getMetadata().getAnnotationAttributes(QueueListener.class.getCanonicalName()).get("queue").toString();
         log.info("starting queue {} declarations ...", queueName);
@@ -105,10 +109,13 @@ public class QueueListenerBinding {
         }
         log.info("queue {} declaration finished", queueName);
 
+        final GenericApplicationContext genericApplicationContext = (GenericApplicationContext) applicationContext;
+
         log.info("Consumer starting...");
         String wrappedBeanName = beanName + "_" + tenantId;
         log.info("starting consumer ... {}", wrappedBeanName);
-        ((GenericApplicationContext) this.applicationContext).registerBean(
+
+        genericApplicationContext.registerBean(
                 wrappedBeanName,
                 SimpleMessageListenerContainer.class,
                 () -> {
@@ -124,6 +131,9 @@ public class QueueListenerBinding {
                     container.start();
                     return container;
                 });
+
+        LISTENERS.get(tenantId).put(beanName, (SimpleMessageListenerContainer) genericApplicationContext.getBean(wrappedBeanName));
+        log.info("Listeners {}", LISTENERS);
     }
 
 }
