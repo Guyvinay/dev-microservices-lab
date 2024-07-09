@@ -13,8 +13,11 @@ import java.lang.annotation.Target;
 public @interface QueueListener {
 
     String queue();
+
     String value();
+
     int prefetchCount() default 1;
+
     boolean isModifiable() default false;
 
 }

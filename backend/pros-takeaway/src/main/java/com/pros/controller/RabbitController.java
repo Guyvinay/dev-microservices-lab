@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pros.modal.Profile;
 import com.pros.rmq.service.RmqService;
-import com.pros.utils.QueueListeners;
+import com.pros.utils.Queues;
 import com.pros.wrapper.RmqWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +27,7 @@ public class RabbitController {
     private RmqService rmqService;
 
     @GetMapping
-    public String send(@RequestParam String message) {
+    public String send(@RequestParam String queue) {
         String messageStr = null;
         Profile profile = new Profile(UUID.randomUUID().toString(), "Vinay Kumar Singh", "vinay@gmail.com", 23);
         try {
@@ -35,7 +35,13 @@ public class RabbitController {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        rmqWrapper.convertAndSend(QueueListeners.QUEUE1, messageStr);
+        if(queue.equalsIgnoreCase(Queues.QUEUE1)) {
+            rmqWrapper.convertAndSend(Queues.QUEUE1, messageStr);
+        }else if(queue.equalsIgnoreCase(Queues.QUEUE2)) {
+            rmqWrapper.convertAndSend(Queues.QUEUE1, messageStr);
+        }else if(queue.equalsIgnoreCase(Queues.QUEUE3)) {
+            rmqWrapper.convertAndSend(Queues.QUEUE3, messageStr);
+        }
         return "Message Sent Successfully";
     }
 

@@ -56,22 +56,22 @@ public class RmqService {
         password = rabbitProperties.getPassword();
         hostUrl = "http://" + rabbitProperties.getHost() + ":15672" + "/api/vhosts/";
         log.info("username: {}, password: {}, hostUrl: {}", username, password, hostUrl);
-        Set<String> tenants =  tenantRetriever.getAllTenants();
+        Set<String> tenants = tenantRetriever.getAllTenants();
         tenants.forEach(this::createVirtualHostAndQueues);
     }
 
     public void createVirtualHostAndQueues(String vhostName) {
-        if(checkVHostAvailability(vhostName)){
+        if (checkVHostAvailability(vhostName)) {
             log.info("virtual host already exists");
         } else {
             createVirtualHost(vhostName);
-            createQueuesAndBindings(vhostName);
+//            createQueuesAndBindings(vhostName);
         }
     }
 
     private void createVirtualHost(String vhostName) {
         log.info("Virtual Host creation start for {}", vhostName);
-        String url = hostUrl  + vhostName;
+        String url = hostUrl + vhostName;
         //headers.add("Authorization", Base64.getEncoder().encodeToString((username + ":" + password).getBytes()));
         //headers.setContentType(MediaType.APPLICATION_JSON);
         HttpHeaders headers = new HttpHeaders();
@@ -82,11 +82,12 @@ public class RmqService {
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
         ResponseEntity<?> response = restTemplate.exchange(
-                url, HttpMethod.PUT, entity, new ParameterizedTypeReference<Void>() {}
+                url, HttpMethod.PUT, entity, new ParameterizedTypeReference<Void>() {
+                }
         );
         if (response.getStatusCode().is2xxSuccessful()) {
             log.info("Virtual host created successfully, {}", vhostName);
-            createQueuesAndBindings(vhostName);
+//            createQueuesAndBindings(vhostName);
         } else {
             throw new RuntimeException("Failed to create virtual host: " + response.getStatusCode());
         }
@@ -103,7 +104,8 @@ public class RmqService {
             httpHeaders.setBasicAuth(username, password);
             HttpEntity<?> httpEntity = new HttpEntity<>(httpHeaders);
             responseValidate = restTemplate.exchange(
-                    Url, HttpMethod.GET, httpEntity, new ParameterizedTypeReference<>() {}
+                    Url, HttpMethod.GET, httpEntity, new ParameterizedTypeReference<>() {
+                    }
             );
             log.info("response entity {}", responseValidate);
 
@@ -140,7 +142,7 @@ public class RmqService {
             }
             log.info("Queues and bindings created for virtual host: {}", vHost);
         } catch (Exception e) {
-            log.info("Exception occurred during queue creation  {}" , e.getMessage());
+            log.info("Exception occurred during queue creation  {}", e.getMessage());
             e.printStackTrace();
         } finally {
             SimpleResourceHolder.unbind(rabbitTemplate.getConnectionFactory());
