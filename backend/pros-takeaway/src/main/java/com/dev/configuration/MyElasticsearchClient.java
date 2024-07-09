@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
+//@Component
 public class MyElasticsearchClient {
 
     private static final Logger log = LoggerFactory.getLogger(MyElasticsearchClient.class);

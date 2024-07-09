@@ -1,5 +1,6 @@
 package com.dev.controller;
 
+import com.dev.common.dto.document.Document;
 import com.dev.modal.Student;
 import com.dev.service.ElasticService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "/elastic")
@@ -37,6 +39,11 @@ public class ElasticController {
     @GetMapping(value = "/index")
     public void indexRequest() {
         elasticService.indexRequest();
+    }
+
+    @GetMapping(value = "/document/{index}")
+    public ResponseEntity<List<Document>> getAllDocuments(@PathVariable("index") String index) {
+        return new ResponseEntity<List<Document>>(elasticService.getAllDocument(index), HttpStatus.OK);
     }
 
 }

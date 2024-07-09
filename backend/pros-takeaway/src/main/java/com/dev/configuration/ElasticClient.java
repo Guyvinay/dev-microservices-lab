@@ -27,7 +27,7 @@ public class ElasticClient {
     public ElasticClient() {
     }
 
-    @Bean
+//    @Bean
     public RestHighLevelClient buildElasticClient() {
         List<HttpHost> httpHosts = new ArrayList<>();
         httpHosts.add(new HttpHost(HOST, PORT, SCHEME));

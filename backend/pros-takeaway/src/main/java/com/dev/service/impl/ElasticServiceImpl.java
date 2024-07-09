@@ -1,5 +1,9 @@
 package com.dev.service.impl;
 
+import com.dev.common.dto.document.Document;
+import com.dev.rmq.utility.Queues;
+import com.dev.rmq.wrapper.RabbitTemplateWrapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.dev.configuration.MyElasticsearchClient;
 import com.dev.modal.Student;
@@ -13,6 +17,7 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.core.TimeValue;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
+import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.xcontent.XContentBuilder;
 import org.elasticsearch.xcontent.XContentFactory;
@@ -21,19 +26,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.Date;
+import java.util.*;
 
 @Service
 @Slf4j
 public class ElasticServiceImpl implements ElasticService {
 
-    @Autowired
+//    @Autowired
     private MyElasticsearchClient elasticsearchClient;
 
-    @Autowired
+//    @Autowired
     private RabbitTemplate rabbitTemplate;
 
-//    @Autowired
+    @Autowired
+    private RabbitTemplateWrapper rabbitTemplateWrapper;
+
+    @Autowired
     private RestHighLevelClient restHighLevelClient;
 
     public static final String index = "localhost_drf_346377_258555_en";
@@ -70,6 +78,41 @@ public class ElasticServiceImpl implements ElasticService {
             log.info("error: {}", e.getMessage());
         }
 
+    }
+
+    @Override
+    public List<Document> getAllDocument(String index) {
+        SearchRequest searchRequest = new SearchRequest(index);
+        SearchResponse searchResponse;
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+        searchRequest.source(searchSourceBuilder);
+        try {
+            searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            rabbitTemplateWrapper.convertAndSend(Queues.QUEUE3, new ObjectMapper().writeValueAsString(searchResponse.getHits().getHits()[0].getSourceAsMap()));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        return mapSeachDocument(searchResponse);
+    }
+
+    private List<Document> mapSeachDocument(SearchResponse searchResponse) {
+        List<Document> documents = new ArrayList<>();
+        SearchHit[] searchHits = searchResponse.getHits().getHits();
+        if(searchHits.length > 0) {
+            Arrays.stream(searchHits).forEach(hit -> {
+                documents.add(convertMapToDocument(hit.getSourceAsMap()));
+            });
+        }
+        return documents;
+    }
+
+    private Document convertMapToDocument(Map<String, Object> hit) {
+        return objectMapper.convertValue(hit, Document.class);
     }
 
 
