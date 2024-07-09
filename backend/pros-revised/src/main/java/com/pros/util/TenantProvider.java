@@ -1,5 +1,4 @@
-package com.dev.util;
-/*
+package com.pros.util;
 import com.pros.utils.TenantRetriever;
 import org.springframework.stereotype.Component;
 
@@ -14,4 +13,4 @@ public class TenantProvider implements TenantRetriever {
         tenants.add("vinay");
         return tenants;
     }
-}*/
+}

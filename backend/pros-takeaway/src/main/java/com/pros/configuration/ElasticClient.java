@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import java.util.ArrayList;
 import java.util.List;
 
-//@Configuration
+@Configuration
 public class ElasticClient {
 
     private static final Logger log = LoggerFactory.getLogger(ElasticClient.class);

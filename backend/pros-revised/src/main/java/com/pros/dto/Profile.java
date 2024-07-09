@@ -1,4 +1,4 @@
-package com.dev.dto;
+package com.pros.dto;
 
 import lombok.*;
 
