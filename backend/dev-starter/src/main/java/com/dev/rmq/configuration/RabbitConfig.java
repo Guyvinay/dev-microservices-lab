@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
@@ -62,6 +63,11 @@ public class RabbitConfig {
     public RabbitAdmin rabbitAdmin() {
         log.info("RabbitAdmin created");
         return new RabbitAdmin(connectionFactory());
+    }
+
+    public RestTemplate restTemplate() {
+        log.info("RestTemplate bean initialized");
+        return new RestTemplate();
     }
 
 }
