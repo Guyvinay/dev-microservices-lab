@@ -65,6 +65,7 @@ public class RabbitConfig {
         return new RabbitAdmin(connectionFactory());
     }
 
+    @Bean
     public RestTemplate restTemplate() {
         log.info("RestTemplate bean initialized");
         return new RestTemplate();
