@@ -1,7 +1,5 @@
-package com.pros.configuration;
+package com.dev.elastic.configuration;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.PostConstruct;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
@@ -11,22 +9,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.ArrayList;
 import java.util.List;
 
-//@Configuration
-public class ElasticClient {
+@Configuration
+public class ElasticConfiguration {
 
-    private static final Logger log = LoggerFactory.getLogger(ElasticClient.class);
+
+    private static final Logger log = LoggerFactory.getLogger(ElasticConfiguration.class);
     private final String HOST = "localhost";
     private final int PORT = 9200;
     private final String SCHEME = "http";
 
     private RestHighLevelClient restHighLevelClient;
 
-    public ElasticClient() {
+    public ElasticConfiguration() {
     }
 
     @Bean
@@ -41,9 +39,5 @@ public class ElasticClient {
         return this.restHighLevelClient;
     }
 
-    @Bean
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper();
-    }
 
 }

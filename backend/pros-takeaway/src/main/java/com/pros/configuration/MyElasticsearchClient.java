@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
+//@Component
 public class MyElasticsearchClient {
 
     private static final Logger log = LoggerFactory.getLogger(MyElasticsearchClient.class);
@@ -25,7 +25,7 @@ public class MyElasticsearchClient {
     private final int PORT = 9200;
     private final String SCHEME = "http"; // Change to "https" if using SSL
 
-    @PostConstruct
+//    @PostConstruct
     public RestHighLevelClient buildElasticClient() {
         // Configure connection details
         List<HttpHost> httpHosts = new ArrayList<>();
@@ -45,7 +45,7 @@ public class MyElasticsearchClient {
         return this.restHighLevelClient;
     }
 
-    @PreDestroy
+//    @PreDestroy
     public void destroy() throws IOException {
         log.info("Closing Elastic Connection...");
         this.restHighLevelClient.close();

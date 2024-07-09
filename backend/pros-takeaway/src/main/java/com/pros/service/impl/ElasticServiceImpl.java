@@ -35,7 +35,7 @@ public class ElasticServiceImpl implements ElasticService {
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
-    @Autowired
+//    @Autowired
     private RestHighLevelClient restHighLevelClient;
 
     public static final String index = "localhost_drf_346377_258555_en";
