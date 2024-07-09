@@ -30,7 +30,7 @@ public class TaskServiceImpl implements TaskService {
         BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
 
         if (status != null && !status.isEmpty()) {
-            boolQueryBuilder.must(QueryBuilders.termQuery("task.status", status));
+            boolQueryBuilder.must(QueryBuilders.termQuery("task.status.keyword", status));
         }
 
 //        if (assignee != null && !assignee.isEmpty()) {
@@ -43,7 +43,7 @@ public class TaskServiceImpl implements TaskService {
             boolQueryBuilder.must(queryStringQueryBuilder);
         }
 //
-        searchSourceBuilder.query(boolQueryBuilder);
+//        searchSourceBuilder.query(boolQueryBuilder);
 //
 //        searchSourceBuilder.from(from);
 //        searchSourceBuilder.size(size);
