@@ -1,8 +1,8 @@
-package com.pros.binding;
+package com.dev.rmq.binding;
 
-import com.pros.annotation.QueueListener;
-import com.pros.configuration.RmqConfiguration;
-import com.pros.wrapper.RmqListenerWrapper;
+import com.dev.rmq.annotation.RabbitListener;
+import com.dev.rmq.configuration.RabbitConfig;
+import com.dev.rmq.wrapper.RabbitListenerWrapper;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.*;
@@ -20,6 +20,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -27,7 +28,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
-public class QueueListenerBinding {
+public class RabbitQueueListenerBinding {
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -48,7 +49,7 @@ public class QueueListenerBinding {
     private final Map<String, AnnotatedBeanDefinition> A_BDF = new ConcurrentHashMap<>();
     private final Map<String, Map<String, SimpleMessageListenerContainer>> LISTENERS = new ConcurrentHashMap<>();
 
-    private static final String PACKAGE_TO_SCAN = "com.pros";
+    private static final String PACKAGE_TO_SCAN = "com.dev";
 
     @PostConstruct
     public void findListenerBeans() {
@@ -56,27 +57,28 @@ public class QueueListenerBinding {
             log.info("RabbitMq connection factory initialized");
         }
 
-        RMQ_BEANS.putAll(applicationContext.getBeansWithAnnotation(QueueListener.class));
+        RMQ_BEANS.putAll(applicationContext.getBeansWithAnnotation(RabbitListener.class));
         log.info("Queue listener beans found : {}, {}", RMQ_BEANS.size(), RMQ_BEANS);
 
         log.info("scanning package {} for Queue Listeners", PACKAGE_TO_SCAN);
         ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
-        provider.addIncludeFilter(new AnnotationTypeFilter(QueueListener.class));
+        provider.addIncludeFilter(new AnnotationTypeFilter(RabbitListener.class));
         Set<BeanDefinition> beanDefinitions = provider.findCandidateComponents(PACKAGE_TO_SCAN);
 
         for (BeanDefinition bD : beanDefinitions) {
-            if (bD instanceof AnnotatedBeanDefinition aBD) {
-//                AnnotatedBeanDefinition aBD = (AnnotatedBeanDefinition) bD;
+            log.info("BeanDefinition {}",bD);
+            if (bD instanceof AnnotatedBeanDefinition) {
+                AnnotatedBeanDefinition aBD = (AnnotatedBeanDefinition) bD;
                 String[] implementingInterfaces = aBD.getMetadata().getInterfaceNames();
-                Map<String, Object> annotationAttributes = aBD.getMetadata().getAnnotationAttributes(QueueListener.class.getCanonicalName());
+                Map<String, Object> annotationAttributes = aBD.getMetadata().getAnnotationAttributes(RabbitListener.class.getCanonicalName());
                 String beanName = annotationAttributes.get("value").toString();
 
                 if (!Arrays.asList(implementingInterfaces).contains(MessageListener.class.getName())) {
-                    log.info("Listener should class should implement with MessageListener interface");
+                    log.info("Listener should class should implement MessageListener interface");
                 }
                 A_BDF.put(beanName, aBD);
 
-                RmqConfiguration.TENANT_IDS.forEach(this::onBoardTenant);
+                RabbitConfig.TENANT_IDS.forEach(this::onBoardTenant);
             }
         }
 
@@ -89,6 +91,7 @@ public class QueueListenerBinding {
     }
 
     private void bindBeanWithTenant(String beanName, AnnotatedBeanDefinition beanDefinition, String tenantId) {
+        log.info("Binding start for bean {}", beanName);
         MessageListener messageListener = (MessageListener) RMQ_BEANS.get(beanName);
         if (messageListener == null) {
             log.info("Listener for bean: {} not found", beanName);
@@ -97,7 +100,7 @@ public class QueueListenerBinding {
         LISTENERS.computeIfAbsent(tenantId, k -> new ConcurrentHashMap<>());
 
 //        final GenericApplicationContext genericApplicationContext = (GenericApplicationContext) applicationContext;
-        String queueName = beanDefinition.getMetadata().getAnnotationAttributes(QueueListener.class.getCanonicalName()).get("queue").toString();
+        String queueName = beanDefinition.getMetadata().getAnnotationAttributes(RabbitListener.class.getCanonicalName()).get("queue").toString();
         log.info("starting queue {} declarations ...", queueName);
         Queue queue = QueueBuilder.durable(queueName).quorum().build();
         try {
@@ -119,14 +122,14 @@ public class QueueListenerBinding {
                 wrappedBeanName,
                 SimpleMessageListenerContainer.class,
                 () -> {
-                    SimpleMessageListenerContainer container = new SimpleMessageListenerContainer((ConnectionFactory) RmqConfiguration.TENANT_CONNECTION_MAP.get(tenantId));
+                    SimpleMessageListenerContainer container = new SimpleMessageListenerContainer((ConnectionFactory) RabbitConfig.TENANT_CONNECTION_MAP.get(tenantId));
                     container.setLookupKeyQualifier(tenantId);
                     container.setMaxConcurrentConsumers(10);
                     container.setStartConsumerMinInterval(5000L);
                     container.setStopConsumerMinInterval(20000L);
                     container.setShutdownTimeout(20000L);
                     container.setAcknowledgeMode(AcknowledgeMode.AUTO);
-                    container.setMessageListener(new RmqListenerWrapper(tenantId, messageListener, this.applicationContext));
+                    container.setMessageListener(new RabbitListenerWrapper(tenantId, messageListener, this.applicationContext));
                     container.setQueueNames(queueName);
                     container.start();
                     return container;

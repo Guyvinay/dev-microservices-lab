@@ -3,6 +3,8 @@ package com.dev.rmq.service;
 import com.dev.rmq.utility.RabbitTenantProvider;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
@@ -20,26 +22,27 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.Set;
 
-@Slf4j
+//@Slf4j
 public class RabbitVirtualHosts {
 
-
-    private final RabbitTemplate rabbitTemplate;
-    private final RabbitAdmin rabbitAdmin;
-    private final RabbitProperties rabbitProperties;
-    private final RestTemplate restTemplate;
-
-    @Autowired
-    private RabbitTenantProvider rabbitTenantProvider;
+    private static final Logger log = LoggerFactory.getLogger(RabbitVirtualHosts.class);
 
     private String hostUrl;
     private String username;
     private String password;
 
-    public RabbitVirtualHosts(RabbitTemplate rabbitTemplate, RabbitAdmin rabbitAdmin, RabbitProperties rabbitProperties, RestTemplate restTemplate) {
+    private RabbitProperties rabbitProperties;
+    private RabbitTemplate rabbitTemplate;
+    private RestTemplate restTemplate;
+    private RabbitAdmin rabbitAdmin;
+
+    @Autowired
+    private RabbitTenantProvider rabbitTenantProvider;
+
+    public RabbitVirtualHosts(RabbitTemplate rabbitTemplate, RabbitProperties rabbitProperties, RabbitAdmin rabbitAdmin, RestTemplate restTemplate) {
         this.rabbitTemplate = rabbitTemplate;
-        this.rabbitAdmin = rabbitAdmin;
         this.rabbitProperties = rabbitProperties;
+        this.rabbitAdmin = rabbitAdmin;
         this.restTemplate = restTemplate;
     }
 
@@ -142,6 +145,4 @@ public class RabbitVirtualHosts {
         }
 
     }
-
-
 }

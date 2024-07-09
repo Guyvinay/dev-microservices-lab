@@ -1,6 +1,10 @@
 package com.dev.rmq.configuration;
 
+import com.dev.rmq.binding.RabbitQueueListenerBinding;
 import com.dev.rmq.service.RabbitVirtualHosts;
+import com.dev.rmq.wrapper.RabbitTemplateWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +15,8 @@ import org.springframework.web.client.RestTemplate;
 
 @Configuration
 public class RabbitBeans {
+
+    private static final Logger log = LoggerFactory.getLogger(RabbitBeans.class);
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
@@ -26,7 +32,19 @@ public class RabbitBeans {
 
     @Bean
     public RabbitVirtualHosts rabbitVirtualHosts() {
-        return new RabbitVirtualHosts(rabbitTemplate, rabbitAdmin, rabbitProperties, restTemplate);
+        log.info("RabbitVirtualHosts bean created.");
+        return new RabbitVirtualHosts(rabbitTemplate, rabbitProperties, rabbitAdmin, restTemplate);
+    }
+
+    @Bean
+    public RabbitTemplateWrapper rabbitTemplateWrapper() {
+        log.info("RabbitTemplateWrapper bean created.");
+        return new RabbitTemplateWrapper(rabbitTemplate);
+    }
+
+    @Bean
+    public RabbitQueueListenerBinding rabbitQueueListenerBinding() {
+        return new RabbitQueueListenerBinding();
     }
 
 }

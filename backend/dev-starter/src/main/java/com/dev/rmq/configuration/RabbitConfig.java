@@ -15,6 +15,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 @Configuration
 @Slf4j
@@ -26,30 +28,29 @@ public class RabbitConfig {
     @Autowired
     private RabbitTenantProvider rabbitTenantProvider;
 
-    public static Set<String> TENANT_LIST = new HashSet<>();
-    public static Map<Object, ConnectionFactory> TENANT_CONNECTION_MAP = new HashMap<>();
+    public static final Map<Object, ConnectionFactory> TENANT_CONNECTION_MAP = new ConcurrentHashMap<>();
 
-    @PostConstruct
+    public static Set<String> TENANT_IDS = new CopyOnWriteArraySet<>();
+
+    @Bean
     public ConnectionFactory connectionFactory() {
-        log.info("Connection factory creation starts");
-        TENANT_LIST = rabbitTenantProvider.getAllTenants();
-        log.info("tenants found {}", TENANT_LIST);
-
+        log.info("Connection Factory creation starts.");
+        TENANT_IDS = rabbitTenantProvider.getAllTenants();
+        log.info("tenants found {}", TENANT_IDS);
         CachingConnectionFactory connectionFactory = new CachingConnectionFactory(rabbitProperties.getHost(), rabbitProperties.getPort());
         connectionFactory.setVirtualHost("/");
 
         TENANT_CONNECTION_MAP.put("public", connectionFactory);
 
-        TENANT_LIST.forEach(tenantId -> {
-            CachingConnectionFactory factory = new CachingConnectionFactory(rabbitProperties.getHost(), rabbitProperties.getPort());
-            factory.setVirtualHost(tenantId);
-            TENANT_CONNECTION_MAP.put(tenantId, factory);
+        TENANT_IDS.forEach(tenant -> {
+            CachingConnectionFactory cF = new CachingConnectionFactory(rabbitProperties.getHost(), rabbitProperties.getPort());
+            cF.setVirtualHost(tenant);
+            TENANT_CONNECTION_MAP.put(tenant, cF);
         });
 
         SimpleRoutingConnectionFactory simpleRoutingConnectionFactory = new SimpleRoutingConnectionFactory();
         simpleRoutingConnectionFactory.setTargetConnectionFactories(TENANT_CONNECTION_MAP);
-        log.info("Connection factory created for tenants {}", TENANT_LIST);
-
+        log.info("Connection Factory Creation finish for tenants {}", TENANT_IDS);
         return simpleRoutingConnectionFactory;
     }
 
