@@ -97,10 +97,10 @@ public class ElasticServiceImpl implements ElasticService {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        return mapSeachDocument(searchResponse);
+        return mapSearchDocument(searchResponse);
     }
 
-    private List<Document> mapSeachDocument(SearchResponse searchResponse) {
+    private List<Document> mapSearchDocument(SearchResponse searchResponse) {
         List<Document> documents = new ArrayList<>();
         SearchHit[] searchHits = searchResponse.getHits().getHits();
         if(searchHits.length > 0) {
