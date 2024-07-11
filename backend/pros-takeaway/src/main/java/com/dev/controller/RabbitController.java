@@ -65,22 +65,22 @@ public class RabbitController {
         user.setEmail("john.doe@example.com");
         user.setAddress(address);
         user.setAge(30);
-        user.setDateOfBirth("1993-01-01");
-        user.setCreatedAt("2023-06-21T14:22:10Z");
+        user.setDate_of_birth("1993-01-01");
+        user.setCreated_at("2023-06-21T14:22:10Z");
 
         Comment comment = new Comment();
-        comment.setCommentId("c123");
-        comment.setUserId("u456");
+        comment.setComment_id("c123");
+        comment.setUser_id("u456");
         comment.setComment("Great post!");
-        comment.setCreatedAt("2023-06-21T15:22:10Z");
+        comment.setCreated_at("2023-06-21T15:22:10Z");
 
         Post post = new Post();
-        post.setPostId("p123");
+        post.setPost_id("p123");
         post.setTitle("My First Post");
         post.setContent("This is the content of my first post.");
         post.setTags(Collections.singletonList("intro"));
         post.setComments(Collections.singletonList(comment));
-        post.setCreatedAt("2023-06-21T14:30:10Z");
+        post.setCreated_at("2023-06-21T14:30:10Z");
 
         Notifications notifications = new Notifications();
         notifications.setEmail(true);
@@ -89,8 +89,8 @@ public class RabbitController {
 
 
         Privacy privacy = new Privacy();
-        privacy.setProfileVisibility("public");
-        privacy.setSearchVisibility("private");
+        privacy.setProfile_visibility("public");
+        privacy.setSearch_visibility("private");
 
         Settings settings = new Settings();
         settings.setTheme("dark");

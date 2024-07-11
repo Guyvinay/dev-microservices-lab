@@ -10,7 +10,8 @@ public class TenantProvider implements RabbitTenantProvider {
     @Override
     public Set<String> getAllTenants() {
         Set<String> tenants = new HashSet<>();
-        tenants.add("vinay");
+//        tenants.add("vinay");
+        tenants.add("vinay2");
         return tenants;
     }
 }
