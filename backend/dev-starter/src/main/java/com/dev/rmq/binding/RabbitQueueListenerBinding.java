@@ -66,7 +66,7 @@ public class RabbitQueueListenerBinding {
         Set<BeanDefinition> beanDefinitions = provider.findCandidateComponents(PACKAGE_TO_SCAN);
 
         for (BeanDefinition bD : beanDefinitions) {
-            log.info("BeanDefinition {}",bD);
+            log.info("BeanDefinition: {}",bD);
             if (bD instanceof AnnotatedBeanDefinition) {
                 AnnotatedBeanDefinition aBD = (AnnotatedBeanDefinition) bD;
                 String[] implementingInterfaces = aBD.getMetadata().getInterfaceNames();
@@ -77,11 +77,9 @@ public class RabbitQueueListenerBinding {
                     log.info("Listener should class should implement MessageListener interface");
                 }
                 A_BDF.put(beanName, aBD);
-
-                RabbitConfig.TENANT_IDS.forEach(this::onBoardTenant);
             }
         }
-
+        RabbitConfig.TENANT_IDS.forEach(this::onBoardTenant);
     }
 
     private void onBoardTenant(String tenantId) {

@@ -21,6 +21,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -30,38 +31,46 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
-		<dependency>
+
+<!--		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
-		</dependency>
+		</dependency>-->
+
+		<!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>42.5.4</version>
+			<version>42.7.3</version>
 		</dependency>
+
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>2.2.0</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/io.swagger/swagger-annotations -->
+
 		<dependency>
 			<groupId>io.swagger</groupId>
 			<artifactId>swagger-annotations</artifactId>
@@ -73,32 +82,45 @@
 			<artifactId>elasticsearch-rest-high-level-client</artifactId>
 			<version>7.17.21</version>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-elasticsearch</artifactId>
-			<version>4.4.17</version>
-		</dependency>
-		<!-- Jackson for JSON serialization -->
-		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
+
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
 			<version>2.17.1</version>
 		</dependency>
 
-		<dependency>
+<!--		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-amqp</artifactId>
+		</dependency>-->
+
+		<dependency>
+			<groupId>com.dev</groupId>
+			<artifactId>dev-starter</artifactId>
+			<version>1.0.1</version>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/com.rabbitmq/amqp-client -->
 		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+
+		<!--		<dependency>
+                    <groupId>org.springframework.data</groupId>
+                    <artifactId>spring-data-elasticsearch</artifactId>
+                    <version>4.4.17</version>
+                </dependency>-->
+		<!-- Jackson for JSON serialization -->
+		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
+
+		<!-- https://mvnrepository.com/artifact/com.rabbitmq/amqp-client -->
+<!--		<dependency>
 			<groupId>com.rabbitmq</groupId>
 			<artifactId>amqp-client</artifactId>
 			<version>5.21.0</version>
-		</dependency>
+		</dependency>-->
 		<!-- https://mvnrepository.com/artifact/net.devh/grpc-spring-boot-starter -->
-		<dependency>
+		<!--<dependency>
 			<groupId>net.devh</groupId>
 			<artifactId>grpc-spring-boot-starter</artifactId>
 			<version>3.0.0.RELEASE</version>
@@ -128,12 +150,8 @@
 			<artifactId>protobuf-java</artifactId>
 			<version>3.17.0</version>
 		</dependency>
-
+-->
 <!--		enable getting all beans at http://localhost:8080/actuator/beans -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-actuator</artifactId>
-		</dependency>
 
 <!--
 		<dependency>
@@ -142,12 +160,6 @@
 			<version>2.1.0-SNAPSHOT</version>
 		</dependency>
 -->
-
-		<dependency>
-			<groupId>com.dev</groupId>
-			<artifactId>dev-starter</artifactId>
-			<version>1.0.1</version>
-		</dependency>
 
 	</dependencies>
 
