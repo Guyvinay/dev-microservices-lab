@@ -30,23 +30,23 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
+  /*  @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ExceptionDto> methodArgumentNotValidException(MethodArgumentNotValidException ex, WebRequest wb) {
 
         List<ObjectError> objectErrors = ex.getBindingResult().getAllErrors();
-        List<String> errors = MethodArgumentNotValidException.errorsToStringList(objectErrors);
+//        List<String> errors = MethodArgumentNotValidException.errorsToStringList(objectErrors);
 
         return new ResponseEntity<>(
                 new ExceptionDto(
                         LocalDateTime.now(),
-                        String.join(", ", errors),
+                        String.join(", "),
                         wb.getDescription(false)
                 ),
                 HttpStatus.BAD_REQUEST
         );
 
     }
-
+*/
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<ExceptionDto> noHandlerFoundException(NoHandlerFoundException ex, WebRequest wb){
         return new ResponseEntity<ExceptionDto>(

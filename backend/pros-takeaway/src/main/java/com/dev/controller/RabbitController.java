@@ -43,6 +43,8 @@ public class RabbitController {
             rmqWrapper.convertAndSend(Queues.QUEUE1, messageStr);
         }else if(queue.equalsIgnoreCase(Queues.QUEUE3)) {
             rmqWrapper.convertAndSend(Queues.QUEUE3, messageStr);
+        }else if(queue.equalsIgnoreCase(Queues.QUEUE4)) {
+            rmqWrapper.convertAndSend(Queues.QUEUE4, messageStr);
         }
         return "Message Sent Successfully";
     }

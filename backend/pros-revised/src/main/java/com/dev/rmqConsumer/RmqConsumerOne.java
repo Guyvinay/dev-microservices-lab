@@ -12,6 +12,7 @@ import java.io.IOException;
 
 @RabbitListener(value = "RmqConsumerOne", queue = Queues.QUEUE3)
 public class RmqConsumerOne implements MessageListener {
+
     @Override
     public void onMessage(Message message) {
         Profile profile;
