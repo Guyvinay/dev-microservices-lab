@@ -1,4 +1,5 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
+import { AppService } from '../../services/app.service';
 
 @Component({
   selector: 'app-utils',
@@ -10,24 +11,29 @@ export class UtilsComponent {
   inputValue: string = '';
   @ViewChild('contentElement') contentElement!: ElementRef;
 
+  constructor(private appService : AppService) {}
+
   toggleVisibility(): void {
     const contentDiv: HTMLDivElement = this.contentElement.nativeElement;
     contentDiv.style.display = (contentDiv.style.display === 'none') ? 'block' : 'none';
   }
 
   showInputValue(value: string): void {
-    this.inputValue = value;
+    // this.inputValue = value;
+    this.downloadTextFile(value);
   }
-  downloadTextFile() {
-    const data = 'hii';
-    const blob = new Blob([data], {type:'text/plain'});
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `SampleTextDownload.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
+  downloadTextFile(value:string) {
+    // const data = 'hii';
+    this.appService.downloadZipFile(value).subscribe(data=>{
+      const blob = new Blob([data], { type: 'application/zip' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `SampleTextDownload_${value}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    })
   }
 }

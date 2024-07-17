@@ -1,5 +1,5 @@
 <div class="root">
-  <fieldset>
+  <!-- <fieldset>
   <legend>mat menu</legend>
   <button mat-raised-button color="primary" [matMenuTriggerFor]="addConnectivity">
     Mat-menu
@@ -21,7 +21,7 @@
   <table mat-table [dataSource]="dataSource">
     <tr mat-header-row *matHeaderRowDef="displayedColumns" ></tr>
   </table>
-</fieldset>
+</fieldset> -->
     <!-- <mat-tab-group>
       <mat-tab label="First">
         Lorem ipsum dolor sit amet consectetur adipisicing elit. Commodi eius cum voluptatem quaerat fugiat voluptatibus
@@ -42,4 +42,39 @@
       <mat-tab label="Second"> Content 2 </mat-tab>
       <mat-tab label="Third"> Content 3 </mat-tab>
     </mat-tab-group> -->
+
+    <h3>Example 1</h3>
+ 
+<!--  This is our template. template1 is the template reference variable holds the reference to the Template
+  template1 is of type TemplateRef This won't be rendered here -->
+ 
+  <ng-template [ngIf]="true">  
+    <p>This is our template. It will be displayed on the div *ngTemplateOutlet="myTemplateRef"</p>
+  </ng-template>
+ 
+<ng-template #template1>  
+  <p>This is our template. It will be displayed on the div *ngTemplateOutlet="myTemplateRef"</p>
+</ng-template>
+ 
+<p>The Template appears after this</p>
+ 
+ 
+<!-- 
+  We want to render the above template here.
+  Hence we use the ngTemplateOutlet directive 
+  Assign template1 to ngTemplateOutlet
+-->
+ 
+ 
+<!-- <ng-container *ngTemplateOutlet="template1">
+  This text is not displayed
+</ng-container> -->
+<!-- 
+  Use can use any element. 
+  Here we use div instead of ng-container
+  Div is not rendered 
+-->
+<!-- <div *ngTemplateOutlet="template1"></div> -->
+<!-- <ng-template *ngTemplateOutlet="template1"> </ng-template> -->
+
 </div>
