@@ -1,6 +1,6 @@
 package com.dev.grpc;
 
-import net.devh.boot.grpc.client.inject.GrpcClient;
+/*import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 
@@ -21,3 +21,4 @@ public class GrpcClientImpl {
 
     }
 }
+ */

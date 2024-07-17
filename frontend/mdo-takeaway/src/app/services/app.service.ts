@@ -17,4 +17,8 @@ export class AppService {
     return this.http.get<any>(`${this.apiURL}/${username}`);
   }
 
+  downloadZipFile(value:string) {
+    return this.http.get(`http://localhost:8080/files/${value}`, {responseType: 'arraybuffer'});
+  }
+
 }
