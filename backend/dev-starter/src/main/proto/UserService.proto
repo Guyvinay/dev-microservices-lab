@@ -4,8 +4,8 @@ option java_multiple_files = true;
 package com.dev;
 
 enum Gender {
-    Male = 0;
-    Female = 1;
+    MALE = 0;
+    FEMALE = 1;
 }
 
 message UserDetail {
@@ -16,15 +16,15 @@ message UserDetail {
     Gender gender = 5;
 }
 
-message users {
+message Users {
     repeated UserDetail user = 1;
 }
 
-message user{
+message User{
 	string name=1;
 }
 
 
 service UserService {
-    rpc createUser(UserDetail) returns (user);
+    rpc CreateUser(UserDetail) returns (User);
 }
