@@ -17,4 +17,10 @@ public class GrpcController {
     public void sendGrpcRequest() {
         grpcClientService.getGrpcResponse();
     }
+
+
+    @GetMapping(value = "/documents")
+    public void getAllDocuments() {
+        grpcClientService.getAllDocuments();
+    }
 }

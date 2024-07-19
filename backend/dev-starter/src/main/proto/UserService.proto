@@ -21,7 +21,10 @@ message Users {
 }
 
 message User{
-	string name=1;
+	string name = 1;
+  string email = 3;
+  int32 age = 4;
+  Gender gender = 5;
 }
 
 
