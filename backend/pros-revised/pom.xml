@@ -84,11 +84,11 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
+<!--		<dependency>
 			<groupId>com.google.protobuf</groupId>
 			<artifactId>protobuf-java-util</artifactId>
 			<version>4.27.2</version>
-		</dependency>
+		</dependency>-->
 		<!-- https://mvnrepository.com/artifact/net.devh/grpc-spring-boot-starter -->
 		<dependency>
 			<groupId>net.devh</groupId>
