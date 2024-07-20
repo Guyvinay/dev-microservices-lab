@@ -18,6 +18,7 @@ public class GrpcClientServiceImpl {
     @GrpcClient("user_service_grpc")
     private UserServiceGrpc.UserServiceBlockingStub stub;
 
+    @GrpcClient("user_service_grpc")
     private DocumentServiceGrpc.DocumentServiceBlockingStub documentServiceBlockingStub;
 
     public void getGrpcResponse() {
