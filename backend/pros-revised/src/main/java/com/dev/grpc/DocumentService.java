@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @GrpcService
+@Slf4j
 public class DocumentService extends DocumentServiceGrpc.DocumentServiceImplBase {
     private static final Logger log = LoggerFactory.getLogger(DocumentService.class);
     @Autowired
@@ -31,8 +32,10 @@ public class DocumentService extends DocumentServiceGrpc.DocumentServiceImplBase
         documents.forEach(doc-> {
             protoDocs.add(convertToProtoDocument(doc));
         });
+        log.info("documents [{}]", documents);
+        DocumentsResponse.newBuilder();
         DocumentsResponse.Builder docs = DocumentsResponse.newBuilder();
-        docs.addAllDocuments(protoDocs);
+//        docs.addAllDocuments(protoDocs);
         docs.setCount(documents.size());
         responseObserver.onNext(docs.build());
         responseObserver.onCompleted();
@@ -47,6 +50,7 @@ public class DocumentService extends DocumentServiceGrpc.DocumentServiceImplBase
             throw new RuntimeException(e);
         }
         return protoDoc.build();
+        responseObserver.onCompleted();
     }
 
 }
