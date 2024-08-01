@@ -36,4 +36,12 @@ export class UtilsComponent {
       window.URL.revokeObjectURL(url);
     })
   }
+  fileChange(event: any) {
+    if (event && event.target) {
+      const file = event.target.files[0] as File;
+      if (file) {
+        console.log(file);
+      }
+    }
+  }
 }

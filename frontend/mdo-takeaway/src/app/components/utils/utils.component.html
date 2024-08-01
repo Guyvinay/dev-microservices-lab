@@ -2,6 +2,7 @@
     <input type="text" #textInput>
     <button (click)="showInputValue(textInput.value)">Download</button>
 </form>
+<input class="drag-input" type="file" (change)="fileChange($event)" (drop)="fileChange($event)" accept=".wsdl,.xml,.json,.xlsx" multiple="false" id="fileUpload" />
 <!--
 <div *ngIf="inputValue">
     <p>Input Value: {{ inputValue }}</p>
