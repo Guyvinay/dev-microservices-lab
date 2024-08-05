@@ -1,7 +1,9 @@
 syntax = "proto3";
 
 option java_multiple_files = true;
-package com.dev;
+package com.dev.grpc.profile;
+
+option java_package = "com.dev.grpc.profile";
 
 enum Gender {
     MALE = 0;
@@ -14,6 +16,7 @@ message UserDetail {
     string email = 3;
     int32 age = 4;
     Gender gender = 5;
+    string date_of_birth = 6;
 }
 
 message Users {
@@ -25,6 +28,7 @@ message User{
   string email = 3;
   int32 age = 4;
   Gender gender = 5;
+  string date_of_birth = 6;
 }
 
 

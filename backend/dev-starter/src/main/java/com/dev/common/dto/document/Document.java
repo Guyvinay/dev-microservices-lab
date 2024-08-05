@@ -1,10 +1,16 @@
 package com.dev.common.dto.document;
 
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
+import org.elasticsearch.client.ml.job.results.AnomalyCause;
 
 import java.util.List;
 
-@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@ToString
+@Getter
+@Setter
 public class Document {
     private User user;
     private List<Post> posts;

@@ -1,11 +1,15 @@
 package com.dev.common.dto.document;
 
-import lombok.Data;
+import lombok.*;
 
-@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@ToString
+@Getter
+@Setter
 public class Comment {
-    private String comment_id;
-    private String user_id;
+    private String commentId;
+    private String userId;
     private String comment;
-    private String created_at;
+    private String createdAt;
 }
