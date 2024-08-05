@@ -1,9 +1,13 @@
 package com.dev.common.dto.document;
 
-import lombok.Data;
+import lombok.*;
 
-@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@ToString
+@Getter
+@Setter
 public class Privacy {
-    private String profile_visibility;
-    private String search_visibility;
+    private String profileVisibility;
+    private String searchVisibility;
 }

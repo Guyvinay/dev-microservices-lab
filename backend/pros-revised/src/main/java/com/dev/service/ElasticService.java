@@ -1,7 +1,6 @@
 package com.dev.service;
 
 import com.dev.common.dto.document.Document;
-import com.dev.grpc.GrpcServerImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -11,10 +10,7 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,7 +29,7 @@ public class ElasticService {
 
 
     public List<Document> getAllDocumentsFromElastic() {
-        SearchRequest searchRequest = new SearchRequest("pros_elastic_index");
+        SearchRequest searchRequest = new SearchRequest("document_index");
         SearchResponse searchResponse;
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.matchAllQuery());

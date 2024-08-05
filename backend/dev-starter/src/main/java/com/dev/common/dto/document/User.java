@@ -1,14 +1,20 @@
 package com.dev.common.dto.document;
 
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
 
-@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@ToString
+@Getter
+@Setter
 public class User {
     private String id;
     private String name;
     private String email;
     private Address address;
     private int age;
-    private String date_of_birth;
-    private String created_at;
+    private String dateOfBirth;
+    private String createdAt;
 }

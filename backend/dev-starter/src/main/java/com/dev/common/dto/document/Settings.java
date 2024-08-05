@@ -1,8 +1,12 @@
 package com.dev.common.dto.document;
 
-import lombok.Data;
+import lombok.*;
 
-@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@ToString
+@Getter
+@Setter
 public class Settings {
     private String theme;
     private Notifications notifications;

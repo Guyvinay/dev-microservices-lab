@@ -4,7 +4,7 @@ package com.dev.grpc;
 
 option java_multiple_files = true;
 //option java_outer_classname = "Document_proto";
-option java_package = "com.dev.grpc";
+option java_package = "com.dev.grpc.document";
 
 message Document {
   User user = 1;
@@ -18,8 +18,8 @@ message User {
   string email = 3;
   Address address = 4;
   int32 age = 5;
-  string date_of_birth = 6;
-  string created_at = 7;
+  string dateOfBirth = 6;
+  string createdAt = 7;
 }
 message Address {
   string street = 1;
@@ -33,22 +33,22 @@ message Location {
   double lon = 2;
 }
 message Post {
-  string post_id = 1;
+  string postId = 1;
   string title = 2;
   string content = 3;
   repeated string tags = 4;
   repeated Comment comments = 5;
-  string created_at = 6;
+  string createdAt = 6;
 }
 message Comment {
-  string comment_id = 1;
-  string user_id = 2;
+  string commentId = 1;
+  string userId = 2;
   string comment = 3;
-  string created_at = 4;
+  string createdAt = 4;
 }
 message Settings {
   string theme = 1;
-  repeated Notification notifications = 2;
+  Notification notifications = 2;
   Privacy privacy = 3;
 }
 message Notification {
@@ -57,11 +57,11 @@ message Notification {
   string push = 3;
 }
 message Privacy {
-  string profile_visibility = 1;
-  string search_visibility = 2;
+  string profileVisibility = 1;
+  string searchVisibility = 2;
 }
 message DocumentRequest {
-  string document_id = 1;
+  string documentId = 1;
 }
 message DocumentsResponse {
   repeated Document documents = 1;

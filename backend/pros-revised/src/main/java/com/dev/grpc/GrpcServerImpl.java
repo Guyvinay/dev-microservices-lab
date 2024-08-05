@@ -1,9 +1,6 @@
 package com.dev.grpc;
 
-import com.dev.User;
-import com.dev.UserDetail;
-import com.dev.UserServiceGrpc;
-import com.dev.Users;
+import com.dev.grpc.profile.*;
 import io.grpc.stub.ServerCalls;
 import io.grpc.stub.StreamObserver;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +17,7 @@ public class GrpcServerImpl extends UserServiceGrpc.UserServiceImplBase {
                 .setName("Vinay")
                 .setAge(request.getAge())
                 .setEmail(request.getEmail())
-                .setGender(request.getGender())
+                .setDateOfBirth(request.getDateOfBirth())
                 .build();
 //        Users users = Users.newBuilder().setUser(1, request).setUser(2, request).build();
 //        log.info("users {}", user);

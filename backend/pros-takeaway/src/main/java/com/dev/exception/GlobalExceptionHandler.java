@@ -13,11 +13,11 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@ControllerAdvice
+//@ControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(Exception.class)
+//    @ExceptionHandler(Exception.class)
     public ResponseEntity<ExceptionDto> globalExceptionHandler(Exception ex, WebRequest wb){
         log.error(ex.getMessage(), ex);
         return new ResponseEntity<>(
@@ -47,7 +47,7 @@ public class GlobalExceptionHandler {
 
     }
 */
-    @ExceptionHandler(NoHandlerFoundException.class)
+//    @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<ExceptionDto> noHandlerFoundException(NoHandlerFoundException ex, WebRequest wb){
         return new ResponseEntity<ExceptionDto>(
                 new ExceptionDto(
