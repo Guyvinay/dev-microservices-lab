@@ -1,13 +1,12 @@
 package com.dev.controller;
 
 import com.dev.common.dto.document.Document;
+import com.dev.common.dto.document.DocumentSearchRequestDTO;
 import com.dev.grpc.GrpcClientServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -28,4 +27,10 @@ public class GrpcController {
     public ResponseEntity<List<Document>> getAllDocuments() {
         return new ResponseEntity<>(grpcClientService.getAllDocuments(), HttpStatus.OK);
     }
+
+    @PostMapping(value = "/documents")
+    public ResponseEntity<List<Document>> getDocumentsByQueries(@RequestBody DocumentSearchRequestDTO documentSearchRequestDTO) {
+        return new ResponseEntity<>(grpcClientService.getDocumentsByQueries(documentSearchRequestDTO), HttpStatus.OK);
+    }
+
 }

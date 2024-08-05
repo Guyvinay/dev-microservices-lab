@@ -72,6 +72,12 @@
 			<groupId>com.dev</groupId>
 			<artifactId>dev-starter</artifactId>
 			<version>1.0.1</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.protobuf</groupId>
+					<artifactId>protobuf-java-util</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>

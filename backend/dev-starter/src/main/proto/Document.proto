@@ -69,6 +69,18 @@ message DocumentsResponse {
 }
 message Empty {}
 
+message DocumentSearchRequest {
+  string userId = 1;
+  string userName = 2;
+  string userEmail = 3;
+  int32 userAge = 4;
+  string userDateOfBirth = 5;
+  repeated string postTags = 6;
+  string profileTheme = 7;
+  string profileVisibility = 8;
+  string searchVisibility = 9;
+}
+
 // Define services to operate on the messages
 service DocumentService {
   rpc CreateDocument (Document) returns (Document);
@@ -76,4 +88,5 @@ service DocumentService {
   rpc GetAllDocuments (Empty) returns (DocumentsResponse);
   rpc UpdateDocument (Document) returns (Document);
   rpc DeleteDocument (DocumentRequest) returns (Empty);
+  rpc GetDocumentsByQueries(DocumentSearchRequest) returns (DocumentsResponse);
 }

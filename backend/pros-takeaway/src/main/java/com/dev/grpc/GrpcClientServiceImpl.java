@@ -1,5 +1,6 @@
 package com.dev.grpc;
 
+import com.dev.common.dto.document.DocumentSearchRequestDTO;
 import com.dev.grpc.document.*;
 import com.dev.grpc.profile.*;
 import com.dev.common.dto.Profile;
@@ -8,6 +9,7 @@ import com.dev.grpc.profile.User;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
@@ -50,6 +52,18 @@ public class GrpcClientServiceImpl {
     public List<Document> getAllDocuments() {
         List<Document> documents = new ArrayList<>();
         DocumentsResponse documentsResponse = documentServiceBlockingStub.getAllDocuments(Empty.newBuilder().build());
+        log.info("documents {}", documentsResponse.getCount());
+        documentsResponse.getDocumentsList().forEach(doc-> {
+            documents.add(convertProtoDocToJavaDoc(doc));
+        });
+        return documents;
+    }
+
+    public List<Document> getDocumentsByQueries(DocumentSearchRequestDTO documentSearchRequestDTO) {
+        List<Document> documents = new ArrayList<>();
+        DocumentSearchRequest.Builder builder =  DocumentSearchRequest.newBuilder();
+        builder.setUserEmail(documentSearchRequestDTO.getUserEmail());
+        DocumentsResponse documentsResponse = documentServiceBlockingStub.getDocumentsByQueries(builder.build());
         log.info("documents {}", documentsResponse.getCount());
         documentsResponse.getDocumentsList().forEach(doc-> {
             documents.add(convertProtoDocToJavaDoc(doc));
