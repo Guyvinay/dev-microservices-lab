@@ -22,7 +22,7 @@ public class RmqListenerWrapper implements MessageListener {
     @Override
     public void onMessage(Message message) {
         try {
-            log.info("RmqListenerWrapper ");
+            log.info("onMessage RmqListenerWrapper");
             message.getMessageProperties().setUserId(tenantId);
             this.messageListener.onMessage(message);
             log.info("received message from queue {} ", message.getMessageProperties().getConsumerQueue());

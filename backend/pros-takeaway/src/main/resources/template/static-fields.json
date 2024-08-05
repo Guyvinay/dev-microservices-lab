@@ -1,0 +1,146 @@
+{
+  "staticFields": [
+    {
+      "fldId": "STATUS",
+      "info": "Record status",
+      "length": 25,
+      "dataType": "CHAR",
+      "txtCase": "None"
+    },
+    {
+      "fldId": "DATEMODIFIED",
+      "info": "Last modified date",
+      "dataType": "Long"
+    },
+    {
+      "fldId": "DATECREATED",
+      "info": "Record creation date",
+      "dataType": "Long"
+    },
+    {
+      "fldId": "USERCREATED",
+      "info": "Record created by user",
+      "length": 50,
+      "dataType": "CHAR",
+      "txtCase": "None"
+    },
+    {
+      "fldId": "USERMODIFIED",
+      "info": "Record last updated by user",
+      "length": 50,
+      "dataType": "CHAR",
+      "txtCase": "None"
+    }
+  ],
+  "controlData": [
+    {
+      "fldId": "recordNumber",
+      "info": "Record number in MDO",
+      "length": 100,
+      "dataType": "CHAR",
+      "txtCase": "None"
+    },
+    {
+      "fldId": "crNumber",
+      "info": "Change request number",
+      "dataType": "Long"
+    },
+    {
+      "fldId": "moduleId",
+      "info": "Module (Dataset) Id in MDO",
+      "dataType": "Long"
+    },
+    {
+      "fldId": "eventId",
+      "info": "Event Id of the CR (1-new record creation, 2-change in existing system record)",
+      "dataType": "Short"
+    },
+    {
+      "fldId": "tenantId",
+      "info": "Id of the tenant in the MDO organization",
+      "length": 20,
+      "dataType": "CHAR",
+      "txtCase": "None"
+    },
+    {
+      "fldId": "processFlowId",
+      "info": "Id of the used flow in MDO",
+      "length": 100,
+      "dataType": "CHAR",
+      "txtCase": "None"
+    },
+    {
+      "fldId": "processFlowContainerId",
+      "info": "Id of flow container having version info",
+      "length": 300,
+      "dataType": "CHAR",
+      "txtCase": "None"
+    },
+    {
+      "fldId": "taskId",
+      "info": "Task Id of the record's current step",
+      "dataType": "Long"
+    },
+    {
+      "fldId": "processId",
+      "info": "Process Id of the CR",
+      "dataType": "Long"
+    }
+  ],
+  "description": {
+    "classCode": {
+      "fldId": "classCode",
+      "info": "Class code of the description",
+      "dataType": "CHAR",
+      "txtCase": "None"
+    },
+    "classMode": {
+      "fldId": "classMode",
+      "info": "Class mode of the description",
+      "dataType": "CHAR",
+      "txtCase": "None"
+    },
+    "classId": {
+      "fldId": "classId",
+      "info": "SAP class Id",
+      "dataType": "CHAR",
+      "txtCase": "None"
+    },
+    "action": {
+      "fldId": "action",
+      "info": "Description action",
+      "dataType": "CHAR",
+      "txtCase": "None"
+    },
+    "attributes": {
+      "{lang}": {
+        "shortDesc": {
+          "fldId": "shortDesc",
+          "info": "Short description",
+          "dataType": "CHAR",
+          "txtCase": "None"
+        },
+        "longDesc": {
+          "fldId": "longDesc",
+          "info": "Long description",
+          "dataType": "CHAR",
+          "txtCase": "None"
+        },
+        "attrs": {
+          "{attributeId}": {
+            "fldId": "Unique field Id",
+            "info": "It contains list of values of the attribute"
+          },
+          "vc": {
+            "fldId": "vc",
+            "info": "Field value list",
+            "c": {
+              "fldId": "c",
+              "info": "Attribute field value"
+            }
+          }
+        }
+      }
+    }
+  }
+}

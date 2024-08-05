@@ -24,7 +24,7 @@ public class RmqWrapper {
         try {
             SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), "vinay");
             Message message = null;
-            if(object instanceof  byte[]) {
+            if (object instanceof byte[]) {
                 message = MessageBuilder.withBody((byte[]) object)
                         .setContentType(MessageProperties.CONTENT_TYPE_TEXT_PLAIN)
                         .setMessageId(UUID.randomUUID().toString())

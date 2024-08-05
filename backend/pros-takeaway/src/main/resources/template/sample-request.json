@@ -1,0 +1,109 @@
+{
+  "adapterId": "3b3a86be-8bec-4b3d-a359-1bcd3397a116",
+  "batchid": "if job ID present the excel and async",
+  "jobid": "",
+  "batchStatus": "",
+  "batchErrorMsg": "",
+  "mdoRecord": [
+    {
+      "status": "",
+      "errorMessages": ["Record Level error for integration"],
+      "mdoRecordEs": {
+        "id": "",
+        "hdvs": {
+          "fld_1": {
+            "cv": ["a"],
+            "nv": [""],
+            "err": [""]
+          }
+        },
+        "hyvs": {
+          "2": [
+            {
+              "hyvs_fld_1": {
+                "cv": ["001"],
+                "nv": [""],
+                "err": [""]
+              },
+              "hyvs_fld_2": {
+                "cv": ["a"],
+                "nv": [""],
+                "err": [""]
+              }
+            }
+          ],
+          "3": [
+            {
+              "hyvs_fld_3": {
+                "cv": ["a"],
+                "nv": [""],
+                "err": [""]
+              }
+            }
+          ]
+        },
+        "gvs": {
+          "grd_fld_1": [
+            {
+              "row_id/uuid": {
+                "cv": ["a"],
+                "nv": [""],
+                "err": [""]
+              },
+              "fld_2": {
+                "cv": ["a"],
+                "nv": [""],
+                "err": [""]
+              }
+            }
+          ]
+        },
+        "descriptions": [
+          {
+            "classCode": "ACCUMULATOR",
+            "classMode": "HYDR",
+            "isDesc": true,
+            "classType": null,
+            "classId": "8bb62a7e-386a-4d4d-a52c-9172a142fac3",
+            "action": "009",
+            "classDesc": null,
+            "attributes": {
+              "en": {
+                "shortDesc": "ACCUMULATOR,HYDR,0.1L,2000PSI,10BAR",
+                "longDesc": "ACCUMULATOR,HYDRAULIC,CAPACITY:0.1L,PRE CHARGE PRESSURE:2000PSI,PRESSURE RATING:10BAR,END CONNECTION:1/2IN FNPT,SHELL MATERIAL:CARBON STEEL,SIZE:1,136 DIAX183 HT MM,TEMPERATURE RATING:-10 TO 150 DEG C",
+                "shortDescOc": null,
+                "longDescOc": null,
+                "attrs": {
+                  "3abb3493-064f-4ef6-aae7-f48932d2217d": {
+                    "cv": ["a"],
+                    "nv": [""],
+                    "err": [""],
+                    "uom": {
+                      "cv": ["a"],
+                      "nv": [""],
+                      "err": [""]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "controlData": {
+        "isChild": "",
+        "recordnumber": "",
+        "crid": "",
+        "processInstanceId": "",
+        "flowId": "",
+        "user_created": "",
+        "workitemId": "",
+        "dateModified": "",
+        "containerId": "",
+        "eventid": "",
+        "moduleId": "",
+        "tasklid": ""
+      }
+    }
+  ]
+}
