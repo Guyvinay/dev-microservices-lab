@@ -1,6 +1,5 @@
 package com.dev.grpc;
 
-import com.dev.common.dto.document.DocumentResponseDTO;
 import com.dev.common.dto.document.DocumentSearchRequestDTO;
 import com.dev.grpc.document.*;
 import com.dev.grpc.profile.*;
@@ -50,21 +49,17 @@ public class GrpcClientServiceImpl {
         }
     }
 
-    public DocumentResponseDTO getAllDocuments() {
-        DocumentResponseDTO documentResponseDTO = new DocumentResponseDTO();
+    public List<Document> getAllDocuments() {
         List<Document> documents = new ArrayList<>();
         DocumentsResponse documentsResponse = documentServiceBlockingStub.getAllDocuments(Empty.newBuilder().build());
         log.info("documents {}", documentsResponse.getCount());
         documentsResponse.getDocumentsList().forEach(doc-> {
             documents.add(convertProtoDocToJavaDoc(doc));
         });
-        documentResponseDTO.setDocuments(documents);
-        documentResponseDTO.setDocumentCount(documentsResponse.getDocumentsCount());
-        return documentResponseDTO;
+        return documents;
     }
 
-    public DocumentResponseDTO getDocumentsByQueries(DocumentSearchRequestDTO documentSearchRequestDTO) {
-        DocumentResponseDTO documentResponseDTO = new DocumentResponseDTO();
+    public List<Document> getDocumentsByQueries(DocumentSearchRequestDTO documentSearchRequestDTO) {
         List<Document> documents = new ArrayList<>();
         DocumentSearchRequest.Builder builder =  DocumentSearchRequest.newBuilder();
         builder.setUserEmail(documentSearchRequestDTO.getUserEmail());
@@ -73,9 +68,7 @@ public class GrpcClientServiceImpl {
         documentsResponse.getDocumentsList().forEach(doc-> {
             documents.add(convertProtoDocToJavaDoc(doc));
         });
-        documentResponseDTO.setDocuments(documents);
-        documentResponseDTO.setDocumentCount(documentsResponse.getDocumentsCount());
-        return documentResponseDTO;
+        return documents;
     }
 
     private Document convertProtoDocToJavaDoc(com.dev.grpc.document.Document doc) {

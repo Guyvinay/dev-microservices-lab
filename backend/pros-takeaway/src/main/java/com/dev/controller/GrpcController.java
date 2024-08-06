@@ -1,7 +1,6 @@
 package com.dev.controller;
 
 import com.dev.common.dto.document.Document;
-import com.dev.common.dto.document.DocumentResponseDTO;
 import com.dev.common.dto.document.DocumentSearchRequestDTO;
 import com.dev.grpc.GrpcClientServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,12 +24,12 @@ public class GrpcController {
 
 
     @GetMapping(value = "/documents")
-    public ResponseEntity<DocumentResponseDTO> getAllDocuments() {
+    public ResponseEntity<List<Document>> getAllDocuments() {
         return new ResponseEntity<>(grpcClientService.getAllDocuments(), HttpStatus.OK);
     }
 
     @PostMapping(value = "/documents")
-    public ResponseEntity<DocumentResponseDTO> getDocumentsByQueries(@RequestBody DocumentSearchRequestDTO documentSearchRequestDTO) {
+    public ResponseEntity<List<Document>> getDocumentsByQueries(@RequestBody DocumentSearchRequestDTO documentSearchRequestDTO) {
         return new ResponseEntity<>(grpcClientService.getDocumentsByQueries(documentSearchRequestDTO), HttpStatus.OK);
     }
 
