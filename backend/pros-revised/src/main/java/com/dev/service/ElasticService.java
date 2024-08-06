@@ -66,6 +66,8 @@ public class ElasticService {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         BoolQueryBuilder booleanQueryBuilder = QueryBuilders.boolQuery();
 
+
+
         if(documentSearchRequest.getUserEmail() != null) {
             booleanQueryBuilder.must(QueryBuilders.termQuery("user.email", documentSearchRequest.getUserEmail()));
         }

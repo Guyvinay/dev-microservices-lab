@@ -17,6 +17,7 @@ public class GrpcUtils {
 
     public <T, P extends Message> P convertToProto(T javaObject, Class<P> protoClass) {
         try {
+            //convert Java Object into string
             String jsonDocument = objectMapper.writeValueAsString(javaObject);
             log.info("document {}", jsonDocument);
 
