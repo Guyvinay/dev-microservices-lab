@@ -13,6 +13,8 @@ import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
+import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -62,7 +64,21 @@ public class GrpcClientServiceImpl {
     public List<Document> getDocumentsByQueries(DocumentSearchRequestDTO documentSearchRequestDTO) {
         List<Document> documents = new ArrayList<>();
         DocumentSearchRequest.Builder builder =  DocumentSearchRequest.newBuilder();
-        builder.setUserEmail(documentSearchRequestDTO.getUserEmail());
+        if(!StringUtils.isEmpty(documentSearchRequestDTO.getUserEmail())) {
+            builder.setUserEmail(documentSearchRequestDTO.getUserEmail());
+        }
+        if(!StringUtils.isEmpty(documentSearchRequestDTO.getUserName())) {
+            builder.setUserName(documentSearchRequestDTO.getUserName());
+        }
+        if(null!=documentSearchRequestDTO.getUserZipCode() ) {
+            builder.setUserZipCode(documentSearchRequestDTO.getUserZipCode());
+        }
+        if (!StringUtils.isEmpty(documentSearchRequestDTO.getUserCity())) {
+            builder.setUserCity(documentSearchRequestDTO.getUserCity());
+        }
+        if (!StringUtils.isEmpty(documentSearchRequestDTO.getUserState())) {
+            builder.setUserState(documentSearchRequestDTO.getUserState());
+        }
         DocumentsResponse documentsResponse = documentServiceBlockingStub.getDocumentsByQueries(builder.build());
         log.info("documents {}", documentsResponse.getCount());
         documentsResponse.getDocumentsList().forEach(doc-> {

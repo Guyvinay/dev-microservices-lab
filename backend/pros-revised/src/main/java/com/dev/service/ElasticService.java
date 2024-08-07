@@ -3,6 +3,7 @@ package com.dev.service;
 import com.dev.common.dto.document.Document;
 import com.dev.grpc.document.DocumentSearchRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.queryparser.xml.builders.BooleanQueryBuilder;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -66,12 +67,28 @@ public class ElasticService {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         BoolQueryBuilder booleanQueryBuilder = QueryBuilders.boolQuery();
 
-
-
-        if(documentSearchRequest.getUserEmail() != null) {
+        if(!StringUtils.isEmpty(documentSearchRequest.getUserEmail()) ) {
             booleanQueryBuilder.must(QueryBuilders.termQuery("user.email", documentSearchRequest.getUserEmail()));
         }
 
+        if(!StringUtils.isEmpty(documentSearchRequest.getUserName()) ) {
+            booleanQueryBuilder.must(QueryBuilders.matchQuery("user.name", documentSearchRequest.getUserName()));
+        }
+
+        if (documentSearchRequest.getUserZipCode() != 0 ) {
+            booleanQueryBuilder.must(QueryBuilders.matchQuery("user.address.zip", documentSearchRequest.getUserZipCode()));
+        }
+
+        if (!StringUtils.isEmpty(documentSearchRequest.getUserCity())) {
+            booleanQueryBuilder.must(QueryBuilders.matchQuery("user.address.city", documentSearchRequest.getUserCity()));
+        }
+
+        if (!StringUtils.isEmpty(documentSearchRequest.getUserState())) {
+            booleanQueryBuilder.must(QueryBuilders.termQuery("user.address.state", documentSearchRequest.getUserState()));
+        }
+
+        String query = booleanQueryBuilder.toString();
+        log.info("query: {}", query);
         searchSourceBuilder.query(booleanQueryBuilder);
         searchRequest.source(searchSourceBuilder);
         return searchRequest;

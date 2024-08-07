@@ -1,5 +1,6 @@
 package com.dev.common.dto.document;
 
+import io.grpc.Internal;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,4 +21,7 @@ public class DocumentSearchRequestDTO {
     private String profileTheme;
     private String profileVisibility;
     private String searchVisibility;
+    private String userState ;
+    private Integer userZipCode;
+    private String userCity;
 }

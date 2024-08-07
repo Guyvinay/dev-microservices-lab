@@ -79,6 +79,9 @@ message DocumentSearchRequest {
   string profileTheme = 7;
   string profileVisibility = 8;
   string searchVisibility = 9;
+  string userState = 10;
+  int32 userZipCode = 11;
+  string userCity = 12;
 }
 
 // Define services to operate on the messages

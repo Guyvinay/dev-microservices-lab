@@ -1,11 +1,15 @@
 package com.dev;
 
 import com.dev.exception.DivisionByZeroException;
+import com.dev.grpc.document.DocumentServiceGrpc;
+import com.dev.grpc.document.DocumentsResponse;
+import com.dev.grpc.document.Empty;
 import com.dev.rmq.wrapper.RabbitTemplateWrapper;
 import com.dev.service.TestService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;
+import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -13,6 +17,7 @@ import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -30,6 +35,10 @@ public class ProsTakeawayApplicationTests {
 
     @Mock
     private ObjectMapper objectMapper;
+
+    @InjectMocks
+    @GrpcClient("user_service_grpc")
+    private DocumentServiceGrpc.DocumentServiceBlockingStub documentServiceBlockingStub;
 
 
     @DisplayName("pushToQueue -> test common service message push to queue")
@@ -65,6 +74,13 @@ public class ProsTakeawayApplicationTests {
         assertThrows(DivisionByZeroException.class, () -> {
             testService.divide(numerator, denominator2);
         });
+    }
+
+    @DisplayName("Test Getting All Documents.")
+    @Test
+    void testGetAllDocuments() {
+
+        when(documentServiceBlockingStub.getAllDocuments(Empty.newBuilder().build())).thenReturn(DocumentsResponse.newBuilder().build());
     }
 
 }
