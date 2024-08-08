@@ -1,0 +1,9 @@
+<div>
+    <button (click)="load()">Load Posts</button>
+    <ul>
+      <li *ngFor="let post of posts$ | async">
+        {{post| json}}
+        <!-- {{ post.title }} -->
+    </li>
+    </ul>
+  </div>

@@ -1,8 +1,8 @@
 import { Component } from "@angular/core";
 import { Store } from "@ngrx/store";
 import { Observable } from "rxjs";
-import { decrement, increment, incrementedBy, reset } from "../state/counter.actions";
-import { counterSelect } from "../state/counter.state";
+import { decrement, increment, incrementedBy, reset } from "../store/state/counter.actions";
+import { counterSelect } from "../store/state/counter.state";
 
 interface AppStore {
     count: number,
@@ -24,7 +24,7 @@ export class CounterComponent {
             return sel.count;
         });
         const slctCounter = this.store.select(counterSelect);
-        console.log("selectCounter ", slctCounter);
+        // console.log("selectCounter ", slctCounter);
 
         // store.select('count').subscribe(val=>console.log("count cosntructor ",val))
         // console.log(store.select('count'));

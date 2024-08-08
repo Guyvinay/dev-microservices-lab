@@ -3,18 +3,26 @@ import { NgModule } from '@angular/core';
 
 import {StoreModule} from '@ngrx/store'
 import { AppComponent } from './app.component';
-import { counterReducer } from './state/counter.reducer';
+import { counterReducer } from './store/state/counter.reducer';
 import { CounterComponent } from './counter/counter.component';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools'
+import { PostComponent } from './posts/post.component';
+import { EffectsModule } from '@ngrx/effects';
+import { PostEffects } from './store/effects/post.effects';
+import { postsReducer } from './store/state/posts.reducer';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
-  declarations: [AppComponent, CounterComponent],
+  declarations: [AppComponent, CounterComponent, PostComponent],
   imports: [
     BrowserModule,
-    StoreModule.forRoot({count: counterReducer}),
+    HttpClientModule,
+    StoreModule.forRoot({count: counterReducer, posts: postsReducer}),
+    EffectsModule.forRoot([PostEffects]),
     StoreDevtoolsModule.instrument({maxAge: 25})
   ],
-  providers: [],
+  providers: [
+  ],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

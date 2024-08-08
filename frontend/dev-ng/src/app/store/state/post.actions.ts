@@ -3,7 +3,11 @@ import { createAction, props } from "@ngrx/store";
 export const loadPosts = createAction('[Posts] Load Posts');
 
 export const loadPostsSuccess = createAction(
-    '[Posts] Loads Posts Success',
+    '[Posts] Load Posts Success',
     props<{posts: any[]}>()
-)
-// export const load
+);
+
+export const loadPostsError = createAction(
+    '[Posts] Load Posts Error',
+    props<{error: any}>()
+);

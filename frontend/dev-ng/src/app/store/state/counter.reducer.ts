@@ -1,6 +1,6 @@
 import { createReducer, on } from '@ngrx/store';
-import { increment, decrement, reset, incrementedBy } from 'src/app/state/counter.actions';
-import { CounterState, initialState } from 'src/app/state/counter.state';
+import { increment, decrement, reset, incrementedBy } from 'src/app/store/state/counter.actions';
+import { CounterState, initialState } from 'src/app/store/state/counter.state';
 const currentState = {
     count: 0,
     anotherProperty: 'someValue'
