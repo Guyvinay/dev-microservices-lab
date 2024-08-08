@@ -37,7 +37,7 @@
     "@angular/compiler-cli": "16.0.4",
     "@angular/language-service": "16.0.4",
     "@ngrx/schematics": "16.0.1",
-    "@ngrx/store-devtools": "16.0.1",
+    "@ngrx/store-devtools": "^16.0.1",
     "@types/jasminewd2": "~2.0.3",
     "jasmine-core": "~4.1.0",
     "jasmine-marbles": "^0.9.1",
