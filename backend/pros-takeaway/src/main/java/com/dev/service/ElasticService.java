@@ -12,4 +12,10 @@ public interface ElasticService {
     public void getAllStudents();
     public List<Document> getAllDocument(String index);
     public void indexRequest();
+    default void ind() {
+        System.out.println();
+    }
+    private void ined() {
+        System.out.println();
+    }
 }

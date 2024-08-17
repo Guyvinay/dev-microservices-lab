@@ -1,0 +1,25 @@
+type Users {
+     user_id:ID!
+     name:String
+     mobile:String
+     role:String
+     email:String
+     password:String
+}
+
+input UsersReq {
+     name:String
+     mobile:String
+     email:String
+     role:String
+     password:String
+}
+type Query{
+     allUsers:[Users]
+     getUserByEmail(email:String):Users
+}
+
+type Mutation {
+     register(user:UsersReq):Users
+}
+
