@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input , ViewChild, ViewEncapsulation, Renderer2 } from '@angular/core';
 
 @Component({
   selector: 'app-range-slider',
