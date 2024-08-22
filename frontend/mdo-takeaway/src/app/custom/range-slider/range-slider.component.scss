@@ -1,5 +1,12 @@
-mat-slider {
+.my-slider {
     margin-top: 50px;
     width: 50%;
 }
-  
+::ng-deep .mat-slider-thumb {
+  background-color: #ff5722; /* Your desired color */
+  border: 2px solid #000;    /* Border color and size */
+}
+
+::ng-deep .mat-slider-thumb-label {
+  background-color: #ffccbc; /* Your desired background color for the label */
+}

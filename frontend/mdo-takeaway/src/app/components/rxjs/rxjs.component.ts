@@ -1,7 +1,8 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { Observable, filter, fromEvent, interval, map, of, pipe } from 'rxjs';
+import { Observable, filter, forkJoin, fromEvent, interval, map, of, pipe } from 'rxjs';
 import { MessageService } from '../../services/message.service';
 import { Message } from '../../modals/message';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-rxjs',
@@ -26,6 +27,8 @@ export class RxjsComponent implements OnInit {
   ngOnInit(): void {
       // this.counterFunction();
       // this.pipFunction();
+      forkJoin(this.sources).subscribe(console.log);
+
   }
 
   counterFunction(){
@@ -60,7 +63,8 @@ export class RxjsComponent implements OnInit {
               squareOdds.subscribe(x => console.log(x));
   }
   constructor(
-    private messageService:MessageService
+    private messageService:MessageService,
+    private http: HttpClient
   ){
     this.message$ = messageService.messages$;
 
@@ -89,5 +93,11 @@ export class RxjsComponent implements OnInit {
     }
     
   }
+  sources = [
+    this.http.get('https://api.github.com/users/google'),
+    this.http.get('https://api.github.com/users/microsoft'),
+    this.http.get('https://api.github.com/users')
+  ];
+
 
 }
