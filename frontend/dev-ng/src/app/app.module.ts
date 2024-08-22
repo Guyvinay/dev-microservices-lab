@@ -11,15 +11,16 @@ import { EffectsModule } from '@ngrx/effects';
 import { PostEffects } from './store/effects/post.effects';
 import { postsReducer } from './store/state/posts.reducer';
 import { HttpClientModule } from '@angular/common/http';
+import { RxjsComponent } from './_modules/home/_components/rxjs/rxjs.component';
 
 @NgModule({
-  declarations: [AppComponent, CounterComponent, PostComponent],
+  declarations: [AppComponent, CounterComponent, PostComponent, RxjsComponent],
   imports: [
     BrowserModule,
     HttpClientModule,
     StoreModule.forRoot({count: counterReducer, posts: postsReducer}),
     EffectsModule.forRoot([PostEffects]),
-    StoreDevtoolsModule.instrument({maxAge: 25})
+    StoreDevtoolsModule.instrument({maxAge: 25}),
   ],
   providers: [
   ],
