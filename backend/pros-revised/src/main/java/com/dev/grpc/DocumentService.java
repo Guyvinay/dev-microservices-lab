@@ -1,5 +1,6 @@
 package com.dev.grpc;
 
+import com.dev.common.annotations.LogExecutionTime;
 import com.dev.common.dto.document.Document;
 import com.dev.common.utility.GrpcUtils;
 import com.dev.service.ElasticService;
@@ -47,6 +48,7 @@ public class DocumentService extends DocumentServiceGrpc.DocumentServiceImplBase
     }
 
     @Override
+    @LogExecutionTime
     public void getAllDocuments(Empty request, StreamObserver<DocumentsResponse> responseObserver) {
         List<Document> documents =  elasticService.getAllDocumentsFromElastic();
         List<com.dev.grpc.document.Document> protoDocs = new ArrayList<>();
@@ -65,7 +67,7 @@ public class DocumentService extends DocumentServiceGrpc.DocumentServiceImplBase
         com.dev.grpc.document.Document.Builder protoDoc;
         try {
             String jsonDocument = objectMapper.writeValueAsString(document);
-            log.info("document {}", jsonDocument);
+//            log.info("document {}", jsonDocument);
             protoDoc  = com.dev.grpc.document.Document.newBuilder();
             JsonFormat.parser().merge(jsonDocument, protoDoc);
         } catch (JsonProcessingException | InvalidProtocolBufferException e) {

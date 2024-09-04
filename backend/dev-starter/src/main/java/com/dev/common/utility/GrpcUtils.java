@@ -19,7 +19,7 @@ public class GrpcUtils {
         try {
             //convert Java Object into string
             String jsonDocument = objectMapper.writeValueAsString(javaObject);
-            log.info("document {}", jsonDocument);
+//            log.info("document {}", jsonDocument);
 
             // Get the builder from the proto class
             Message.Builder builder = (Message.Builder) protoClass.getMethod("newBuilder").invoke(null);
