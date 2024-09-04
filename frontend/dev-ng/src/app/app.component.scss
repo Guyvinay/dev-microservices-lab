@@ -1,0 +1,125 @@
+// .mat-mdc-progress-spinner .mdc-circular-progress__determinate-circle, .mat-mdc-progress-spinner .mdc-circular-progress__indeterminate-circle-graphic {
+//   stroke: var(--mdc-circular-progress-active-indicator-color);
+// }
+
+.custom-spinner {
+  --mdc-circular-progress-active-indicator-color: red;
+}
+
+
+mat-slider.mat-slider {
+  &.slider-primary {
+    z-index: 1;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    .mat-slider-wrapper {
+      .mat-slider-track-wrapper {
+        .mat-slider-track-fill {
+          background-color: sv.$mdo-border;
+        }
+        .mat-slider-track-background {
+          background-color: transparent;
+        }
+      }
+
+      .mat-slider-thumb-container {
+        .mat-slider-thumb {
+          border: 7px solid sv.$mdo-canvas;
+          z-index: 1;
+        }
+      }
+    }
+  }
+
+  &.slider-secondary {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    .mat-slider-wrapper {
+      .mat-slider-thumb-container {
+        .mat-slider-thumb {
+          border: 7px solid sv.$mdo-canvas;
+          z-index: 1;
+        }
+      }
+    }
+  }
+
+  &.slider-primary {
+    &.numeric-slider {
+      .mat-slider-wrapper {
+        .mat-slider-track-wrapper {
+          .mat-slider-track-fill {
+            background-color: sv.$mdo-theme;
+          }
+          .mat-slider-track-background {
+            background-color: sv.$mdo-border;
+          }
+        }
+
+        .mat-slider-thumb-container {
+          .mat-slider-thumb {
+            transform: scale(0.7);
+          }
+
+          .mat-slider-thumb-label {
+            right: -14px;
+            transform: rotate(0deg);
+            padding: math.div(sv.$padding-size, 4);
+            background-color: sv.$mdo-canvas;
+            border: 1px solid sv.$mdo-border;
+            border-radius: 3px;
+            height: auto;
+          }
+
+          .mat-slider-thumb-label-text {
+            transform: rotate(0deg);
+            opacity: 1;
+          }
+        }
+      }
+    }
+  }
+  &.slider-secondary {
+    &.numeric-slider {
+      .mat-slider-wrapper {
+        .mat-slider-track-wrapper {
+          .mat-slider-track-fill {
+            background-color: sv.$mdo-theme;
+          }
+          .mat-slider-track-background {
+            background-color: sv.$mdo-border;
+          }
+        }
+
+        .mat-slider-thumb-container {
+          .mat-slider-thumb {
+            transform: scale(0.7);
+          }
+
+          .mat-slider-thumb-label {
+            right: -14px;
+            transform: rotate(0deg);
+            padding: math.div(sv.$padding-size, 4);
+            background-color: sv.$mdo-canvas;
+            border: 1px solid sv.$mdo-border;
+            border-radius: 3px;
+            height: auto;
+          }
+
+          .mat-slider-thumb-label-text {
+            transform: rotate(0deg);
+            opacity: 1;
+          }
+        }
+      }
+    }
+  }
+}

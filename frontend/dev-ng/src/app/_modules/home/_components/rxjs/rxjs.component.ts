@@ -1,5 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { Component, OnInit } from "@angular/core";
+import { ThemePalette } from "@angular/material/core";
+import { ProgressSpinnerMode } from "@angular/material/progress-spinner";
 import { forkJoin, catchError, of } from "rxjs";
 import { interval, fromEvent, takeUntil } from 'rxjs';
 
@@ -10,11 +12,14 @@ import { interval, fromEvent, takeUntil } from 'rxjs';
 })
 export class RxjsComponent implements OnInit{
 
+  color: ThemePalette = 'primary';
+  mode: ProgressSpinnerMode = 'determinate';
+  value = 50;
   ngOnInit(): void {
-    const source = interval(1000);
-    const clicks = fromEvent(document, 'click');
-    const result = source.pipe(takeUntil(clicks));
-    result.subscribe(x => console.log(x));
+    // const source = interval(1000);
+    // const clicks = fromEvent(document, 'click');
+    // const result = source.pipe(takeUntil(clicks));
+    // result.subscribe(x => console.log(x));
   }
   /*
     postsData: any;

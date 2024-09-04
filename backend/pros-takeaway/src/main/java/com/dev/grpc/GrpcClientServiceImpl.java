@@ -1,5 +1,6 @@
 package com.dev.grpc;
 
+import com.dev.common.annotations.LogExecutionTime;
 import com.dev.common.dto.document.DocumentSearchRequestDTO;
 import com.dev.grpc.document.*;
 import com.dev.grpc.profile.*;
@@ -51,6 +52,7 @@ public class GrpcClientServiceImpl {
         }
     }
 
+    @LogExecutionTime
     public List<Document> getAllDocuments() {
         List<Document> documents = new ArrayList<>();
         DocumentsResponse documentsResponse = documentServiceBlockingStub.getAllDocuments(Empty.newBuilder().build());

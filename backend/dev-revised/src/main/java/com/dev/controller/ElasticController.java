@@ -23,7 +23,7 @@ import java.util.Objects;
 @RestController
 @RequestMapping(value = "/elastic")
 public class ElasticController {
-
+/*
     @Autowired
     private ElasticConfiguration elasticConfiguration;
 
@@ -140,5 +140,5 @@ public class ElasticController {
             throw new RuntimeException(e);
         }
         return "index deleted";
-    }
+    }*/
 }

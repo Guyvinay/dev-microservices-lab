@@ -189,11 +189,11 @@
             <artifactId>spring-boot-starter-graphql</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>com.dev</groupId>
-            <artifactId>auth-starter</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.dev</groupId>-->
+<!--            <artifactId>auth-starter</artifactId>-->
+<!--            <version>0.0.1-SNAPSHOT</version>-->
+<!--        </dependency>-->
 
     </dependencies>
 

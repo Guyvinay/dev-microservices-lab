@@ -12,11 +12,15 @@ import { PostEffects } from './store/effects/post.effects';
 import { postsReducer } from './store/state/posts.reducer';
 import { HttpClientModule } from '@angular/common/http';
 import { RxjsComponent } from './_modules/home/_components/rxjs/rxjs.component';
+import { MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @NgModule({
   declarations: [AppComponent, CounterComponent, PostComponent, RxjsComponent],
   imports: [
     BrowserModule,
+    MatProgressSpinnerModule,
+    BrowserAnimationsModule,
     HttpClientModule,
     StoreModule.forRoot({count: counterReducer, posts: postsReducer}),
     EffectsModule.forRoot([PostEffects]),
