@@ -7,6 +7,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "user_role_mappings")
 public class UserRoleMapping {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
