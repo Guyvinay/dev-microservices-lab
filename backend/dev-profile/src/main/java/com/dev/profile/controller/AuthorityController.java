@@ -1,7 +1,11 @@
 package com.dev.profile.controller;
 
+import com.dev.profile.dto.AuthorityDTO;
 import com.dev.profile.entity.Authority;
 import com.dev.profile.service.AuthorityService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,10 +22,17 @@ public class AuthorityController {
     private AuthorityService authorityService;
 
     // Create a new Authority
+    @Operation(summary = "Create a new user profile", description = "This endpoint creates a new user profile with roles and authorities.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "User profile created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PostMapping
-    public ResponseEntity<Authority> createAuthority(@RequestBody Authority authority) {
-        Authority createdAuthority = authorityService.createAuthority(authority);
-        return new ResponseEntity<>(createdAuthority, HttpStatus.CREATED);
+    public ResponseEntity<AuthorityDTO> createAuthority(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Authority object that needs to be created")
+            @RequestBody AuthorityDTO authority) {
+        return new ResponseEntity<>(authorityService.createAuthority(authority), HttpStatus.CREATED);
     }
 
     // Get an Authority by ID

@@ -1,5 +1,6 @@
 package com.dev.profile.service.serivceImpl;
 
+import com.dev.profile.dto.AuthorityDTO;
 import com.dev.profile.entity.Authority;
 import com.dev.profile.exception.ResourceNotFoundException;
 import com.dev.profile.repository.AuthorityRepository;
@@ -18,8 +19,9 @@ public class AuthorityServiceImpl implements AuthorityService {
 
     // Create a new Authority
     @Override
-    public Authority createAuthority(Authority authority) {
-        return authorityRepository.save(authority);
+    public AuthorityDTO createAuthority(AuthorityDTO authorityDTO) {
+        Authority authority = authorityRepository.save(new Authority(authorityDTO.getName()));
+        return new AuthorityDTO(authority.getId(), authority.getName());
     }
 
     // Update an existing Authority

@@ -1,5 +1,6 @@
 package com.dev.profile.service;
 
+import com.dev.profile.dto.AuthorityDTO;
 import com.dev.profile.entity.Authority;
 
 import java.util.List;
@@ -8,7 +9,7 @@ import java.util.UUID;
 public interface AuthorityService {
 
     // Create a new Authority
-    public Authority createAuthority(Authority authority);
+    public AuthorityDTO createAuthority(AuthorityDTO authority);
 
     // Update an existing Authority
     public Authority updateAuthority(UUID id, Authority authorityDetails);

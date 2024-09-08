@@ -11,7 +11,6 @@ import java.util.UUID;
 @Entity
 @Table(name = "user_authorities")
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 public class Authority {
 
@@ -25,5 +24,13 @@ public class Authority {
     @ManyToMany(mappedBy = "authorities", fetch = FetchType.LAZY)
     private Set<UserRole> roles;
 
+    public Authority(String name) {
+        this.name = name;
+    }
 
+    public Authority(UUID id, String name, Set<UserRole> roles) {
+        this.id = id;
+        this.name = name;
+        this.roles = roles;
+    }
 }
