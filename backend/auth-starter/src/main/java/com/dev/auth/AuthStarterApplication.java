@@ -1,4 +1,4 @@
-package com.dev;
+package com.dev.auth;
 
 import org.springframework.context.annotation.Configuration;
 
