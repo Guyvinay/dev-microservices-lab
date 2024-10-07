@@ -14,13 +14,16 @@ import { HttpClientModule } from '@angular/common/http';
 import { RxjsComponent } from './_modules/home/_components/rxjs/rxjs.component';
 import { MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { NgMaterialComponent } from './_modules/home/_components/ng-material/ng-material.component';
+import { MatTableModule } from '@angular/material/table'; // Import MatTableModule
 
 @NgModule({
-  declarations: [AppComponent, CounterComponent, PostComponent, RxjsComponent],
+  declarations: [AppComponent, CounterComponent, PostComponent, RxjsComponent, NgMaterialComponent],
   imports: [
     BrowserModule,
     MatProgressSpinnerModule,
     BrowserAnimationsModule,
+    MatTableModule,           // Add MatTableModule here
     HttpClientModule,
     StoreModule.forRoot({count: counterReducer, posts: postsReducer}),
     EffectsModule.forRoot([PostEffects]),

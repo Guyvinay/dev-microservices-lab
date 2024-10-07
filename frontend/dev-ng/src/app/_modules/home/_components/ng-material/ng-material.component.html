@@ -1,0 +1,56 @@
+<!-- <table mat-table [dataSource]="dataSource">
+
+  <ng-container matColumnDef="id">
+    <th mat-header-cell *matHeaderCellDef> Id</th>
+    <td mat-cell *matCellDef="let element">{{element.id}}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="name">
+    <th mat-header-cell *matHeaderCellDef> Name</th>
+    <td mat-cell *matCellDef="let element">{{element.name}}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="age">
+    <th mat-header-cell *matHeaderCellDef> Age</th>
+    <td mat-cell *matCellDef="let element">{{element.age}}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="email">
+    <th mat-header-cell *matHeaderCellDef> Email</th>
+    <td mat-cell *matCellDef="let element">{{element.email}}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="address">
+    <th mat-header-cell *matHeaderCellDef> Address</th>
+    <td mat-cell *matCellDef="let element">{{element.address}}</td>
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+</table> -->
+
+<table mat-table [dataSource]="dataSource">
+  <ng-container *ngFor="let column of displayedColumns" [matColumnDef]="column">
+    <th mat-header-cell *matHeaderCellDef>{{column | titlecase}}</th>
+    <td mat-cell *matCellDef="let element">
+
+      <ng-container *ngIf="column === 'address'; else companyCell">
+        {{element.address.street}}, {{element.address.city}}, {{element.address.zipcode}}
+      </ng-container>
+
+      <ng-template #companyCell>
+        <ng-container *ngIf="column === 'company'; else defaultCell">
+          {{element.company.name}}, {{element.company.bs}}
+        </ng-container>
+      </ng-template>
+
+      <ng-template #defaultCell>
+        {{element[column]}}
+      </ng-template>
+
+    </td>
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+</table>

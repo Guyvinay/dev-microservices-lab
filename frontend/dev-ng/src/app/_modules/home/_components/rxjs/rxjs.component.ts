@@ -2,8 +2,10 @@ import { HttpClient } from "@angular/common/http";
 import { Component, OnInit } from "@angular/core";
 import { ThemePalette } from "@angular/material/core";
 import { ProgressSpinnerMode } from "@angular/material/progress-spinner";
-import { forkJoin, catchError, of } from "rxjs";
+import { forkJoin, catchError, of, Observable, from } from "rxjs";
 import { interval, fromEvent, takeUntil } from 'rxjs';
+import { Post, User } from "src/app/_models/models";
+import { UserService } from "src/app/_services/user.service";
 
 @Component({
     selector: 'app-rxjs',
@@ -20,6 +22,7 @@ export class RxjsComponent implements OnInit{
     // const clicks = fromEvent(document, 'click');
     // const result = source.pipe(takeUntil(clicks));
     // result.subscribe(x => console.log(x));
+    this.fetchUserPosts()
   }
   /*
     postsData: any;
@@ -71,6 +74,18 @@ export class RxjsComponent implements OnInit{
     }
       */
 
+    constructor(private userService: UserService){}
+
+    fetchUserPosts() {
+      this.userService.fetchUserPosts().subscribe({
+        next: (data) => {
+          console.log(data);
+        },
+        error: (err) => {
+
+        }
+      });
+    }
 
 
 }
