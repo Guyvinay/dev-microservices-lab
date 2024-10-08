@@ -16,6 +16,9 @@ import { MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgMaterialComponent } from './_modules/home/_components/ng-material/ng-material.component';
 import { MatTableModule } from '@angular/material/table'; // Import MatTableModule
+import { MatPaginatorModule} from '@angular/material/paginator';
+import {MatTabsModule} from '@angular/material/tabs';
+
 
 @NgModule({
   declarations: [AppComponent, CounterComponent, PostComponent, RxjsComponent, NgMaterialComponent],
@@ -24,6 +27,8 @@ import { MatTableModule } from '@angular/material/table'; // Import MatTableModu
     MatProgressSpinnerModule,
     BrowserAnimationsModule,
     MatTableModule,           // Add MatTableModule here
+    MatTabsModule,
+    MatPaginatorModule,
     HttpClientModule,
     StoreModule.forRoot({count: counterReducer, posts: postsReducer}),
     EffectsModule.forRoot([PostEffects]),

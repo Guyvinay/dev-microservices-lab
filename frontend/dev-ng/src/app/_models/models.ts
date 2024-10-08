@@ -35,3 +35,9 @@ export interface Post {
   title: string;
   body: string;
 }
+
+export interface Tab {
+  order: number;
+  label: string;
+  content: string;
+}
