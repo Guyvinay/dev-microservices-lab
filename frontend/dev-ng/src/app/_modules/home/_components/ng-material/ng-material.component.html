@@ -28,7 +28,7 @@
   <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
   <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
 </table> -->
-<mat-tab-group (selectedTabChange)="loadData($event.index)" (focusChange)="focusChangeEvent($event)">
+<!-- <mat-tab-group (selectedTabChange)="loadData($event.index)" (focusChange)="focusChangeEvent($event)">
   <mat-tab *ngFor="let tab of tabs" [label]="tab.label">
     <table mat-table [dataSource]="dataSource">
       <ng-container *ngFor="let column of displayedColumns" [matColumnDef]="column">
@@ -46,9 +46,19 @@
           </ng-template>
 
           <ng-template #defaultCell>
-            {{element[column]}}
-          </ng-template>
+            <ng-container *ngIf="column === 'id'; else otherColumn">
+              <span
+                [matMenuTriggerFor]="flowMenu"
+                [matMenuTriggerData]="{triggerFrom: 'view', docId: element.id, element: element}"
+                class="cursor">
+                {{element[column]}}
+              </span>
+            </ng-container>
 
+            <ng-template #otherColumn>
+              {{element[column]}}
+            </ng-template>
+          </ng-template>
         </td>
       </ng-container>
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
@@ -56,3 +66,13 @@
     </table>
   </mat-tab>
 </mat-tab-group>
+
+<mat-menu #flowMenu="matMenu" xPosition="after" yPosition="below" class="flow-menu">
+  <ng-template
+    matMenuContent
+    let-triggerFrom="triggerFrom"
+    let-docId="docId"
+    let-element="element">
+    {{ triggerFrom | json }} <br> {{ docId | json }} <br> {{ element | json }}
+  </ng-template>
+</mat-menu> -->

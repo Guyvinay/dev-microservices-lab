@@ -3,26 +3,69 @@ import { Component, OnInit } from "@angular/core";
 import { ThemePalette } from "@angular/material/core";
 import { ProgressSpinnerMode } from "@angular/material/progress-spinner";
 import { forkJoin, catchError, of, Observable, from } from "rxjs";
-import { interval, fromEvent, takeUntil } from 'rxjs';
+import { interval, fromEvent, takeUntil } from "rxjs";
 import { Post, User } from "src/app/_models/models";
-import { UserService } from "src/app/_services/user.service";
+import { HttpService } from "src/app/_services/http.service";
 
 @Component({
-    selector: 'app-rxjs',
-    templateUrl: './rxjs.component.html',
-    styleUrls: ['./rxjs.component.scss']
+  selector: "app-rxjs",
+  templateUrl: "./rxjs.component.html",
+  styleUrls: ["./rxjs.component.scss"],
 })
-export class RxjsComponent implements OnInit{
-
-  color: ThemePalette = 'primary';
-  mode: ProgressSpinnerMode = 'determinate';
+export class RxjsComponent implements OnInit {
+  color: ThemePalette = "primary";
+  mode: ProgressSpinnerMode = "determinate";
   value = 50;
+  data: any;
+
   ngOnInit(): void {
     // const source = interval(1000);
     // const clicks = fromEvent(document, 'click');
     // const result = source.pipe(takeUntil(clicks));
     // result.subscribe(x => console.log(x));
-    this.fetchUserPosts()
+    // this.fetchUserPosts();
+
+
+    // this.fetchBothApisWithAsync();
+    // this.fetchBothApisWithMergeMap();
+    // this.fetchBothApisWithConcatMap();
+    this.fetchBothApisWithConcatMapV2();
+    this.fetchBothApisWithMergeMapV2();
+  }
+
+  async fetchBothApisWithAsync() {
+    try {
+      console.log("fetching fetchBothApisWithAsync");
+      this.data = await this.httpService.fetchBothApisWithAsync();
+      console.log("fetchBothApisWithAsync: ",this.data);
+      console.log("fetched fetchBothApisWithAsync");
+    } catch (error) {
+      console.error('Error in fetching data', error);
+    }
+  }
+
+  fetchBothApisWithMergeMap() {
+    this.httpService.fetchBothApisWithMergeMap().subscribe((response) => {
+      console.log("fetchBothApisWithMergeMap: ", response);
+    });
+  }
+
+  fetchBothApisWithConcatMap() {
+    this.httpService.fetchBothApisWithConcatMap().subscribe((response) => {
+      console.log("fetchBothApisWithConcatMap: ", response);
+    });
+  }
+
+  fetchBothApisWithConcatMapV2() {
+    this.httpService.fetchBothApisWithConcatMapV2().subscribe((response) => {
+      console.log("fetchBothApisWithConcatMapV2: ", response);
+    });
+  }
+
+  fetchBothApisWithMergeMapV2() {
+    this.httpService.fetchBothApisWithMergeMapV2().subscribe((response) => {
+      console.log("fetchBothApisWithMergeMapV2: ", response);
+    });
   }
   /*
     postsData: any;
@@ -74,18 +117,14 @@ export class RxjsComponent implements OnInit{
     }
       */
 
-    constructor(private userService: UserService){}
+  constructor(private httpService: HttpService) {}
 
-    fetchUserPosts() {
-      this.userService.fetchUserPosts().subscribe({
-        next: (data) => {
-          console.log(data);
-        },
-        error: (err) => {
-
-        }
-      });
-    }
-
-
+  fetchUserPosts() {
+    this.httpService.fetchUserPosts().subscribe({
+      next: (data) => {
+        console.log(data);
+      },
+      error: (err) => {},
+    });
+  }
 }

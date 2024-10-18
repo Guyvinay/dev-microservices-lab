@@ -18,6 +18,7 @@ import { NgMaterialComponent } from './_modules/home/_components/ng-material/ng-
 import { MatTableModule } from '@angular/material/table'; // Import MatTableModule
 import { MatPaginatorModule} from '@angular/material/paginator';
 import {MatTabsModule} from '@angular/material/tabs';
+import { MatMenuModule } from '@angular/material/menu';
 
 
 @NgModule({
@@ -29,6 +30,7 @@ import {MatTabsModule} from '@angular/material/tabs';
     MatTableModule,           // Add MatTableModule here
     MatTabsModule,
     MatPaginatorModule,
+    MatMenuModule,
     HttpClientModule,
     StoreModule.forRoot({count: counterReducer, posts: postsReducer}),
     EffectsModule.forRoot([PostEffects]),

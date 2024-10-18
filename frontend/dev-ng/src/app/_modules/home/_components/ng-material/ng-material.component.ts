@@ -1,6 +1,5 @@
 import { HttpClient } from "@angular/common/http";
 import { Component, OnInit } from "@angular/core";
-import { DateAdapter } from "@angular/material/core";
 import { catchError, of } from "rxjs";
 import { Tab, User } from "src/app/_models/models";
 import { CustomDataSource } from "src/app/_services/CustomeDataSource";
@@ -19,8 +18,8 @@ export class NgMaterialComponent implements OnInit {
   constructor(private http: HttpClient) { }
 
   ngOnInit() {
-    this.loadData(0);
-    this.loadTabsData();
+    // this.loadData(0);
+    // this.loadTabsData();
   }
   loadTabsData() {
     this.http
@@ -69,5 +68,21 @@ export class NgMaterialComponent implements OnInit {
 
   focusChangeEvent($event: any) {
     console.log($event);
+  }
+
+  // Sample flow data (you can replace this with actual data from a service)
+  flowData = {
+    flows: [
+      { flowId: 'flow1', flowDesc: 'Flow 1' },
+      { flowId: 'flow2', flowDesc: 'Flow 2' }
+    ]
+  };
+
+  isLoading = false; // Show skeleton while loading
+
+  // Method to handle flow selection
+  openFlow(flowId: string) {
+    console.log(`Opening flow: ${flowId}`);
+    // Add your flow opening logic here
   }
 }
