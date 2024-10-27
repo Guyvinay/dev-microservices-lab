@@ -4,8 +4,6 @@ import javax.swing.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.*;
-import java.util.Arrays;
-
 public class Test {
     public static void main(String[] args) throws FileNotFoundException {
 //        File f = new File("kay.txt");
@@ -26,6 +24,7 @@ public class Test {
         JButton button = new JButton("Click Me");
         // Add a MouseAdapter to handle mouse clicks on the button
         button.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
                 System.out.println("Button was clicked!");
             }
