@@ -1,6 +1,5 @@
 package com.dev.controller;
 
-import com.dev.CustomSchemaInitializer;
 import com.dev.modal.Profile;
 import com.dev.service.ProfileService;
 import lombok.extern.slf4j.Slf4j;
@@ -26,8 +25,7 @@ public class ProfileController {
     @Autowired
     private ProfileService profileService;
 
-    @Autowired
-    private CustomSchemaInitializer customSchemaInitializer;
+
 
     @PostMapping
     public ResponseEntity<Profile> saveProfiles(@RequestBody Profile profile) throws IOException {
@@ -61,11 +59,6 @@ public class ProfileController {
     @GetMapping()
     public ResponseEntity<List<Profile>> GetAllProfiles() throws IOException {
         return new ResponseEntity<List<Profile>>(profileService.findAllProfiles(), HttpStatus.ACCEPTED);
-    }
-
-    @GetMapping(value = "/initSchema/{tenantId}")
-    public void initilizeSchema(@PathVariable("tenantId") String tenantId) {
-        customSchemaInitializer.initialize(tenantId);
     }
 
 }

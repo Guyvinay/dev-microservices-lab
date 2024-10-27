@@ -4,9 +4,9 @@ package com.dev.hibernate.service;
 import liquibase.exception.LiquibaseException;
 import liquibase.integration.spring.SpringLiquibase;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.postgresql.util.PGobject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +15,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Component
 @Slf4j
@@ -29,6 +32,9 @@ public class DatasourceService {
 
     @Value("${liquibase.master.file.path}")
     private String changelog;
+
+    @Value("${liquibase.ignore.schema:pg_catalog,public,information_schema}")
+    private String excludeSchema;
 
     public void executeLiquibase(String tenantId) throws LiquibaseException {
         log.info("Liquibase execution starts for {}", tenantId);
@@ -111,6 +117,27 @@ public class DatasourceService {
             }
         }
         return sanitizedInput;
+    }
+
+    public List<String> getAllTenanats() throws SQLException {
+        List<String> alltenants = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection()) {
+            try(ResultSet dataSources = connection.getMetaData().getSchemas()){
+                while (dataSources.next()) {
+                    String schema = dataSources.getString("TABLE_SCHEM").toLowerCase();
+                    alltenants.add(schema);
+                }
+            } catch (Exception e) {
+                log.error("Error in getting tenants [{}] ", e);
+                connection.close();
+            }
+            return alltenants;
+        }
+    }
+
+    public List<String> getExcludeSchema(){
+        return StringUtils.isNotBlank(excludeSchema) ? Arrays.asList(excludeSchema.split(","))
+                : Arrays.asList("pg_catalog","public","information_schema");
     }
 
 
