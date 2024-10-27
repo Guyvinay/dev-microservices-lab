@@ -3,4 +3,5 @@ org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
 	com.dev.rmq.configuration.RabbitConfig,\
 	com.dev.rmq.configuration.RabbitBeans,\
 	com.dev.rmq.event.ApplicationStartEventListener,\
-	com.dev.elastic.configuration.ElasticConfiguration
+	com.dev.elastic.configuration.ElasticConfiguration,\
+	com.dev.hibernate.service.DatasourceService

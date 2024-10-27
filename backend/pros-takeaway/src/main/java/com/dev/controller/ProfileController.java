@@ -64,7 +64,7 @@ public class ProfileController {
     }
 
     @GetMapping(value = "/initSchema/{tenantId}")
-    public void initilizeSchema(@PathVariable String tenantId) {
+    public void initilizeSchema(@PathVariable("tenantId") String tenantId) {
         customSchemaInitializer.initialize(tenantId);
     }
 
