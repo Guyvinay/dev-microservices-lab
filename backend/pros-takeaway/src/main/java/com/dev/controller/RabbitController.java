@@ -45,6 +45,8 @@ public class RabbitController {
             rmqWrapper.convertAndSend(Queues.QUEUE3, messageStr);
         }else if(queue.equalsIgnoreCase(Queues.QUEUE4)) {
             rmqWrapper.convertAndSend(Queues.QUEUE4, messageStr);
+        } else {
+            return "pushing in undeclared queue";
         }
         return "Message Sent Successfully";
     }

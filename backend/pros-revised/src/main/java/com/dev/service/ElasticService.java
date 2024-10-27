@@ -46,6 +46,9 @@ public class ElasticService {
             searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            throw e;
         }
         return mapSearchDocument(searchResponse);
     }
