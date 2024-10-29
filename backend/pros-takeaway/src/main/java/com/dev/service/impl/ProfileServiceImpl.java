@@ -66,8 +66,8 @@ public class ProfileServiceImpl implements ProfileService {
 	@Override
 	public List<Profile> findAllProfiles() throws IOException {
 
-					Instant start =  Instant.now();
-					log.info("getting all students start at : {}", start);
+		Instant start =  Instant.now();
+		log.info("getting all students start at : {}", start);
 
 		SearchRequest searchRequest = new SearchRequest("profiles");
 		SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();

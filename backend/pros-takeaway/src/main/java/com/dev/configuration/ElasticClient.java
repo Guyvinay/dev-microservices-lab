@@ -32,12 +32,26 @@ public class ElasticClient {
         List<HttpHost> httpHosts = new ArrayList<>();
         httpHosts.add(new HttpHost(HOST, PORT, SCHEME));
         log.info("Connecting to elasticsearch at ({}:{}) {}", HOST, PORT, SCHEME);
-        RestClientBuilder restClientBuilder = RestClient.builder((HttpHost[]) httpHosts.toArray(new HttpHost[httpHosts.size()]));
-        restClientBuilder.setRequestConfigCallback(requestConfigBuilder -> requestConfigBuilder.setConnectTimeout(5000).setSocketTimeout(30000));
+//        RestClientBuilder restClientBuilder = RestClient.builder((HttpHost[]) httpHosts.toArray(new HttpHost[httpHosts.size()]));
+        RestClientBuilder restClientBuilder = RestClient.builder(new HttpHost[]{new HttpHost(HOST, PORT, SCHEME)});
+//       restClientBuilder.setRequestConfigCallback(requestConfigBuilder -> requestConfigBuilder.setConnectTimeout(5000).setSocketTimeout(30000));
+        configureTimeouts(restClientBuilder);
+
         this.restHighLevelClient = new RestHighLevelClientBuilder(restClientBuilder.build()).build();
         log.info("Connection to elastic successful ");
         return this.restHighLevelClient;
     }
+
+    private void configureTimeouts(RestClientBuilder restClientBuilder) {
+        int connectTimeout = 5000;
+        int socketTimeout = 30000;
+
+        restClientBuilder.setRequestConfigCallback(requestConfigBuilder ->
+                requestConfigBuilder.setConnectTimeout(connectTimeout)
+                        .setSocketTimeout(socketTimeout)
+        );
+    }
+
 
     @Bean
     public ObjectMapper objectMapper() {

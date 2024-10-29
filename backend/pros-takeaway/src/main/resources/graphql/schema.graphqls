@@ -1,25 +1,23 @@
-type Users {
-     user_id:ID!
-     name:String
-     mobile:String
-     role:String
-     email:String
-     password:String
-}
-
-input UsersReq {
-     name:String
-     mobile:String
-     email:String
-     role:String
-     password:String
-}
-type Query{
-     allUsers:[Users]
-     getUserByEmail(email:String):Users
+type Query {
+     getAllUsers: [UserDTO]
+     getUserById(id: ID!): UserDTO
 }
 
 type Mutation {
-     register(user:UsersReq):Users
+     createUser(input: UserInputDTO!): UserDTO
+     updateUser(id: ID!, input: UserInputDTO!): UserDTO
+     deleteUser(id: ID!): String
 }
 
+type UserDTO {
+     id: ID!
+     name: String!
+     email: String!
+     password: String!
+}
+
+input UserInputDTO {
+     name: String!
+     email: String!
+     password: String!
+}
