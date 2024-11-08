@@ -1,42 +1,84 @@
-# See http://help.github.com/ignore-files/ for more about ignoring files.
-
-# Compiled output
-/dist
-/tmp
-/out-tsc
-/bazel-out
-
-# Node
-/node_modules
-npm-debug.log
-yarn-error.log
-
-# IDEs and editors
-.idea/
-.project
+HELP.md
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+**/target
+### STS ###
+.apt_generated
 .classpath
-.c9/
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+.target
+mvnw
+mvnw.cmd
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+# Maven target directory
+/target/
+
+# Maven specific files
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+
+# Eclipse/IntelliJ IDEA project files
+/.idea/
+/*.iml
+/.classpath
+/.project
+/.settings/
+
+# Eclipse specific files
 *.launch
 .settings/
-*.sublime-workspace
 
-# Visual Studio Code
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-.history/*
+# IntelliJ IDEA specific files
+/.idea/
+/*.iws
+/*.ipr
+/out/
 
-# Miscellaneous
-/.angular/cache
-.sass-cache/
-/connect.lock
-/coverage
-/libpeerconnection.log
-testem.log
-/typings
+# VS Code specific files
+.vscode/
 
-# System files
+# OS-specific files
 .DS_Store
 Thumbs.db
+
+# Logs
+logs
+*.log
+
+# Compiled class files
+*.class
+
+# Package files
+*.jar
+*.war
+*.ear
+
+# Temporary files
+*.tmp
+*.swp
+*.swo

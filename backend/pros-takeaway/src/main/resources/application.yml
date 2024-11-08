@@ -1,0 +1,75 @@
+spring:
+  application:
+    name: pros-takeaway
+  datasource:
+    url: jdbc:postgresql://localhost:5432/pros-takeaway
+    username: postgres
+    password: root
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+# Uncomment the following line if Elasticsearch is enabled
+#  elasticsearch:
+#    rest:
+#      uris: http://localhost:9200
+
+logging:
+  pattern:
+    console: "%d{HH:mm:ss} -%5level --> %msg -- %logger%n"
+  level:
+    org:
+      hibernate:
+        SQL: DEBUG
+        type:
+          descriptor:
+            sql:
+              BasicBinder: TRACE
+        cache: DEBUG
+
+# Hazelcast Configuration
+#spring:
+#  jpa:
+#    properties:
+#      hibernate:
+#        generate_statistics: true
+#        cache:
+#          use_second_level_cache: true
+#          region:
+#            factory_class: com.hazelcast.hibernate.HazelcastCacheRegionFactory
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+grpc:
+  client:
+    user_service_grpc:
+      address: static://localhost:10018
+      negotiationType: PLAINTEXT
+  server:
+   port: 10017
+
+# Override bean definitions if duplicated
+#spring:
+#  main:
+#    allow-bean-definition-overriding: true
+
+liquibase:
+  master:
+    file:
+      path: classpath:db/changelog/db.changelog-master.xml
