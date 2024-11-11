@@ -25,7 +25,7 @@ public interface ElasticService {
 
     List<ProfilingDocumentDTO> getAllProfilingDocuments(String tenantId, Long moduleId, Integer pageNumber, Integer pageSize);
 
-    ProfilingDocumentDTO getProfilingDocumentById(String tenantId, Long moduleId, String fieldId, Integer pageNumber, Integer pageSize);
+    ProfilingDocumentDTO getProfilingDocumentById(String tenantId, Long moduleId, String fieldId);
 
 
 }

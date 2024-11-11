@@ -2,6 +2,7 @@ package com.dev.service.impl;
 
 import com.dev.common.dto.document.Document;
 import com.dev.dto.ProfilingDocumentDTO;
+import com.dev.exception.ProfilingNotFoundException;
 import com.dev.rmq.utility.Queues;
 import com.dev.rmq.wrapper.RabbitTemplateWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -19,6 +20,7 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.core.TimeValue;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -229,11 +231,80 @@ public class ElasticServiceImpl implements ElasticService {
 
     @Override
     public List<ProfilingDocumentDTO> getAllProfilingDocuments(String tenantId, Long moduleId, Integer pageNumber, Integer pageSize) {
-        return List.of();
+        String indexName = _index(moduleId, tenantId);
+        log.info("Getting profiling documents from index: {}", indexName);
+        try {
+            SearchRequest searchRequest = buildSearchRequestWithExclusions(indexName, pageNumber, pageSize, new String[]{"value_frequency"});
+            return fetchProfilingDocuments(searchRequest);
+        } catch (IOException e) {
+            log.error("Error occurred while fetching all documents excluding field: {} ", e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
-    public ProfilingDocumentDTO getProfilingDocumentById(String tenantId, Long moduleId, String fieldId, Integer pageNumber, Integer pageSize) {
-        return null;
+    public ProfilingDocumentDTO getProfilingDocumentById(String tenantId, Long moduleId, String fieldId) {
+
+        String indexName = _index(moduleId, tenantId);
+        log.info("Getting profiling document from index: {}, for field : {}", indexName, fieldId);
+        try {
+            SearchRequest searchRequest = buildSearchRequestByColumnValue(indexName, fieldId);
+            return fetchProfilingDocuments(searchRequest).get(0);
+        } catch (IOException exception) {
+            log.error("Exception while getting profiling document: {}", exception.getMessage());
+            throw new RuntimeException(exception);
+        }
+    }
+
+    private SearchRequest buildSearchRequestByColumnValue(String index, String fieldId) {
+        SearchRequest searchRequest = new SearchRequest(index);
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+
+        //prepare term query
+        TermQueryBuilder termQueryBuilder = QueryBuilders.termQuery("column", fieldId);
+        searchSourceBuilder.query(termQueryBuilder);
+        searchRequest.source(searchSourceBuilder);
+
+        return searchRequest;
+    }
+
+    private SearchRequest buildSearchRequestWithExclusions(String index, int pageNumber, int pageSize, String[] excludedFields) {
+        SearchRequest searchRequest = new SearchRequest(index);
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder()
+                .from(pageNumber)
+                .size(pageSize)
+                .query(QueryBuilders.matchAllQuery())
+                .fetchSource(null, excludedFields);
+
+        searchRequest.source(searchSourceBuilder);
+        return searchRequest;
+    }
+
+    private List<ProfilingDocumentDTO> fetchProfilingDocuments(SearchRequest searchRequest) throws IOException {
+
+        SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+        List<ProfilingDocumentDTO> results = new ArrayList<>();
+
+        if(searchResponse != null && searchResponse.getHits() != null && searchResponse.getHits().getHits().length > 0) {
+            SearchHit[] searchHits = searchResponse.getHits().getHits();
+            log.info("Received profiling search response hits : {}", searchHits.length);
+            for( SearchHit searchHit: searchResponse.getHits().getHits() ) {
+                try {
+                    ProfilingDocumentDTO profilingDocument = objectMapper.readValue(searchHit.getSourceAsString(), ProfilingDocumentDTO.class);
+                    results.add(profilingDocument);
+                } catch (IOException exception) {
+                    log.error("Error while parsing: {}", exception.getMessage());
+                }
+            }
+        } else {
+            log.info("No documents found matching the query.");
+            throw new ProfilingNotFoundException("No documents found matching the query.");
+        }
+
+        return results;
+    }
+
+    private String _index(Long moduleId, String tenantId) {
+        return  "localhost_" + moduleId + "_do_profile_" + tenantId + "_en";
     }
 }

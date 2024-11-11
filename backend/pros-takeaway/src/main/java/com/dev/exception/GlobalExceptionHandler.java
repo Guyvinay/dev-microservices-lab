@@ -1,7 +1,9 @@
 package com.dev.exception;
 
+import com.dev.common.dto.GeneralResponseDTO;
 import com.dev.dto.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.ObjectError;
@@ -13,6 +15,7 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @ControllerAdvice
 @Slf4j
@@ -20,28 +23,18 @@ public class GlobalExceptionHandler {
 
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ApiResponse<String>> handleResourceNotFound(ResourceNotFoundException ex) {
-        ApiResponse<String> response = new ApiResponse<>("404", ex.getMessage(), null);
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    public ResponseEntity<GeneralResponseDTO<Object>> handleResourceNotFound(ResourceNotFoundException ex) {
+        GeneralResponseDTO<Object> generalResponseDTO =  generalResponseDTO(ex, null, HttpStatus.INTERNAL_SERVER_ERROR);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(generalResponseDTO);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiResponse<String>> handleIllegalArgument(IllegalArgumentException ex) {
         ApiResponse<String> response = new ApiResponse<>("400", ex.getMessage(), null);
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
-//    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ExceptionDto> globalExceptionHandler(Exception ex, WebRequest wb){
-        log.error(ex.getMessage(), ex);
-        return new ResponseEntity<>(
-                new ExceptionDto(
-                        LocalDateTime.now(),
-                        ex.getMessage(),
-                        wb.getDescription(false)
-                ),
-                HttpStatus.BAD_REQUEST
-        );
-    }
+
 
   /*  @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ExceptionDto> methodArgumentNotValidException(MethodArgumentNotValidException ex, WebRequest wb) {
@@ -70,5 +63,21 @@ public class GlobalExceptionHandler {
                 ),
                 HttpStatus.BAD_REQUEST
         );
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<GeneralResponseDTO<Object>> globalExceptionHandler(Exception ex, WebRequest wb){
+
+        GeneralResponseDTO<Object> generalResponseDTO =  generalResponseDTO(ex, null, HttpStatus.INTERNAL_SERVER_ERROR);
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(generalResponseDTO);
+    }
+
+    private GeneralResponseDTO<Object> generalResponseDTO(Exception e, String errorMessage, HttpStatus status) {
+        GeneralResponseDTO<Object> generalResponseDTO = new GeneralResponseDTO<>();
+        generalResponseDTO.setSuccess(false);
+        generalResponseDTO.setStatus(status.value());
+        generalResponseDTO.setErrorMsg(StringUtils.isNotBlank(errorMessage)? errorMessage: e.getMessage());
+        return generalResponseDTO;
     }
 }

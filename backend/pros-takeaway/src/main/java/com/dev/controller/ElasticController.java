@@ -1,5 +1,6 @@
 package com.dev.controller;
 
+import com.dev.common.dto.GeneralResponseDTO;
 import com.dev.common.dto.document.Document;
 import com.dev.dto.ProfilingDocumentDTO;
 import com.dev.modal.Student;
@@ -61,15 +62,27 @@ public class ElasticController {
 
 
     @GetMapping
-    ResponseEntity<List<ProfilingDocumentDTO>> getAllProfilingDocuments(
-            String tenantId, Long moduleId, Integer pageNumber, Integer pageSize) {
-        return new ResponseEntity<>(elasticService.getAllProfilingDocuments(tenantId, moduleId, pageNumber, pageSize), HttpStatus.OK);
+    ResponseEntity<GeneralResponseDTO<List<ProfilingDocumentDTO>>> getAllProfilingDocuments(
+            @RequestParam(name = "tenantId",required = false, defaultValue = "346377") String tenantId,
+            @RequestParam(name = "moduleId",required = false, defaultValue = "504349") Long moduleId,
+            @RequestParam(name = "pageNumber", required = false, defaultValue = "0") Integer pageNumber,
+            @RequestParam(name = "pageSize", required = false, defaultValue = "20") Integer pageSize
+            ) {
+        return new ResponseEntity<>(GeneralResponseDTO.ok(
+                elasticService.getAllProfilingDocuments(tenantId, moduleId, pageNumber, pageSize)),
+                HttpStatus.OK
+        );
     }
 
     @GetMapping(value = "/field")
-    ResponseEntity<ProfilingDocumentDTO> getProfilingDocumentById(
-            String tenantId, Long moduleId, String fieldId, Integer pageNumber, Integer pageSize) {
-        return new ResponseEntity<>(elasticService.getProfilingDocumentById(tenantId, moduleId, fieldId, pageNumber, pageSize), HttpStatus.OK);
+    ResponseEntity<GeneralResponseDTO<ProfilingDocumentDTO>> getProfilingDocumentById(
+            @RequestParam(name = "tenantId",required = false, defaultValue = "346377") String tenantId,
+            @RequestParam(name = "moduleId",required = false, defaultValue = "504349") Long moduleId,
+            @RequestParam(name = "fieldId",required = false, defaultValue = "fld_963014021") String fieldId) {
+        return new ResponseEntity<>(
+                GeneralResponseDTO.ok(elasticService.getProfilingDocumentById(tenantId, moduleId, fieldId)),
+                HttpStatus.OK
+        );
     }
 
 
