@@ -2,6 +2,7 @@ package com.dev.service.impl;
 
 import com.dev.common.dto.document.Document;
 import com.dev.dto.ProfilingDocumentDTO;
+import com.dev.exception.ProfilingFailedException;
 import com.dev.exception.ProfilingNotFoundException;
 import com.dev.rmq.utility.Queues;
 import com.dev.rmq.wrapper.RabbitTemplateWrapper;
@@ -30,6 +31,7 @@ import org.elasticsearch.xcontent.XContentType;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,10 +41,10 @@ import java.util.*;
 @Slf4j
 public class ElasticServiceImpl implements ElasticService {
 
-//    @Autowired
+    //    @Autowired
     private MyElasticsearchClient elasticsearchClient;
 
-//    @Autowired
+    //    @Autowired
     private RabbitTemplate rabbitTemplate;
 
     @Autowired
@@ -58,9 +60,9 @@ public class ElasticServiceImpl implements ElasticService {
 
     @Override
     public void saveStudent(Student student) {
-        try{
+        try {
             elasticsearchClient.indexDocument(index, student.getStudentId(), new ObjectMapper().writeValueAsString(student));
-        } catch (Exception e){
+        } catch (Exception e) {
             log.info("parsing error: {}", e.getMessage());
         }
     }
@@ -77,11 +79,11 @@ public class ElasticServiceImpl implements ElasticService {
         searchSourceBuilder.query(QueryBuilders.matchAllQuery());
         searchRequest.source(searchSourceBuilder);
 
-        try{
+        try {
             SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
             System.out.println(searchResponse);
             rabbitTemplate.convertAndSend("CR_QUEUES", searchResponse);
-        } catch ( Exception e) {
+        } catch (Exception e) {
             log.info("error: {}", e.getMessage());
         }
 
@@ -110,7 +112,7 @@ public class ElasticServiceImpl implements ElasticService {
     private List<Document> mapSearchDocument(SearchResponse searchResponse) {
         List<Document> documents = new ArrayList<>();
         SearchHit[] searchHits = searchResponse.getHits().getHits();
-        if(searchHits.length > 0) {
+        if (searchHits.length > 0) {
             Arrays.stream(searchHits).forEach(hit -> {
                 documents.add(convertMapToDocument(hit.getSourceAsMap()));
             });
@@ -161,8 +163,8 @@ public class ElasticServiceImpl implements ElasticService {
             }
             builder.endObject();
 
-        IndexRequest indexRequest = new IndexRequest("posts")
-                .id("1").source(builder);
+            IndexRequest indexRequest = new IndexRequest("posts")
+                    .id("1").source(builder);
 
             restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
 
@@ -181,7 +183,7 @@ public class ElasticServiceImpl implements ElasticService {
         BulkRequest bulkRequest = new BulkRequest();
 
         try {
-            for(ProfilingDocumentDTO doc: documents) {
+            for (ProfilingDocumentDTO doc : documents) {
                 String docId = doc.getColumn();
                 bulkRequest.add(new IndexRequest("localhost_504349_do_profile_346377_en1")
                         .id(docId)
@@ -208,7 +210,6 @@ public class ElasticServiceImpl implements ElasticService {
     }
 
 
-
     public List<ProfilingDocumentDTO> readJsonData() {
         String fileClassPath = "profiling.json";
         List<ProfilingDocumentDTO> documents = null;
@@ -216,7 +217,8 @@ public class ElasticServiceImpl implements ElasticService {
 
 
         try {
-            documents = objectMapper.readValue(jsonFile, new TypeReference<>(){});
+            documents = objectMapper.readValue(jsonFile, new TypeReference<>() {
+            });
         } catch (Exception exception) {
             log.error(exception.getMessage());
             exception.printStackTrace();
@@ -224,6 +226,7 @@ public class ElasticServiceImpl implements ElasticService {
 
         return documents;
     }
+
     @Override
     public List<ProfilingDocumentDTO> getProfilingDocuments(int from, int page) {
         return List.of();
@@ -233,13 +236,10 @@ public class ElasticServiceImpl implements ElasticService {
     public List<ProfilingDocumentDTO> getAllProfilingDocuments(String tenantId, Long moduleId, Integer pageNumber, Integer pageSize) {
         String indexName = _index(moduleId, tenantId);
         log.info("Getting profiling documents from index: {}", indexName);
-        try {
-            SearchRequest searchRequest = buildSearchRequestWithExclusions(indexName, pageNumber, pageSize, new String[]{"value_frequency"});
-            return fetchProfilingDocuments(searchRequest);
-        } catch (IOException e) {
-            log.error("Error occurred while fetching all documents excluding field: {} ", e.getMessage());
-            throw new RuntimeException(e);
-        }
+
+        SearchRequest searchRequest = buildSearchRequestWithExclusions(indexName, pageNumber, pageSize, new String[]{"value_frequency"});
+        return fetchProfilingDocuments(searchRequest);
+
     }
 
     @Override
@@ -247,13 +247,13 @@ public class ElasticServiceImpl implements ElasticService {
 
         String indexName = _index(moduleId, tenantId);
         log.info("Getting profiling document from index: {}, for field : {}", indexName, fieldId);
-        try {
-            SearchRequest searchRequest = buildSearchRequestByColumnValue(indexName, fieldId);
-            return fetchProfilingDocuments(searchRequest).get(0);
-        } catch (IOException exception) {
-            log.error("Exception while getting profiling document: {}", exception.getMessage());
-            throw new RuntimeException(exception);
+        SearchRequest searchRequest = buildSearchRequestByColumnValue(indexName, fieldId);
+        List<ProfilingDocumentDTO> profilingDocumentDTOS = fetchProfilingDocuments(searchRequest);
+        if (CollectionUtils.isEmpty(profilingDocumentDTOS)) {
+            throw new ProfilingNotFoundException("Technical profiling not found for field: " + fieldId);
         }
+
+        return profilingDocumentDTOS.getFirst();
     }
 
     private SearchRequest buildSearchRequestByColumnValue(String index, String fieldId) {
@@ -280,31 +280,33 @@ public class ElasticServiceImpl implements ElasticService {
         return searchRequest;
     }
 
-    private List<ProfilingDocumentDTO> fetchProfilingDocuments(SearchRequest searchRequest) throws IOException {
+    private List<ProfilingDocumentDTO> fetchProfilingDocuments(SearchRequest searchRequest) {
 
-        SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
-        List<ProfilingDocumentDTO> results = new ArrayList<>();
+        try {
+            SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+            List<ProfilingDocumentDTO> results = new ArrayList<>();
 
-        if(searchResponse != null && searchResponse.getHits() != null && searchResponse.getHits().getHits().length > 0) {
-            SearchHit[] searchHits = searchResponse.getHits().getHits();
-            log.info("Received profiling search response hits : {}", searchHits.length);
-            for( SearchHit searchHit: searchResponse.getHits().getHits() ) {
-                try {
-                    ProfilingDocumentDTO profilingDocument = objectMapper.readValue(searchHit.getSourceAsString(), ProfilingDocumentDTO.class);
-                    results.add(profilingDocument);
-                } catch (IOException exception) {
-                    log.error("Error while parsing: {}", exception.getMessage());
+            if (searchResponse != null && searchResponse.getHits() != null && searchResponse.getHits().getHits().length > 0) {
+                SearchHit[] searchHits = searchResponse.getHits().getHits();
+                log.info("Received profiling search response hits : {}", searchHits.length);
+                for (SearchHit searchHit : searchResponse.getHits().getHits()) {
+                    try {
+                        ProfilingDocumentDTO profilingDocument = objectMapper.readValue(searchHit.getSourceAsString(), ProfilingDocumentDTO.class);
+                        results.add(profilingDocument);
+                    } catch (IOException exception) {
+                        log.error("Error while parsing: {}", exception.getMessage());
+                    }
                 }
             }
-        } else {
-            log.info("No documents found matching the query.");
-            throw new ProfilingNotFoundException("No documents found matching the query.");
+            return results;
+        } catch (IOException ex) {
+            log.error("Exception while fetching profiling: {}", ex.getMessage());
+            throw new ProfilingFailedException("Exception while fetching profiling: " + ex.getMessage());
         }
 
-        return results;
     }
 
     private String _index(Long moduleId, String tenantId) {
-        return  "localhost_" + moduleId + "_do_profile_" + tenantId + "_en";
+        return "localhost_" + moduleId + "_do_profile_" + tenantId + "_en";
     }
 }

@@ -1,5 +1,6 @@
 package com.dev.configuration;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
@@ -27,7 +28,7 @@ public class ElasticClient {
     public ElasticClient() {
     }
 
-//    @Bean
+    //    @Bean
     public RestHighLevelClient buildElasticClient() {
         List<HttpHost> httpHosts = new ArrayList<>();
         httpHosts.add(new HttpHost(HOST, PORT, SCHEME));
@@ -55,7 +56,12 @@ public class ElasticClient {
 
     @Bean
     public ObjectMapper objectMapper() {
-        return new ObjectMapper();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        objectMapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        return objectMapper;
     }
 
 }
