@@ -12,7 +12,7 @@ public class GrpcServerImpl extends UserServiceGrpc.UserServiceImplBase {
 
     @Override
     public void createUser(UserDetail request, StreamObserver<User> responseObserver) {
-        log.info("request received {}", request);
+//        log.info("request received {}", request);
         User user = User.newBuilder()
                 .setName("Vinay")
                 .setAge(request.getAge())

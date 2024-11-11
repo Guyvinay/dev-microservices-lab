@@ -1,14 +1,17 @@
 package com.dev.service.impl;
 
 import com.dev.common.dto.document.Document;
+import com.dev.dto.ProfilingDocumentDTO;
 import com.dev.rmq.utility.Queues;
 import com.dev.rmq.wrapper.RabbitTemplateWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.dev.configuration.MyElasticsearchClient;
 import com.dev.modal.Student;
 import com.dev.service.ElasticService;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -21,10 +24,12 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.xcontent.XContentBuilder;
 import org.elasticsearch.xcontent.XContentFactory;
+import org.elasticsearch.xcontent.XContentType;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -166,4 +171,69 @@ public class ElasticServiceImpl implements ElasticService {
 
     }
 
+    @Override
+    public List<ProfilingDocumentDTO> indexBulkDocument() {
+        List<ProfilingDocumentDTO> documents = readJsonData();
+        log.info("documents: {} ", documents.size());
+
+        BulkRequest bulkRequest = new BulkRequest();
+
+        try {
+            for(ProfilingDocumentDTO doc: documents) {
+                String docId = doc.getColumn();
+                bulkRequest.add(new IndexRequest("localhost_504349_do_profile_346377_en1")
+                        .id(docId)
+                        .source(objectMapper.writeValueAsString(doc), XContentType.JSON)
+                );
+
+                IndexRequest indexRequest = new IndexRequest("localhost_504349_do_profile_346377_en1")
+                        .id(docId)
+                        .source(objectMapper.writeValueAsString(doc), XContentType.JSON);
+                restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
+            }
+//            BulkResponse bulkResponse = restHighLevelClient.bulk(bulkRequest, RequestOptions.DEFAULT);
+//            if (bulkResponse.hasFailures()) {
+//                System.out.println("Bulk insert had failures: " + bulkResponse.buildFailureMessage());
+//            } else {
+//                System.out.println("Bulk insert successful.");
+//            }
+
+        } catch (Exception e) {
+            log.error("Exception: {}", e.getMessage());
+            e.printStackTrace();
+        }
+        return documents;
+    }
+
+
+
+    public List<ProfilingDocumentDTO> readJsonData() {
+        String fileClassPath = "profiling.json";
+        List<ProfilingDocumentDTO> documents = null;
+        File jsonFile = new File(fileClassPath);
+
+
+        try {
+            documents = objectMapper.readValue(jsonFile, new TypeReference<>(){});
+        } catch (Exception exception) {
+            log.error(exception.getMessage());
+            exception.printStackTrace();
+        }
+
+        return documents;
+    }
+    @Override
+    public List<ProfilingDocumentDTO> getProfilingDocuments(int from, int page) {
+        return List.of();
+    }
+
+    @Override
+    public List<ProfilingDocumentDTO> getAllProfilingDocuments(String tenantId, Long moduleId, Integer pageNumber, Integer pageSize) {
+        return List.of();
+    }
+
+    @Override
+    public ProfilingDocumentDTO getProfilingDocumentById(String tenantId, Long moduleId, String fieldId, Integer pageNumber, Integer pageSize) {
+        return null;
+    }
 }

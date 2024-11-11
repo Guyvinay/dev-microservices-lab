@@ -1,6 +1,7 @@
 package com.dev.service;
 
 import com.dev.common.dto.document.Document;
+import com.dev.dto.ProfilingDocumentDTO;
 import com.dev.modal.Student;
 
 import java.util.List;
@@ -18,4 +19,13 @@ public interface ElasticService {
     private void ined() {
         System.out.println();
     }
+    public List<ProfilingDocumentDTO> indexBulkDocument();
+
+    List<ProfilingDocumentDTO> getProfilingDocuments(int from, int page);
+
+    List<ProfilingDocumentDTO> getAllProfilingDocuments(String tenantId, Long moduleId, Integer pageNumber, Integer pageSize);
+
+    ProfilingDocumentDTO getProfilingDocumentById(String tenantId, Long moduleId, String fieldId, Integer pageNumber, Integer pageSize);
+
+
 }
