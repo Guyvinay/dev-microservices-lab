@@ -47,10 +47,10 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id " + id));
 
-        user.setId(userDTO.getId());
         user.setName(userDTO.getName());
         user.setEmail(userDTO.getEmail());
-        user.setPassword(userDTO.getPassword());  // Consider hashing passwords in a real application
+        user.setPassword(userDTO.getPassword());
+        user.setUpdatedAt(LocalDateTime.now());
 
         user = userRepository.save(user);
         return convertToDTO(user);
