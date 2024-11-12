@@ -345,7 +345,6 @@ public class ElasticServiceImpl implements ElasticService {
             log.error("Exception while fetching profiling: {}", ex.getMessage());
             throw new ProfilingFailedException("Exception while fetching profiling: " + ex.getMessage());
         }
-
     }
 
     /**

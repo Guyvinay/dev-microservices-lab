@@ -37,7 +37,6 @@ public class UserService {
         if (userRepository.existsByEmail(userDTO.getEmail())) {
             throw new IllegalArgumentException("Email already in use");
         }
-        User user1 = convertToEntity(userDTO);
         User user = convertToEntity(userDTO);
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());

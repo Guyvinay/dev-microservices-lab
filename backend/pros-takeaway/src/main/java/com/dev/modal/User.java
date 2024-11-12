@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.envers.AuditTable;
+import org.hibernate.envers.Audited;
+
 
 import java.time.LocalDateTime;
 
@@ -12,6 +15,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Entity
 @Table(name = "users")
+@Audited
+@AuditTable("users_aud")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,14 +34,4 @@ public class User {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
-
-    @PrePersist
-    public void prePersist() {
-        createdAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
 }
