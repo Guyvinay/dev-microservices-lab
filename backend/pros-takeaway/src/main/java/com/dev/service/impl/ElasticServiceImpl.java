@@ -2,6 +2,7 @@ package com.dev.service.impl;
 
 import com.dev.common.dto.document.Document;
 import com.dev.dto.ProfilingDocumentDTO;
+import com.dev.dto.ProfilingDocumentResponse;
 import com.dev.exception.ProfilingFailedException;
 import com.dev.exception.ProfilingNotFoundException;
 import com.dev.rmq.utility.Queues;
@@ -19,6 +20,8 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.core.CountRequest;
+import org.elasticsearch.client.core.CountResponse;
 import org.elasticsearch.core.TimeValue;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.TermQueryBuilder;
@@ -233,12 +236,15 @@ public class ElasticServiceImpl implements ElasticService {
     }
 
     @Override
-    public List<ProfilingDocumentDTO> getAllProfilingDocuments(String tenantId, Long moduleId, Integer pageNumber, Integer pageSize) {
+    public ProfilingDocumentResponse getAllProfilingDocuments(String tenantId, Long moduleId, Integer pageNumber, Integer pageSize) {
         String indexName = _index(moduleId, tenantId);
         log.info("Getting profiling documents from index: {}", indexName);
-
+        Long totalCount = getTotalDocumentCount(indexName);
+        log.info("Total count: {}", totalCount);
         SearchRequest searchRequest = buildSearchRequestWithExclusions(indexName, pageNumber, pageSize, new String[]{"value_frequency"});
-        return fetchProfilingDocuments(searchRequest);
+        List<ProfilingDocumentDTO> response = fetchProfilingDocuments(searchRequest);
+
+        return new ProfilingDocumentResponse(response, totalCount);
 
     }
 
@@ -256,6 +262,16 @@ public class ElasticServiceImpl implements ElasticService {
         return profilingDocumentDTOS.getFirst();
     }
 
+    /**
+     * Builds an Elasticsearch {@link SearchRequest} to search by a specific field value in the specified index.
+     *
+     * <p> This method constructs a search request targeting a single index, and it allows for querying documents
+     * based on the value of a specific field.
+     *
+     * @param index   the name of the Elasticsearch index to search in.
+     * @param fieldId fieldId the name of the field (or column) to filter by,
+     * @return a  {@link SearchRequest} that includes a filter for the specified field in the index.
+     */
     private SearchRequest buildSearchRequestByColumnValue(String index, String fieldId) {
         SearchRequest searchRequest = new SearchRequest(index);
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
@@ -267,19 +283,41 @@ public class ElasticServiceImpl implements ElasticService {
 
         return searchRequest;
     }
-
+    /**
+     * Build an Elasticsearch {@link SearchRequest} with pagination and field exclusion.
+     *
+     * <p>
+     * This method constructs a search request for specified index with support for paginating
+     * results and excluding specified fields from the response.     *
+     * </p>
+     *
+     * @param index          name of the ES index which is being queried.
+     * @param pageNumber     the page number to retrieve.
+     * @param pageSize       number of documents return per page.
+     * @param excludedFields an array of field names to be excluded from response. If empty or null no fields are excluded.
+     * @return a {@link SearchRequest} that includes paginating results with excluded fields for the specified index.
+     */
     private SearchRequest buildSearchRequestWithExclusions(String index, int pageNumber, int pageSize, String[] excludedFields) {
         SearchRequest searchRequest = new SearchRequest(index);
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder()
                 .from(pageNumber)
                 .size(pageSize)
-                .query(QueryBuilders.matchAllQuery())
+//                .query(QueryBuilders.matchAllQuery())
                 .fetchSource(null, excludedFields);
 
         searchRequest.source(searchSourceBuilder);
         return searchRequest;
     }
 
+    /**
+     * Executes elasticsearch search request to retrieve profiling documents, returning a list of
+     * {@link ProfilingDocumentDTO} objects.
+     *
+     * @param searchRequest searchRequest {@link SearchRequest} object contains query for retrieving profiling documents.
+     * @return a list {@link List} of {@link ProfilingDocumentDTO} objects each representing a profiling
+     * document retrieved from elasticsearch index.
+     * If no document is matching the search criteria a empty list is returned.
+     */
     private List<ProfilingDocumentDTO> fetchProfilingDocuments(SearchRequest searchRequest) {
 
         try {
@@ -306,6 +344,34 @@ public class ElasticServiceImpl implements ElasticService {
 
     }
 
+    /**
+     * Gets the total count in specified index.
+     * @param indexName name of the index which is being queried for count.
+     * @return number of total documents {@link Long}
+     */
+    public Long getTotalDocumentCount(String indexName) {
+        try {
+            // Create a CountRequest with the index name
+            CountRequest countRequest = new CountRequest(indexName);
+
+            // Perform the count request
+            CountResponse countResponse = restHighLevelClient.count(countRequest, RequestOptions.DEFAULT);
+
+            return countResponse.getCount();
+        } catch (IOException e) {
+            log.error("Exception while getting count: ", e);
+            return null;  // Return null in case of failure
+        }
+    }
+
+    /**
+     * prepares the index based on specified moduleId and tenantId.
+     *
+     * @param moduleId id of the module used to construct index.
+     * @param tenantId id of the tenant used to construct index
+     * @return a {@link String} representing constructed index name.
+     * <code>{serverName}_{moduleId}_do_profile_{tenantId}_en</code>
+     */
     private String _index(Long moduleId, String tenantId) {
         return "localhost_" + moduleId + "_do_profile_" + tenantId + "_en";
     }
