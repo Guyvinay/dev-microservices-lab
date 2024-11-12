@@ -61,6 +61,10 @@ public class ElasticServiceImpl implements ElasticService {
     @Autowired
     private ObjectMapper objectMapper;
 
+    public ElasticServiceImpl() {
+        if(objectMapper==null) objectMapper = new ObjectMapper();
+    }
+
     @Override
     public void saveStudent(Student student) {
         try {
@@ -316,7 +320,7 @@ public class ElasticServiceImpl implements ElasticService {
      * @param searchRequest searchRequest {@link SearchRequest} object contains query for retrieving profiling documents.
      * @return a list {@link List} of {@link ProfilingDocumentDTO} objects each representing a profiling
      * document retrieved from elasticsearch index.
-     * If no document is matching the search criteria a empty list is returned.
+     * If no document is matching the search criteria empty list is returned.
      */
     private List<ProfilingDocumentDTO> fetchProfilingDocuments(SearchRequest searchRequest) {
 

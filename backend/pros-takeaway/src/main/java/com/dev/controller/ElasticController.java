@@ -26,6 +26,7 @@ import java.util.List;
 @Tag(name = "ElasticController", description = "REST controller to manage Elastic requests")
 @RestController
 @RequestMapping(value = "/elastic")
+@CrossOrigin("*")
 public class ElasticController {
 
 
