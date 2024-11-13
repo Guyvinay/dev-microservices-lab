@@ -74,3 +74,5 @@ liquibase:
   master:
     file:
       path: classpath:db/changelog/db.changelog-master.xml
+server:
+  port: 8888

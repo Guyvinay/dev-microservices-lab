@@ -5,7 +5,9 @@ import com.dev.common.dto.document.Document;
 import com.dev.dto.ProfilingDocumentDTO;
 import com.dev.dto.ProfilingDocumentResponse;
 import com.dev.modal.Student;
+import com.dev.modal.User;
 import com.dev.service.ElasticService;
+import com.dev.service.UserAuditService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -140,6 +142,14 @@ public class ElasticController {
                 GeneralResponseDTO.ok(elasticService.getProfilingDocumentById(tenantId, moduleId, fieldId)),
                 HttpStatus.OK
         );
+    }
+
+    @Autowired
+    private UserAuditService userAuditService;
+
+    @GetMapping(value = "/userAudit/{userId}")
+    public List<User> getUserRevision(@PathVariable("userId") Long userId) {
+        return userAuditService.printUserRevisionHistory(userId);
     }
 
 
