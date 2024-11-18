@@ -4,6 +4,7 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
+
     <!-- To enable auditing -->
     <changeSet id="113" author="vinay.singh">
         <preConditions onFail="MARK_RAN">
@@ -32,6 +33,20 @@
             </column>
             <column name="test_column" type="INT"/>
         </createTable>
+    </changeSet>
+    <changeSet id="118" author="vinay.singh" context="dev,prod" labels="feature1,feature2">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="test_table"/>
+            </not>
+        </preConditions>
+        <createTable tableName="test_table">
+            <column name="test_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="test_column" type="INT"/>
+        </createTable>
+        <comment>test table created</comment>
     </changeSet>
 
     <changeSet id="112" author="vinay.singh">

@@ -55,6 +55,8 @@ logging:
 
 management:
   endpoints:
+    health:
+      show-details: true
     web:
       exposure:
         include: "*"
