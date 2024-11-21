@@ -14,21 +14,21 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
 
-@Configuration
-@Data
-@AutoConfigureBefore(HibernateJpaAutoConfiguration.class)
-@AutoConfigureAfter(DataSourceAutoConfiguration.class)
+//@Configuration
+//@Data
+//@AutoConfigureBefore(HibernateJpaAutoConfiguration.class)
+//@AutoConfigureAfter(DataSourceAutoConfiguration.class)
 public class MultiTenantDSAutoConfiguration {
-    @Autowired
+//    @Autowired
     private DataSource ds;
 
 
-    @Bean
+//    @Bean
     public SchemaMultiTenantConnectionProvider connectionProvider() {
         return new SchemaMultiTenantConnectionProvider(ds);
     }
 
-    @Bean
+//    @Bean
     public TenantIdentifierResolver tenantIdentifierResolver() {
         return new TenantIdentifierResolver();
     }

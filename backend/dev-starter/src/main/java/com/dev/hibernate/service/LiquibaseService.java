@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
-@DependsOn("liquibase")
+//@DependsOn("liquibase")
 @Slf4j
 public class LiquibaseService {
 

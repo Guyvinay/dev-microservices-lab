@@ -1,22 +1,27 @@
 package com.dev.configuration;
 
-import com.dev.service.impl.SchemaMultiTenantConnectionProvider;
-import com.dev.service.impl.TenantIdentifierResolver;
-import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
+
+import com.dev.hibernate.multiTanent.TenantIdentifierResolver;
+import com.dev.hibernate.multiTanent.SchemaMultiTenantConnectionProvider;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.hibernate.cfg.AvailableSettings;
 import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
 
-//@Configuration
+@Configuration
+@Data
+@AutoConfigureBefore(HibernateJpaAutoConfiguration.class)
+@AutoConfigureAfter(DataSourceAutoConfiguration.class)
 public class MultiTenantDSAutoConfiguration {
-
-
     @Autowired
     private DataSource ds;
+
 
     @Bean
     public SchemaMultiTenantConnectionProvider connectionProvider() {
@@ -27,16 +32,4 @@ public class MultiTenantDSAutoConfiguration {
     public TenantIdentifierResolver tenantIdentifierResolver() {
         return new TenantIdentifierResolver();
     }
-
-    @Bean
-    public HibernatePropertiesCustomizer hibernatePropertiesCustomizer(
-            CurrentTenantIdentifierResolver tenantIdentifierResolver,
-            SchemaMultiTenantConnectionProvider connectionProvider) {
-        return hibernateProperties -> {
-            hibernateProperties.put(AvailableSettings.MULTI_TENANT_IDENTIFIER_RESOLVER, tenantIdentifierResolver);
-            hibernateProperties.put(AvailableSettings.MULTI_TENANT_CONNECTION_PROVIDER, connectionProvider);
-        };
-    }
-
-
 }

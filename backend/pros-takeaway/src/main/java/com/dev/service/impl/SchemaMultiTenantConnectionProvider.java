@@ -1,33 +1,38 @@
 package com.dev.service.impl;
 
+import com.dev.hibernate.multiTanent.TenantIdentifierResolver;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.engine.jdbc.connections.spi.AbstractDataSourceBasedMultiTenantConnectionProviderImpl;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer;
+import org.springframework.util.StringUtils;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Map;
 
-public class SchemaMultiTenantConnectionProvider  extends AbstractDataSourceBasedMultiTenantConnectionProviderImpl implements HibernatePropertiesCustomizer {
-
+public class SchemaMultiTenantConnectionProvider  extends AbstractDataSourceBasedMultiTenantConnectionProviderImpl<com.dev.hibernate.multiTanent.TenantIdentifierResolver> implements HibernatePropertiesCustomizer {
 
     private final DataSource dataSource;
 
-    public SchemaMultiTenantConnectionProvider(DataSource ds) {
-        this.dataSource = ds;
+    public SchemaMultiTenantConnectionProvider(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     @Override
     protected DataSource selectAnyDataSource() {
+        // Return the shared datasource for any tenant
         return this.dataSource;
     }
 
     @Override
-    protected DataSource selectDataSource(Object tenantIdentifier) {
+    protected DataSource selectDataSource(TenantIdentifierResolver tenantIdentifier) {
         return this.dataSource;
     }
 
     @Override
     public void customize(Map<String, Object> hibernateProperties) {
-        hibernateProperties.put(AvailableSettings.MULTI_TENANT_CONNECTION_PROVIDER, this);
+        // Use the correct Hibernate constant for setting the connection provider
+        hibernateProperties.put(AvailableSettings.MULTI_TENANT_IDENTIFIER_RESOLVER, this);
     }
 }
