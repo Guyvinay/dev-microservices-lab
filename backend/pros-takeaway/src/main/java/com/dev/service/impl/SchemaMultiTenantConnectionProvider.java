@@ -4,14 +4,12 @@ import com.dev.hibernate.multiTanent.TenantIdentifierResolver;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.engine.jdbc.connections.spi.AbstractDataSourceBasedMultiTenantConnectionProviderImpl;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer;
-import org.springframework.util.StringUtils;
+
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Map;
 
-public class SchemaMultiTenantConnectionProvider  extends AbstractDataSourceBasedMultiTenantConnectionProviderImpl<com.dev.hibernate.multiTanent.TenantIdentifierResolver> implements HibernatePropertiesCustomizer {
+public class SchemaMultiTenantConnectionProvider  extends AbstractDataSourceBasedMultiTenantConnectionProviderImpl<String> implements HibernatePropertiesCustomizer {
 
     private final DataSource dataSource;
 
@@ -26,9 +24,10 @@ public class SchemaMultiTenantConnectionProvider  extends AbstractDataSourceBase
     }
 
     @Override
-    protected DataSource selectDataSource(TenantIdentifierResolver tenantIdentifier) {
+    protected DataSource selectDataSource(String tenantIdentifier) {
         return this.dataSource;
     }
+
 
     @Override
     public void customize(Map<String, Object> hibernateProperties) {

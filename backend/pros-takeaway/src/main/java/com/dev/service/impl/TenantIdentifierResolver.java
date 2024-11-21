@@ -2,7 +2,7 @@ package com.dev.service.impl;
 
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
-import org.springframework.beans.factory.annotation.Value;
+
 import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer;
 
 import java.util.Map;
