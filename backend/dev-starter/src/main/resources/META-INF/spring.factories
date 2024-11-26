@@ -6,7 +6,4 @@ org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
 	com.dev.elastic.configuration.ElasticConfiguration,\
 	com.dev.hibernate.service.DatasourceService, \
 	com.dev.hibernate.service.LiquibaseService, \
-	com.dev.hibernate.SpringLiquibaseConfig, \
-    com.dev.hibernate.MultiTenantDSAutoConfiguration, \
-    com.dev.hibernate.multiTanent.SchemaMultiTenantConnectionProvider, \
-    com.dev.hibernate.multiTanent.TenantIdentifierResolver
+	com.dev.hibernate.SpringLiquibaseConfig

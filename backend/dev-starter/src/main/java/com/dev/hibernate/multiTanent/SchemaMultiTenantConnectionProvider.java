@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 
+/*
 public class SchemaMultiTenantConnectionProvider  extends AbstractDataSourceBasedMultiTenantConnectionProviderImpl<TenantIdentifierResolver> implements HibernatePropertiesCustomizer {
 
     private final DataSource dataSource;
@@ -34,4 +35,4 @@ public class SchemaMultiTenantConnectionProvider  extends AbstractDataSourceBase
         // Use the correct Hibernate constant for setting the connection provider
         hibernateProperties.put(AvailableSettings.MULTI_TENANT_IDENTIFIER_RESOLVER, this);
     }
-}
+}*/
