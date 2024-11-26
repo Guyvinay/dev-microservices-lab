@@ -17,7 +17,7 @@ public class TenantIdentifierResolver implements CurrentTenantIdentifierResolver
 
     @Override
     public String resolveCurrentTenantIdentifier() {
-        return "vinay4";
+        return "vinay";
     }
 
     @Override
