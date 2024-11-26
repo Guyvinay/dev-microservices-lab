@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomi
 
 import java.util.Map;
 
+/*
 public class TenantIdentifierResolver implements CurrentTenantIdentifierResolver, HibernatePropertiesCustomizer {
 
     @Override
@@ -26,4 +27,4 @@ public class TenantIdentifierResolver implements CurrentTenantIdentifierResolver
         hibernateProperties.put(AvailableSettings.MULTI_TENANT_IDENTIFIER_RESOLVER
                 , this);
     }
-}
+}*/

@@ -14,8 +14,11 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
-        use_sql_comments: true
+#        format_sql: true
+#        use_sql_comments: true
+#        multiTenancy: SCHEMA
+#        tenant_identifier_resolver: com.dev.multitenant.impl.TenantIdentifierResolver
+#        multi_tenant_connection_provider: com.dev.multitenant.impl.SchemaBasedMultiTenantConnectionProvider
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.xml
 #    logging:
@@ -38,12 +41,12 @@ logging:
   level:
     org:
       hibernate:
-        SQL: DEBUG
-        type:
-          descriptor:
-            sql:
-              BasicBinder: TRACE
-        cache: DEBUG
+#        SQL: DEBUG
+#        type:
+#          descriptor:
+#            sql:
+#              BasicBinder: TRACE
+#        cache: DEBUG
 
 # Hazelcast Configuration
 #spring:
@@ -83,3 +86,4 @@ liquibase:
       path: classpath:db/changelog/db.changelog-master.xml
 server:
   port: 8888
+  servlet.context-path: /takeaways
