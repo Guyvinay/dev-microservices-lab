@@ -1,8 +1,8 @@
-package com.dev.multitenant;
+package com.dev.multiTenant;
 
-import com.dev.multitenant.impl.SchemaBasedMultiTenantConnectionProvider;
-import com.dev.multitenant.impl.TenantIdentifierResolver;
-import jakarta.servlet.http.HttpServletRequest;
+/*
+import com.dev.multiTenant.impl.SchemaBasedMultiTenantConnectionProvider;
+import com.dev.multiTenant.impl.TenantIdentifierResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
@@ -14,8 +14,8 @@ import org.springframework.context.annotation.Configuration;
 import javax.sql.DataSource;
 
 @Configuration
-//@AutoConfigureBefore(HibernateJpaAutoConfiguration.class)
-//@AutoConfigureAfter(DataSourceAutoConfiguration.class)
+@AutoConfigureBefore(HibernateJpaAutoConfiguration.class)
+@AutoConfigureAfter(DataSourceAutoConfiguration.class)
 public class MultiTenantConfig {
 
 
@@ -33,3 +33,4 @@ public class MultiTenantConfig {
     }
 
 }
+*/

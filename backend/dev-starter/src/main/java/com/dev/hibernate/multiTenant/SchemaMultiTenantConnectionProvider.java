@@ -1,4 +1,4 @@
-package com.dev.multitenant.impl;
+package com.dev.hibernate.multiTenant;
 
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.cfg.AvailableSettings;
@@ -11,11 +11,11 @@ import java.sql.SQLException;
 import java.util.Map;
 
 @Slf4j
-public class SchemaBasedMultiTenantConnectionProvider extends AbstractDataSourceBasedMultiTenantConnectionProviderImpl<String> implements HibernatePropertiesCustomizer {
+public class SchemaMultiTenantConnectionProvider extends AbstractDataSourceBasedMultiTenantConnectionProviderImpl<String> implements HibernatePropertiesCustomizer {
 
     private DataSource ds;
 
-    public SchemaBasedMultiTenantConnectionProvider(DataSource source) {
+    public SchemaMultiTenantConnectionProvider(DataSource source) {
         this.ds = source;
     }
 

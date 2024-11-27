@@ -10,25 +10,23 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 
 @SpringBootApplication
-public class ProsTakeawayApplication implements CommandLineRunner {
+public class ProsTakeawayApplication /*implements CommandLineRunner*/ {
 
-	private static final Logger log = LoggerFactory.getLogger(ProsTakeawayApplication.class);
-	@Autowired
-	private ApplicationContext applicationContext;
+//	@Autowired
+//	private ApplicationContext applicationContext;
 
 	public static void main(String[] args) {
 		SpringApplication.run(ProsTakeawayApplication.class, args);
 	}
 
-	@Override
-	public void run(String... args) throws Exception {
+//	@Override
+//	public void run(String... args) throws Exception {
 //		String[] beans = applicationContext.getBeanDefinitionNames();
 //		int beansCount = applicationContext.getBeanDefinitionCount();
 //		log.info("total beans : {}", beansCount);
 //		for (String bean : beans) {
 //			log.info("{}", bean);
 //		}
-
-	}
+//	}
 
 }

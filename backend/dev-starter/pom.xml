@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.dev</groupId>
     <artifactId>dev-starter</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <packaging>jar</packaging>
     <name>dev-starter</name>
     <description>Demo project for Spring Boot Dev starter</description>

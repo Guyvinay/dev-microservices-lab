@@ -52,8 +52,6 @@
                     <scope>runtime</scope>
                 </dependency>-->
 
-        <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -82,8 +80,7 @@
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>elasticsearch-rest-high-level-client</artifactId>
             <version>7.17.21</version>
-        </dependency>-->
-        <!--
+        </dependency>
                 <dependency>
                     <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-core</artifactId>
@@ -99,7 +96,7 @@
         <dependency>
             <groupId>com.dev</groupId>
             <artifactId>dev-starter</artifactId>
-            <version>1.0.3</version>
+            <version>1.0.4</version>
         </dependency>
 
         <dependency>
@@ -213,9 +210,6 @@
             <artifactId>hibernate-envers</artifactId>
             <version>${hibernate.version}</version>
         </dependency>
-
-
-
     </dependencies>
 
     <build>
