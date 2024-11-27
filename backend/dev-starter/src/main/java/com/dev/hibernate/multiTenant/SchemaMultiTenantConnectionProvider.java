@@ -47,7 +47,7 @@ public class SchemaMultiTenantConnectionProvider extends AbstractDataSourceBased
 
     @Override
     public void releaseConnection(String s, Connection connection) throws SQLException {
-        connection.setSchema(s);
+        connection.setSchema("PUBLIC");
         connection.close();
     }
 
