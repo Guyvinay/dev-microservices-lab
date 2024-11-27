@@ -46,6 +46,12 @@ public class SchemaMultiTenantConnectionProvider extends AbstractDataSourceBased
     }
 
     @Override
+    public void releaseConnection(String s, Connection connection) throws SQLException {
+        connection.setSchema(s);
+        connection.close();
+    }
+
+    @Override
     public void customize(Map<String, Object> hibernateProperties) {
         hibernateProperties.put(AvailableSettings.MULTI_TENANT_CONNECTION_PROVIDER, this);
     }
