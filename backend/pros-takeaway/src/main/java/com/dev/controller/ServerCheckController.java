@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.Instant;
 import java.util.Random;
 
-@RestController
-@RequestMapping(value = "/server/health/check/rtt")
-@CrossOrigin("*")
+//@RestController
+//@RequestMapping(value = "/server/health/check/rtt")
+//@CrossOrigin("*")
 public class ServerCheckController {
 
     @PostMapping
