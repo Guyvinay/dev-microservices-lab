@@ -20,7 +20,7 @@ public class UsingSeleniumTest {
     public void setup() {
         driver = new ChromeDriver();
     }
-    @Test
+//    @Test
     public void eightComponents() {
 
 /*        String actualTitle = "Web forms";

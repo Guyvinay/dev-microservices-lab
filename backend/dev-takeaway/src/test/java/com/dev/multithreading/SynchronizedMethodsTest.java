@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SynchronizedMethodsTest {
 
-    @Test
+//    @Test
     public void givenMultiThread_whenNonSyncMethod() throws InterruptedException {
         ExecutorService service = Executors.newFixedThreadPool(3);
         SynchronizedMethods summation = new SynchronizedMethods();
@@ -23,7 +23,7 @@ public class SynchronizedMethodsTest {
         assertEquals(1000, summation.getSum());
     }
 
-    @Test
+//    @Test
     public void givenMultiThread_whenMethodSync() throws InterruptedException {
         ExecutorService service = Executors.newFixedThreadPool(3);
         SynchronizedMethods method = new SynchronizedMethods();

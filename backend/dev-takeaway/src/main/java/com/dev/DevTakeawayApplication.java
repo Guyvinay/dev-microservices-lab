@@ -10,13 +10,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 
 @SpringBootApplication
-public class ProsTakeawayApplication /*implements CommandLineRunner*/ {
+public class DevTakeawayApplication /*implements CommandLineRunner*/ {
 
 //	@Autowired
 //	private ApplicationContext applicationContext;
 
 	public static void main(String[] args) {
-		SpringApplication.run(ProsTakeawayApplication.class, args);
+		SpringApplication.run(DevTakeawayApplication.class, args);
 	}
 
 //	@Override

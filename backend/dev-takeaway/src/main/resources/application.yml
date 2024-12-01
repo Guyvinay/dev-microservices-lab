@@ -1,6 +1,6 @@
 spring:
   application:
-    name: pros-takeaway
+    name: dev-takeaway
   datasource:
     url: jdbc:postgresql://localhost:5432/pros-takeaway
     username: postgres

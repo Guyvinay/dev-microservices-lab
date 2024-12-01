@@ -8,10 +8,10 @@
         <version>3.3.1</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.pros</groupId>
-    <artifactId>pros-takeaway</artifactId>
+    <groupId>com.dev</groupId>
+    <artifactId>dev-takeaway</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>pros-takeaway</name>
+    <name>dev-takeaway</name>
     <description>Demo project for Spring Boot</description>
     <properties>
         <java.version>21</java.version>
