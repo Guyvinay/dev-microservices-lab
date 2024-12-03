@@ -2,7 +2,7 @@ spring:
   application:
     name: dev-takeaway
   datasource:
-    url: jdbc:postgresql://localhost:5432/dev-takeaway
+    url: jdbc:postgresql://localhost:5432/dev_takeaway
     username: postgres
     password: root
     driver-class-name: org.postgresql.Driver
