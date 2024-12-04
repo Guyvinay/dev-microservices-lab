@@ -68,6 +68,12 @@
 
     </changeSet>
 
+    <changeSet id="04-12-2024-22.41" author="vinay.singh">
+        <addColumn tableName="users">
+            <column name="role" type="varchar(50)"></column>
+        </addColumn>
+    </changeSet>
+
 
 
     <!-- Create the users_aud table (audit table for users) -->
