@@ -81,11 +81,11 @@
 			<version>1.5.20</version>
 		</dependency>
 
-		<dependency>
-			<groupId>com.dev</groupId>
-			<artifactId>dev-starter</artifactId>
-			<version>1.0.4</version>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>com.dev</groupId>-->
+<!--			<artifactId>dev-starter</artifactId>-->
+<!--			<version>1.0.4</version>-->
+<!--		</dependency>-->
 	</dependencies>
 
 	<build>

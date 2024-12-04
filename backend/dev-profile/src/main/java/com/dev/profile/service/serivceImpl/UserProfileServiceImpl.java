@@ -26,9 +26,7 @@ public class UserProfileServiceImpl implements UserProfileService {
         UserProfile existingProfile = userProfileRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("UserProfile not found with id: " + id));
 
-        existingProfile.setUsername(userProfileDetails.getUsername());
         existingProfile.setEmail(userProfileDetails.getEmail());
-        existingProfile.setUserRoles(userProfileDetails.getUserRoles());  // Set roles, if needed
 
         return userProfileRepository.save(existingProfile);
     }
