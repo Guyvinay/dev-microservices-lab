@@ -15,8 +15,8 @@ public class UserProfile {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false, unique = true)
-    private String username;
+    @Column(nullable = false)
+    private String name;
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -24,10 +24,8 @@ public class UserProfile {
     @Column(nullable = false)
     private String password;
 
+    @Column(nullable = false)
+    private String role;
+
     private boolean enabled;
-
-    @OneToMany(mappedBy = "userProfile", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private Set<UserRoleMapping> userRoles;
-
-
 }
