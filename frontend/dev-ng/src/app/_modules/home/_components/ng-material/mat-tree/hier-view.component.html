@@ -1,0 +1,18 @@
+<mat-tree [dataSource]="dataSource" [treeControl]="treeControl" class="tree-table">
+    <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>
+        <div class="tree-row">
+            <div class="tree-cell tree-cell-name">
+                <button mat-icon-button matTreeNodeToggle *ngIf="node.expandable">
+                    <mat-icon>
+                        {{ treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right' }}
+                    </mat-icon>
+                </button>
+                {{ node.name }}
+            </div>
+
+            <div class="tree-cell tree-cell-other">{{ node.property1 }}</div>
+
+            <div class="tree-cell tree-cell-other">{{ node.property2 }}</div>
+        </div>
+    </mat-tree-node>
+</mat-tree>

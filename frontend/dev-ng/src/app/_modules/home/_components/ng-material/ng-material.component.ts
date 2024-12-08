@@ -4,6 +4,21 @@ import { catchError, of } from "rxjs";
 import { Tab, User } from "src/app/_models/models";
 import { CustomDataSource } from "src/app/_services/CustomeDataSource";
 
+interface TreeNode {
+  name: string;
+  property1?: string;
+  property2?: string;
+  children?: TreeNode[];
+}
+
+interface FlatNode {
+  name: string;
+  level: number;
+  expandable: boolean;
+  property1?: string;
+  property2?: string;
+}
+
 @Component({
   selector: "app-ng-material",
   templateUrl: "./ng-material.component.html",

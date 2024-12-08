@@ -20,6 +20,9 @@ import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatTabsModule } from "@angular/material/tabs";
 import { MatMenuModule } from "@angular/material/menu";
 import { ChartJsComponent } from "./_modules/home/_components/chart-js/chart.js.component";
+import { MatTreeModule } from '@angular/material/tree';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 
 @NgModule({
   declarations: [
@@ -39,6 +42,9 @@ import { ChartJsComponent } from "./_modules/home/_components/chart-js/chart.js.
     MatPaginatorModule,
     MatMenuModule,
     HttpClientModule,
+    MatTreeModule,
+    MatIconModule,
+    MatButtonModule,
     StoreModule.forRoot({ count: counterReducer, posts: postsReducer }),
     EffectsModule.forRoot([PostEffects]),
     StoreDevtoolsModule.instrument({ maxAge: 25 }),
