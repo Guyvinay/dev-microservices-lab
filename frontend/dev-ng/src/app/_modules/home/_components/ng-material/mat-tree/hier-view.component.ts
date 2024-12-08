@@ -24,6 +24,7 @@ interface FlatNode {
 })
 export class HierViewComponent implements OnInit {
   ngOnInit(): void {}
+  displayedColumns: string[] = ['name', 'property1', 'property2'];
 
   treeData: TreeNode[] = [
     {
@@ -35,9 +36,31 @@ export class HierViewComponent implements OnInit {
           name: 'Child 1.1',
           property1: 'C1.1-Prop1',
           property2: 'C1.1-Prop2',
-          children: [{ name: 'Sub-child 1.1.1', property1: 'SC1.1.1-Prop1', property2: 'SC1.1.1-Prop2' }]
+          children: [
+            {
+              name: 'Sub-child 1.1.1',
+              property1: 'SC1.1.1-Prop1',
+              property2: 'SC1.1.1-Prop2'
+            }
+          ]
         },
-        { name: 'Child 1.2', property1: 'C1.2-Prop1', property2: 'C1.2-Prop2' }
+        {
+          name: 'Child 1.2',
+          property1: 'C1.2-Prop1',
+          property2: 'C1.2-Prop2',
+          children: [
+            {
+              name: 'Sub-child 1.1.1',
+              property1: 'SC1.1.1-Prop1',
+              property2: 'SC1.1.1-Prop2'
+            }
+          ]
+        },
+        {
+          name: 'Child 1.3',
+          property1: 'C1.3-Prop1',
+          property2: 'C1.3-Prop2'
+        }
       ]
     },
     {
@@ -46,41 +69,28 @@ export class HierViewComponent implements OnInit {
       property2: 'P2-Prop2',
       children: [
         {
-          name: 'Child 1.1',
-          property1: 'C1.1-Prop1',
-          property2: 'C1.1-Prop2',
-          children: [
-            {
-              name: 'Sub-child 1.1.1',
-              property1: 'SC1.1.1-Prop1',
-              property2: 'SC1.1.1-Prop2',
-              children: [
-                {
-                  name: 'Child 1.1',
-                  property1: 'C1.1-Prop1',
-                  property2: 'C1.1-Prop2',
-                  children: [{ name: 'Sub-child 1.1.1', property1: 'SC1.1.1-Prop1', property2: 'SC1.1.1-Prop2' }]
-                },
-                {
-                  name: 'Child 1.2',
-                  property1: 'C1.2-Prop1',
-                  property2: 'C1.2-Prop2',
-                  children: [
-                    {
-                      name: 'Child 1.1',
-                      property1: 'C1.1-Prop1',
-                      property2: 'C1.1-Prop2',
-                      children: [{ name: 'Sub-child 1.1.1', property1: 'SC1.1.1-Prop1', property2: 'SC1.1.1-Prop2' }]
-                    },
-                    { name: 'Child 1.2', property1: 'C1.2-Prop1', property2: 'C1.2-Prop2' }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        { name: 'Child 1.2', property1: 'C1.2-Prop1', property2: 'C1.2-Prop2' }
+          name: 'Child 2.1',
+          property1: 'C2.1-Prop1',
+          property2: 'C2.2-Prop2'
+        }
       ]
+    },
+    {
+      name: 'Parent 3',
+      property1: 'P3-Prop1',
+      property2: 'P3-Prop2',
+      children: [
+        {
+          name: 'Child 3.1',
+          property1: 'C3.1-Prop1',
+          property2: 'C3.2-Prop2'
+        }
+      ]
+    },
+    {
+      name: 'Parent 4',
+      property1: 'P4-Prop1',
+      property2: 'P4-Prop2'
     }
   ];
 
