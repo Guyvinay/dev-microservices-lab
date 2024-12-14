@@ -2,17 +2,22 @@ package com.dev.hibernate.multiTenant;
 
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer;
 
 import java.util.Map;
 
 public class TenantIdentifierResolver implements CurrentTenantIdentifierResolver<String>, HibernatePropertiesCustomizer {
 
+    @Value("${database.default.schema.name:public}")
+    private String DEFAULT_TENANT_ID;
+
+
     public TenantIdentifierResolver() {}
 
     @Override
     public String resolveCurrentTenantIdentifier() {
-        return "vinay";
+        return DEFAULT_TENANT_ID;
     }
 
     @Override

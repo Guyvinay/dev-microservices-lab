@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://www.ehcache.org/ehcache-core-3.0.xsd"
+         xmlns="http://www.ehcache.org/schema/ehcache-core-3.0.xsd">
+
+    <cache alias="userCache">
+        <key-type>java.lang.Long</key-type>
+        <value-type>com.example.demo.User</value-type>
+        <resources>
+            <heap>1000</heap>
+            <offheap size="10MB"/>
+        </resources>
+    </cache>
+
+</ehcache>

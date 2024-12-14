@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 
-@Component
+//@Component
 public class SpringLiquibaseConfig {
     @Autowired
     private DataSource dataSource;

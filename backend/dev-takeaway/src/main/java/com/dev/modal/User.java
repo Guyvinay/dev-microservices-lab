@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 
 import java.time.LocalDateTime;
@@ -36,10 +38,10 @@ public class User {
     @Column(nullable = false)
     private String role;
 
-//    @CreatedDate
+    @CreatedDate
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
-//    @LastModifiedDate
+    @LastModifiedDate
     private LocalDateTime updatedAt;
 }

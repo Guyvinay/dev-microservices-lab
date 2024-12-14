@@ -68,9 +68,15 @@
 
     </changeSet>
 
-    <changeSet id="04-12-2024-22.41" author="vinay.singh">
+    <changeSet id="14-12-2024-11.46" author="vinay.singh">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="users"/>
+            <not>
+                <columnExists tableName="users" columnName="role"/>
+            </not>
+        </preConditions>
         <addColumn tableName="users">
-            <column name="role" type="varchar(50)"></column>
+            <column name="role" type="varchar(50)" />
         </addColumn>
     </changeSet>
 
@@ -99,6 +105,18 @@
             </column>
             <column name="timestamp" type="timestamp"/>
         </createTable>
+    </changeSet>
+
+    <changeSet id="14-12-2024-11.51" author="vinay.singh">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="users_aud"/>
+            <not>
+                <columnExists tableName="users_aud" columnName="role"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="users_aud">
+            <column name="role" type="varchar(50)" />
+        </addColumn>
     </changeSet>
 
 

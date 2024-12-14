@@ -56,6 +56,7 @@ public class LiquibaseService {
                     ignoreSchemas = getExcludeSchema();
                     // Pls check with multiple database on default schemas
                     if (!ignoreSchemas.contains(schema)) {
+                        log.info("executing liquibase for tenant: {}", schema);
                         updateLock(schema, connection);
                         liquibase.setDataSource(dataSource);
                         liquibase.setDefaultSchema(schema);
