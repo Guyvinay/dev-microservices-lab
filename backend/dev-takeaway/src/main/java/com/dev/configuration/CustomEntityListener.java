@@ -8,5 +8,6 @@ public class CustomEntityListener implements RevisionListener {
     public void newRevision(Object o) {
         AuditRevisionEntity auditRevisionEntity = (AuditRevisionEntity) o;
         auditRevisionEntity.setModifiedBy("Vinay Kr. Singh");
+//        auditRevisionEntity.setTimestamp(System.currentTimeMillis());
     }
 }

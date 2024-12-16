@@ -28,4 +28,7 @@ public class AuditRevisionEntity {
     public void setModifiedBy(String modifiedBy) {
         this.modifiedBy = modifiedBy;
     }
-}
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }}

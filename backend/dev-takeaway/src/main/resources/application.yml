@@ -87,3 +87,7 @@ liquibase:
 server:
   port: 8888
   servlet.context-path: /takeaways
+database:
+  default:
+    schema:
+      name: vinay
