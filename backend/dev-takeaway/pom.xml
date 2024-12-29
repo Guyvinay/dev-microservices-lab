@@ -252,6 +252,11 @@
             <artifactId>ehcache</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jooq</artifactId>
+        </dependency>
+
     </dependencies>
     <build>
         <plugins>

@@ -52,7 +52,7 @@ public class GrpcClientServiceImpl {
         }
     }
 
-    @LogExecutionTime
+    @LogExecutionTime()
     public List<Document> getAllDocuments() {
         List<Document> documents = new ArrayList<>();
         DocumentsResponse documentsResponse = documentServiceBlockingStub.getAllDocuments(Empty.newBuilder().build());
