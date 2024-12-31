@@ -2,6 +2,7 @@ package com.dev.modal;
 
 import com.dev.configuration.CustomEntityListener;
 import jakarta.persistence.*;
+import lombok.ToString;
 import org.hibernate.envers.RevisionEntity;
 import org.hibernate.envers.RevisionNumber;
 import org.hibernate.envers.RevisionTimestamp;
@@ -9,6 +10,7 @@ import org.hibernate.envers.RevisionTimestamp;
 
 @Entity
 @RevisionEntity(CustomEntityListener.class)
+@ToString
 @Table(name = "AUTH_REVINFO_TABLE")
 public class AuditRevisionEntity {
 

@@ -12,9 +12,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,11 +42,14 @@ public class UserAuditService {
     public Date getRevisionTimestamp(int revision) {
         return getAuditReader().getRevisionDate(revision);
     }
+    public Map<Number, User> findUserRevisions(Set<Number> revisions) {
+        return getAuditReader().findRevisions(User.class, revisions);
+    }
 
     public List<UserDTO> printUserRevisionHistory(Long userId) {
         List<Number> revisions = getUserRevisions(userId);
         List<User> revUsers = new ArrayList<>();
-
+//        getUserByRevisions(userId);
         for (Number rev : revisions) {
             User userAtRevision = getUserAtRevision(userId, rev.intValue());
             Date timestamp = getRevisionTimestamp(rev.intValue());
@@ -61,6 +62,12 @@ public class UserAuditService {
         return revUsers.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
+    }
+    //TODO: to be improved
+    public void getUserByRevisions(Long userId) {
+        List<Number> revisions = getUserRevisions(userId);
+        Map<Number, User> userRevisions = findUserRevisions(new HashSet<>(revisions));
+        log.info("User revisions: {}", userRevisions);
     }
 
     private UserDTO convertToDTO(User user) {
