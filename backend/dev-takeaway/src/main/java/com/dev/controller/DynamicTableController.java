@@ -17,6 +17,9 @@ public class DynamicTableController {
 
     @PostMapping(value = "/create-table")
     public ResponseEntity<String> createTable(@RequestBody TableDefinition tableDefinition) {
+
+        TableDefinition definition = new TableDefinition();
+//        definition.setPks();
         dynamicTableService.createTable("vinay", tableDefinition);
         return new ResponseEntity<>("created", HttpStatus.OK);
     }

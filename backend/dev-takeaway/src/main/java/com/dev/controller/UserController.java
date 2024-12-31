@@ -2,6 +2,7 @@ package com.dev.controller;
 
 import com.dev.dto.ApiResponse;
 import com.dev.dto.UserDTO;
+import com.dev.service.UserAuditService;
 import com.dev.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private UserAuditService userAuditService;
 
     @GetMapping
     public ApiResponse<List<UserDTO>> getAllUsers() {
@@ -45,5 +49,10 @@ public class UserController {
     public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.ok(new ApiResponse<>("204", "User deleted successfully", null));
+    }
+
+    @GetMapping(value = "/userAudit/{userId}")
+    public ResponseEntity<List<UserDTO>> getUserRevision(@PathVariable("userId") Long userId) {
+        return new ResponseEntity<>(userAuditService.printUserRevisionHistory(userId), HttpStatus.OK);
     }
 }

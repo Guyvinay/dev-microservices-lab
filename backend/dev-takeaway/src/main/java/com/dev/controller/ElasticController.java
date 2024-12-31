@@ -144,13 +144,5 @@ public class ElasticController {
         );
     }
 
-    @Autowired
-    private UserAuditService userAuditService;
-
-    @GetMapping(value = "/userAudit/{userId}")
-    public List<User> getUserRevision(@PathVariable("userId") Long userId) {
-        return userAuditService.printUserRevisionHistory(userId);
-    }
-
 
 }
