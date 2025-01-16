@@ -2,7 +2,6 @@ package com.dev.rmq.service;
 
 import com.dev.rmq.utility.RabbitTenantProvider;
 import jakarta.annotation.PostConstruct;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.BindingBuilder;
@@ -30,11 +29,12 @@ public class RabbitVirtualHosts {
     private String hostUrl;
     private String username;
     private String password;
+    private Integer port;
 
-    private RabbitProperties rabbitProperties;
-    private RabbitTemplate rabbitTemplate;
-    private RestTemplate restTemplate;
-    private RabbitAdmin rabbitAdmin;
+    private final RabbitProperties rabbitProperties;
+    private final RabbitTemplate rabbitTemplate;
+    private final RestTemplate restTemplate;
+    private final RabbitAdmin rabbitAdmin;
 
     @Autowired
     private RabbitTenantProvider rabbitTenantProvider;
@@ -50,7 +50,9 @@ public class RabbitVirtualHosts {
     public void postConstruct() {
         username = rabbitProperties.getUsername();
         password = rabbitProperties.getPassword();
-        hostUrl = "http://" + rabbitProperties.getHost() + ":15672" + "/api/vhosts/";
+        port = rabbitProperties.getPort();
+
+        hostUrl = "http://" + rabbitProperties.getHost() + ":" + port + "/api/vhosts/";
         log.info("username: {}, password: {}, hostUrl: {}", username, password, hostUrl);
         Set<String> tenants = rabbitTenantProvider.getAllTenants();
         tenants.forEach(this::createVirtualHostAndQueues);

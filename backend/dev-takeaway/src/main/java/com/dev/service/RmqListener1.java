@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageListener;
 
-@RabbitListener(value = "RmqListener1", queue = Queues.QUEUE1)
+//@RabbitListener(value = "RmqListener1", queue = Queues.QUEUE1)
 public class RmqListener1 implements MessageListener {
     private static final Logger log = LoggerFactory.getLogger(RmqListener1.class);
 
