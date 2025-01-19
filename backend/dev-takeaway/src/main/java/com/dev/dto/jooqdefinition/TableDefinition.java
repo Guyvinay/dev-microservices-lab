@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.dev.utils.JOOQConstants.VARCHAR;
@@ -45,6 +46,16 @@ public class TableDefinition {
 
     public void setColumns(LinkedHashMap<String, ColumnDefinition> columns) {
         this.columns = columns;
+    }
+    public void setColumns(List<ColumnDefinition> columns) {
+        this.columns.putAll(
+                columns.stream().collect(
+                        Collectors.toMap(
+                                ColumnDefinition::getName,
+                                Function.identity()
+                        )
+                )
+        );
     }
 
     public Collection<Field<?>> getColumnsField(DSLContext dslContext) {

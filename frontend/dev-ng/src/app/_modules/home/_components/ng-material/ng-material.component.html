@@ -29,6 +29,8 @@
   <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
 </table> -->
 <!-- <mat-tab-group (selectedTabChange)="loadData($event.index)" (focusChange)="focusChangeEvent($event)">
+
+
   <mat-tab *ngFor="let tab of tabs" [label]="tab.label">
     <table mat-table [dataSource]="dataSource">
       <ng-container *ngFor="let column of displayedColumns" [matColumnDef]="column">
@@ -76,3 +78,5 @@
     {{ triggerFrom | json }} <br> {{ docId | json }} <br> {{ element | json }}
   </ng-template>
 </mat-menu> -->
+
+<mat-table-component></mat-table-component>

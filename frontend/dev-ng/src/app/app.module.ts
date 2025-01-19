@@ -23,6 +23,7 @@ import { ChartJsComponent } from "./_modules/home/_components/chart-js/chart.js.
 import { MatTreeModule } from '@angular/material/tree';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatTableComponent } from "./_modules/home/_components/ng-material/mat-table/mat.table.component";
 
 @NgModule({
   declarations: [
@@ -32,6 +33,7 @@ import { MatButtonModule } from '@angular/material/button';
     RxjsComponent,
     NgMaterialComponent,
     ChartJsComponent,
+    MatTableComponent
   ],
   imports: [
     BrowserModule,

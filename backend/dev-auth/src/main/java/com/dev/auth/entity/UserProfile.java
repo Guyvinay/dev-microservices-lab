@@ -1,11 +1,17 @@
 package com.dev.auth.entity;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+
+import java.util.UUID;
+
 public class UserProfile {
 
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
 
     @Column(nullable = false, unique = true, length = 50)
     private String username;
@@ -16,27 +22,20 @@ public class UserProfile {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(length = 15)
-    private String phoneNumber;
-
     @Column(nullable = false)
     private String firstName;
 
     @Column(nullable = false)
     private String lastName;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Role role;
-
     @Column(nullable = false)
     private boolean isActive;
 
     @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private Long createdAt;
 
     @Column(nullable = false)
-    private LocalDateTime updatedAt;
+    private Long updatedAt;
 
 
 }

@@ -12,7 +12,6 @@ public class TenantIdentifierResolver implements CurrentTenantIdentifierResolver
     @Value("${database.default.schema.name:public}")
     private String DEFAULT_TENANT_ID;
 
-
     public TenantIdentifierResolver() {}
 
     @Override
