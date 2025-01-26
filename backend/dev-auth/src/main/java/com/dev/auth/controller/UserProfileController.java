@@ -33,13 +33,13 @@ public class UserProfileController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserProfileResponseDTO> updateUser(@PathVariable UUID id, @Valid @RequestBody UserProfileRequestDTO request) {
+    public ResponseEntity<UserProfileResponseDTO> updateUser(@PathVariable UUID id, @RequestBody UserProfileRequestDTO request) {
         UserProfileResponseDTO response = userProfileService.updateUser(id, request);
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
+    public ResponseEntity<String> deleteUser(@PathVariable UUID id) {
         userProfileService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
