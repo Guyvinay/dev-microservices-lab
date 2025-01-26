@@ -2,7 +2,6 @@ package com.dev.auth.security.provider;
 
 import com.dev.auth.entity.UserProfileModel;
 import com.dev.auth.repository.UserProfileModelRepository;
-import com.dev.auth.security.StatusEnum;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
