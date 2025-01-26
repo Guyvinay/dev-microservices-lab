@@ -14,7 +14,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "USER_PROFILE_PRIVILEGE_INFO_MODEL")
 @ApiModel(description = "Represents user privileges assigned to a specific role in the system.")
-public class UserProfilePrivilegeInfoModel {
+public class UserProfilePrivilegeModel {
 
     @Id
     @GeneratedValue
@@ -48,7 +48,7 @@ public class UserProfilePrivilegeInfoModel {
     @ApiModelProperty(name = "assignedBy", value = "User ID who assigned this privilege", example = "1001")
     private Long assignedBy;
 
-    public UserProfilePrivilegeInfoModel() {
+    public UserProfilePrivilegeModel() {
         this.assignedAt = Instant.now().toEpochMilli();
     }
 }

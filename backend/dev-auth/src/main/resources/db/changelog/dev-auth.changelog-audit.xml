@@ -1,0 +1,53 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="2025:01:26-09:53" author="vinay.singh">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="AUTH_REV_INFO_TABLE"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="AUTH_REV_INFO_TABLE">
+            <column name="ID" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="TIMESTAMP" type="BIGINT"/>
+            <column name="USERMODIFIED" type="NVARCHAR(150)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2025:01:26-00:56" author="vinay.singh">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="USER_PROFILE_MODEL_AUD"/>
+            </not>
+        </preConditions>
+        <createTable tableName="USER_PROFILE_MODEL_AUD">
+            <column name="id" type="UUID"/>
+            <column name="username" type="VARCHAR(50)"/>
+            <column name="password" type="VARCHAR(255)"/>
+            <column name="email" type="VARCHAR(100)"/>
+            <column name="first_name" type="VARCHAR(50)"/>
+            <column name="last_name" type="VARCHAR(50)"/>
+            <column name="is_active" type="BOOLEAN"/>
+
+            <column name="created_at" type="BIGINT"/>
+            <column name="updated_at" type="BIGINT"/>
+
+            <!-- To enable auditing -->
+            <column name="REV" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="REVTYPE" type="tinyint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="TIMESTAMP" type="timestamp"/>
+        </createTable>
+
+    </changeSet>
+
+</databaseChangeLog>

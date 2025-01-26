@@ -15,13 +15,13 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserProfileRoleInfoModel {
+public class UserProfileRoleModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ROLE_ID")
     @ApiModelProperty(name = "roleId", value = "Unique identifier of the role")
-    private Long id;
+    private Long roleId;
 
     @Column(name = "ROLE_NAME", length = 100, nullable = false)
     @ApiModelProperty(name = "roleName", value = "Name of the role")

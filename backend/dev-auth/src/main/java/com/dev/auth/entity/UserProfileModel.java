@@ -1,14 +1,15 @@
 package com.dev.auth.entity;
 
+import com.dev.auth.dto.UserProfileRequestDTO;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
+import java.util.Objects;
 import java.util.UUID;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.hibernate.envers.AuditTable;
+import org.hibernate.envers.Audited;
 
 import java.time.Instant;
 
@@ -17,9 +18,12 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "USER_PROFILE_INFO_MODEL")
+@Table(name = "USER_PROFILE_MODEL")
+@Audited
+@AuditTable("USER_PROFILE_MODEL_AUD")
 @ApiModel(description = "Represents a user profile in the system.")
-public class UserProfileInfoModel {
+@Builder
+public class UserProfileModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

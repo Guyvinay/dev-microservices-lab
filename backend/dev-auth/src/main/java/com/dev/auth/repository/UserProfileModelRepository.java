@@ -1,8 +1,8 @@
 package com.dev.auth.repository;
 
-import com.dev.auth.entity.UserProfileInfoModel;
+import com.dev.auth.entity.UserProfileModel;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+
 import java.util.Optional;
 import java.util.UUID;
 
@@ -11,21 +11,20 @@ import java.util.UUID;
  * This interface extends JpaRepository to provide standard methods for interacting with the database.
  */
 
-@Repository
-public interface UserProfileInfoRepository extends JpaRepository<UserProfileInfoModel, UUID> {
+public interface UserProfileModelRepository extends JpaRepository<UserProfileModel, UUID> {
     /**
      * Finds a UserProfileInfoModel by the username.
      * @param username - The username.
      * @return Optional of UserProfileInfoModel.
      */
-    Optional<UserProfileInfoModel> findByUsername(String username);
+    Optional<UserProfileModel> findByUsername(String username);
 
     /**
      * Finds a UserProfileInfoModel by the email.
      * @param email - The email address.
      * @return Optional of UserProfileInfoModel.
      */
-    Optional<UserProfileInfoModel> findByEmail(String email);
+    Optional<UserProfileModel> findByEmail(String email);
 
     /**
      * Checks if a username already exists.

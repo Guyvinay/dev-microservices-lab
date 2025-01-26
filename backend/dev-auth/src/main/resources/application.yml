@@ -1,0 +1,16 @@
+spring:
+
+
+  # Liquibase properties
+  liquibase:
+    enabled: true
+    change-log: classpath:/db/changelog/dev-auth.changelog-master.xml
+    contexts: "!test"
+
+  # Validate schema against hibernate models
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none #create | update | validate | none
+#      naming.physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    properties.org.hibernate.envers.store_data_at_delete: true
