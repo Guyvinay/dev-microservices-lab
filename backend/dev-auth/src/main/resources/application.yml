@@ -1,6 +1,4 @@
 spring:
-
-
   # Liquibase properties
   liquibase:
     enabled: true
@@ -14,3 +12,14 @@ spring:
       ddl-auto: none #create | update | validate | none
 #      naming.physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     properties.org.hibernate.envers.store_data_at_delete: true
+
+server:
+  port: 8080
+  canonical.url: http://localhost:8080/dev-auth
+  servlet.context-path: /dev-auth
+  name: localhost
+
+security:
+  jwt:
+    secret: mySecretKeyForJwtToken
+    expiration: 3600000 # 1 hour in milliseconds

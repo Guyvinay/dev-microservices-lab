@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -12,6 +13,7 @@ import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 
 import java.time.Instant;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -63,6 +65,10 @@ public class UserProfileModel {
     @ApiModelProperty(name = "updatedAt", value = "Timestamp when the user profile was last updated", example = "1705741300000")
     private Long updatedAt;
 
+    @Transient
+    private Set<Long> roles;
+
+
     @PrePersist
     protected void onCreate() {
         long timestamp = Instant.now().toEpochMilli();
@@ -73,6 +79,13 @@ public class UserProfileModel {
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = Instant.now().toEpochMilli();
+    }
+
+    public Set<String> getRoles(){
+        if(roles != null) {
+            return roles.stream().map(id -> ((Long) id).toString()).collect(Collectors.toSet());
+        }
+        return Set.of();
     }
 }
 /**

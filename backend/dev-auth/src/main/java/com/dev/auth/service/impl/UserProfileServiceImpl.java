@@ -96,8 +96,6 @@ public class UserProfileServiceImpl implements UserProfileService {
                         () -> new UserNotFoundException("User not found with ID: " + id)
                 );
         // Map request to existing model
-        existingUser.setUsername(request.getUsername());
-        existingUser.setEmail(request.getEmail());
         existingUser.setFirstName(request.getFirstName());
         existingUser.setLastName(request.getLastName());
         existingUser.setActive(request.getIsActive());

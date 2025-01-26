@@ -50,4 +50,61 @@
 
     </changeSet>
 
+    <changeSet id="2025:01:26-14:14" author="vinay.singh">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="USER_PROFILE_ROLE_INFO_MODEL_AUD"/>
+            </not>
+        </preConditions>
+        <createTable tableName="USER_PROFILE_ROLE_INFO_MODEL_AUD">
+            <column name="ROLE_ID" type="BIGINT"/>
+            <column name="ROLE_NAME" type="VARCHAR(100)"/>
+            <column name="STATUS" type="BOOLEAN"/>
+            <column name="TENANT_ID" type="VARCHAR(100)"/>
+            <column name="IS_ADMIN" type="BOOLEAN"/>
+            <column name="DATE_MODIFIED" type="BIGINT"/>
+            <column name="DATE_CREATED" type="BIGINT"/>
+            <column name="DESCRIPTION" type="VARCHAR(255)"/>
+            <column name="CREATED_BY" type="UUID"/>
+            <column name="MODIFIED_BY" type="UUID"/>
+
+            <!-- To enable auditing -->
+            <column name="REV" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="REVTYPE" type="tinyint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="TIMESTAMP" type="timestamp"/>
+        </createTable>
+
+    </changeSet>
+
+    <changeSet id="2025:01:26-14:15" author="vinay.singh">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="USER_PROFILE_PRIVILEGE_INFO_MODEL"/>
+            </not>
+        </preConditions>
+        <createTable tableName="USER_PROFILE_PRIVILEGE_INFO_MODEL">
+            <column name="ID" type="UUID"/>
+            <column name="ROLE_ID" type="BIGINT"/>
+            <column name="PRIVILEGE" type="VARCHAR(50)"/>
+            <column name="ACTION" type="VARCHAR(50)"/>
+            <column name="AREA" type="VARCHAR(50)"/>
+            <column name="ASSIGNED_AT" type="BIGINT"/>
+            <column name="ASSIGNED_BY" type="UUID"/>
+
+            <!-- To enable auditing -->
+            <column name="REV" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="REVTYPE" type="tinyint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="TIMESTAMP" type="timestamp"/>
+        </createTable>
+
+    </changeSet>
+
 </databaseChangeLog>
