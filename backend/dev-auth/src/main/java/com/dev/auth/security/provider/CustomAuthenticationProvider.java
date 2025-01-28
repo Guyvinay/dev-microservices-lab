@@ -1,54 +1,85 @@
 package com.dev.auth.security.provider;
 
+import com.dev.auth.security.details.CustomAuthToken;
+import com.dev.auth.security.details.CustomUserDetails;
+import com.dev.auth.security.details.CustomUserDetailsService;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
+@Service
 public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     private final CustomUserDetailsService userDetailsService;
-    private final PasswordEncoder passwordEncoder;
+    private final CustomBcryptEncoder customBcryptEncoder;
 
-    public CustomAuthenticationProvider(CustomUserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+    public CustomAuthenticationProvider(CustomUserDetailsService userDetailsService, CustomBcryptEncoder customBcryptEncoder) {
         this.userDetailsService = userDetailsService;
-        this.passwordEncoder = passwordEncoder;
+        this.customBcryptEncoder = customBcryptEncoder;
     }
 
     /**
-     * @param authentication
-     * @return
-     * @throws AuthenticationException
+     * Performs authentication with the same contract as
+     * {@link AuthenticationManager#authenticate(Authentication)}
+     * .
+     *
+     * @param authentication the authentication request object.
+     * @return a fully authenticated object including credentials. May return
+     * <code>null</code> if the <code>AuthenticationProvider</code> is unable to support
+     * authentication of the passed <code>Authentication</code> object. In such a case,
+     * the next <code>AuthenticationProvider</code> that supports the presented
+     * <code>Authentication</code> class will be tried.
+     * @throws AuthenticationException if authentication fails.
      */
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        String username = authentication.getName();
-        String rawPassword = authentication.getCredentials().toString();
 
-        // Load user details from database
+        if( !(authentication instanceof UsernamePasswordAuthenticationToken) )
+            throw new BadCredentialsException("Invalid authentication requested.");
+        CustomAuthToken customAuthToken = (CustomAuthToken) authentication;
+        String orgId = customAuthToken.getOrgId();
+        String username = customAuthToken.getName();
+        String password = (String) customAuthToken.getCredentials();
+
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-        // Validate password
-        if (!passwordEncoder.matches(rawPassword, userDetails.getPassword())) {
-            throw new BadCredentialsException("Invalid username or password");
-        }
-
-        // Return authenticated user details
-        return new UsernamePasswordAuthenticationToken(
-                userDetails, rawPassword, userDetails.getAuthorities()
+//        if (!customBcryptEncoder.matches(password, userDetails.getPassword())) {
+//            throw new BadCredentialsException("Invalid username or password");
+//        }
+        return new CustomAuthToken(
+                orgId,
+                username,
+                password,
+                userDetails.getAuthorities()
         );
     }
 
     /**
+     * Returns <code>true</code> if this <Code>AuthenticationProvider</code> supports the
+     * indicated <Code>Authentication</code> object.
+     * <p>
+     * Returning <code>true</code> does not guarantee an
+     * <code>AuthenticationProvider</code> will be able to authenticate the presented
+     * <code>Authentication</code> object. It simply indicates it can support closer
+     * evaluation of it. An <code>AuthenticationProvider</code> can still return
+     * <code>null</code> from the {@link #authenticate(Authentication)} method to indicate
+     * another <code>AuthenticationProvider</code> should be tried.
+     * </p>
+     * <p>
+     * Selection of an <code>AuthenticationProvider</code> capable of performing
+     * authentication is conducted at runtime the <code>ProviderManager</code>.
+     * </p>
+     *
      * @param authentication
-     * @return
+     * @return <code>true</code> if the implementation can more closely evaluate the
+     * <code>Authentication</code> class presented
      */
     @Override
     public boolean supports(Class<?> authentication) {
-        return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);
+        return CustomAuthToken.class.isAssignableFrom(authentication);
     }
-
 }
