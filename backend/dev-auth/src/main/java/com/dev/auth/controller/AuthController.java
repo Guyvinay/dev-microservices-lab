@@ -1,28 +1,36 @@
 package com.dev.auth.controller;
 
 import com.dev.auth.dto.LoginRequestDTO;
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.http.HttpStatus;
+import com.dev.auth.security.details.CustomAuthToken;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
-
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequestDTO request) {
-        return new ResponseEntity<>("ok", HttpStatus.OK);
+    private final AuthenticationManager authenticationManager;
+
+    public AuthController(AuthenticationManager authenticationManager) {
+        this.authenticationManager = authenticationManager;
     }
 
-    @PostMapping("/signin")
-    public ResponseEntity<?> signIn(HttpServletRequest request) {
-        return new ResponseEntity<>("ok", HttpStatus.OK);
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody LoginRequestDTO loginRequestDTO) {
+        Authentication authentication = new CustomAuthToken(
+                loginRequestDTO.getUsername(),
+                loginRequestDTO.getPassword(),
+                loginRequestDTO.getOrgId()
+        );
+
+        Authentication authenticated = authenticationManager.authenticate(authentication);
+
+        return ResponseEntity.ok("Login Successful for tenant: " + ((CustomAuthToken) authenticated).getOrgId());
     }
 
 
