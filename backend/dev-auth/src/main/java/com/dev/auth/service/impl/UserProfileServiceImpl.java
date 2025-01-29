@@ -6,6 +6,7 @@ import com.dev.auth.entity.UserProfileModel;
 import com.dev.auth.exception.InvalidInputException;
 import com.dev.auth.exception.UserNotFoundException;
 import com.dev.auth.repository.UserProfileModelRepository;
+import com.dev.auth.security.provider.CustomBcryptEncoder;
 import com.dev.auth.service.UserProfileService;
 import com.dev.auth.utility.EntityDtoMapper;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,7 @@ public class UserProfileServiceImpl implements UserProfileService {
     // Repositories and mappers
     private final UserProfileModelRepository userProfileModelRepository;
     private final EntityDtoMapper entityDtoMapper;
+    private final CustomBcryptEncoder customBcryptEncoder;
 
     /**
      * Creates a new user profile.
@@ -49,7 +51,7 @@ public class UserProfileServiceImpl implements UserProfileService {
         UserProfileModel profileModel = entityDtoMapper.toUserProfileModelEntity(request);
 
         if (Objects.isNull(profileModel)) throw new InvalidInputException("Unable to convert request to user model");
-
+        profileModel.setPassword(customBcryptEncoder.encode(profileModel.getPassword()));
         UserProfileModel savedModel = userProfileModelRepository.save(profileModel);
         return entityDtoMapper.toUserProfileResponseDTO(savedModel);
     }
