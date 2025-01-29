@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.util.List;
 
@@ -21,12 +22,11 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfiguration {
 
-    @Autowired
-    private CustomBcryptEncoder customBcryptEncoder;
-
+    private final CustomBcryptEncoder customBcryptEncoder;
     private final CustomAuthenticationProvider customAuthenticationProvider;
 
-    public SecurityConfiguration(CustomAuthenticationProvider customAuthenticationProvider) {
+    public SecurityConfiguration(CustomBcryptEncoder customBcryptEncoder, CustomAuthenticationProvider customAuthenticationProvider) {
+        this.customBcryptEncoder = customBcryptEncoder;
         this.customAuthenticationProvider = customAuthenticationProvider;
     }
 
@@ -34,9 +34,9 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(
-                                SessionCreationPolicy.STATELESS)
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+
                 .authorizeHttpRequests(auth -> {
                     auth
                         .requestMatchers("/swagger-ui*/**", "/v3/api-docs/**").permitAll()
@@ -46,8 +46,11 @@ public class SecurityConfiguration {
                         .authenticated();
                 })
                 .csrf(AbstractHttpConfigurer::disable)
-                .formLogin(Customizer.withDefaults())
-                .httpBasic(Customizer.withDefaults());
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable);
+//                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+//                .formLogin(Customizer.withDefaults())
+//                .httpBasic(Customizer.withDefaults());
         return httpSecurity.build();
     }
 

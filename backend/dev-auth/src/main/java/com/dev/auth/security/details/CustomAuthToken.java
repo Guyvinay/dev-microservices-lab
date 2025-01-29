@@ -18,6 +18,7 @@ public class CustomAuthToken extends UsernamePasswordAuthenticationToken {
      */
     public CustomAuthToken(String orgId, Object principal, Object credentials) {
         super(principal, credentials);
+        setAuthenticated(false);
         this.orgId = orgId;
     }
 

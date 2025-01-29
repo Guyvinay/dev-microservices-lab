@@ -2,6 +2,7 @@ package com.dev.auth.controller;
 
 import com.dev.auth.dto.LoginRequestDTO;
 import com.dev.auth.security.details.CustomAuthToken;
+import com.dev.auth.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
@@ -14,23 +15,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private final AuthenticationManager authenticationManager;
+    private final AuthService authService;
 
-    public AuthController(AuthenticationManager authenticationManager) {
-        this.authenticationManager = authenticationManager;
+    public AuthController(AuthService authService) {
+        this.authService = authService;
     }
 
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginRequestDTO loginRequestDTO) {
-        Authentication authentication = new CustomAuthToken(
-                loginRequestDTO.getUsername(),
-                loginRequestDTO.getPassword(),
-                loginRequestDTO.getOrgId()
-        );
-
-        Authentication authenticated = authenticationManager.authenticate(authentication);
-
-        return ResponseEntity.ok("Login Successful for tenant: " + ((CustomAuthToken) authenticated).getOrgId());
+        authService.login(loginRequestDTO);
+        return ResponseEntity.ok(authService.login(loginRequestDTO));
     }
 
 
