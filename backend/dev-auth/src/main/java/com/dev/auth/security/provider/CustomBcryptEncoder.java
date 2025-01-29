@@ -22,7 +22,6 @@ public class CustomBcryptEncoder extends BCryptPasswordEncoder {
         } catch (Exception ex) {
             log.warn("exception in matching passwords.");
         }
-
         return matched;
     }
 
