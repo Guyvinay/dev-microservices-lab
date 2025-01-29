@@ -47,9 +47,9 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         String password = (String) customAuthToken.getCredentials();
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-//        if (!customBcryptEncoder.matches(password, userDetails.getPassword())) {
-//            throw new BadCredentialsException("Invalid username or password");
-//        }
+        if (!customBcryptEncoder.matches(password, userDetails.getPassword())) {
+            throw new BadCredentialsException("Invalid username or password");
+        }
         return new CustomAuthToken(
                 orgId,
                 username,
