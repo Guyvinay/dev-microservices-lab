@@ -1,11 +1,8 @@
 package com.dev.auth.controller;
 
 import com.dev.auth.dto.LoginRequestDTO;
-import com.dev.auth.security.details.CustomAuthToken;
 import com.dev.auth.service.AuthService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;

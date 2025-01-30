@@ -1,7 +1,6 @@
 package com.dev.auth.security.provider;
 
 import com.dev.auth.security.details.CustomAuthToken;
-import com.dev.auth.security.details.CustomUserDetails;
 import com.dev.auth.security.details.CustomUserDetailsService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
