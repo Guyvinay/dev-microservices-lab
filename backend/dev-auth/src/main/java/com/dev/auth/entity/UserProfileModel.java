@@ -1,10 +1,8 @@
 package com.dev.auth.entity;
 
-import com.dev.auth.dto.UserProfileRequestDTO;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import io.swagger.annotations.ApiModel;
