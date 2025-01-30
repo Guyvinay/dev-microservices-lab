@@ -38,7 +38,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
 
-        if( !(authentication instanceof UsernamePasswordAuthenticationToken) )
+        if (!(authentication instanceof UsernamePasswordAuthenticationToken))
             throw new BadCredentialsException("Invalid authentication requested.");
         CustomAuthToken customAuthToken = (CustomAuthToken) authentication;
         String orgId = customAuthToken.getOrgId();
