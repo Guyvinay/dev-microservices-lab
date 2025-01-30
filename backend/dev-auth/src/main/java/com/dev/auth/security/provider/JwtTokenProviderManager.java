@@ -11,6 +11,7 @@ import com.nimbusds.jwt.SignedJWT;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -20,9 +21,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+@Component
 public class JwtTokenProviderManager {
-
-    private static final String SECRET = "my-super-secret-key-which-is-at-least-256-bits-long";
 
     private JWSSigner reqSigner;
 

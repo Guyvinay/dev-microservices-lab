@@ -2,6 +2,8 @@ package com.dev.auth.controller;
 
 import com.dev.auth.dto.LoginRequestDTO;
 import com.dev.auth.service.AuthService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.nimbusds.jose.JOSEException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,7 +21,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequestDTO loginRequestDTO) {
+    public ResponseEntity<String> login(@RequestBody LoginRequestDTO loginRequestDTO) throws JsonProcessingException, JOSEException {
         authService.login(loginRequestDTO);
         return ResponseEntity.ok(authService.login(loginRequestDTO));
     }

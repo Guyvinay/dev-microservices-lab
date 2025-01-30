@@ -1,5 +1,6 @@
 package com.dev.auth.security;
 
+import com.dev.auth.security.filter.JWTAuthenticationFilter;
 import com.dev.auth.security.provider.CustomAuthenticationProvider;
 import com.dev.auth.security.provider.CustomBcryptEncoder;
 import org.springframework.context.annotation.Bean;
@@ -11,12 +12,14 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import java.util.List;
 
 @Configuration
-//@EnableWebSecurity(debug = true)
-@EnableWebSecurity
+@EnableWebSecurity(debug = true)
+//@EnableWebSecurity
 public class SecurityConfiguration {
 
     private final CustomBcryptEncoder customBcryptEncoder;
@@ -29,23 +32,14 @@ public class SecurityConfiguration {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+        httpSecurity.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(auth -> {
-                    auth
-                        .requestMatchers("/swagger-ui*/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/api/v1.0/users*/**").permitAll()
-                        .requestMatchers("/api/auth/login").permitAll() // Allow login API
-                        .anyRequest()
-                        .authenticated();
-                })
-                .csrf(AbstractHttpConfigurer::disable)
-                .httpBasic(AbstractHttpConfigurer::disable)
-                .formLogin(AbstractHttpConfigurer::disable);
-//                .addFilterAfter(new JWTAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+                    auth.requestMatchers("/swagger-ui*/**", "/v3/api-docs/**").permitAll()
+                            .requestMatchers("/api/v1.0/users*/**").permitAll()
+                            .requestMatchers("/api/auth/login").permitAll() // Allow login API
+                            .anyRequest().authenticated();
+                }).csrf(AbstractHttpConfigurer::disable).httpBasic(AbstractHttpConfigurer::disable).formLogin(AbstractHttpConfigurer::disable).addFilterAfter(new JWTAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 //                .formLogin(Customizer.withDefaults())
 //                .httpBasic(Customizer.withDefaults());
         return httpSecurity.build();
