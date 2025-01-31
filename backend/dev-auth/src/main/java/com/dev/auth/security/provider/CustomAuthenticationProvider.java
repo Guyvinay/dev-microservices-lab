@@ -2,6 +2,7 @@ package com.dev.auth.security.provider;
 
 import com.dev.auth.security.details.CustomAuthToken;
 import com.dev.auth.security.details.CustomUserDetailsService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -11,7 +12,10 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+
 @Service
+@Slf4j
 public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     private final CustomUserDetailsService userDetailsService;
@@ -40,15 +44,21 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
         if (!(authentication instanceof UsernamePasswordAuthenticationToken))
             throw new BadCredentialsException("Invalid authentication requested.");
-        CustomAuthToken customAuthToken = (CustomAuthToken) authentication;
-        String orgId = customAuthToken.getOrgId();
-        String username = customAuthToken.getName();
-        String password = (String) customAuthToken.getCredentials();
+
+        log.info("CustomAuthenticationProvider invoked for: {}", authentication.getPrincipal());
+
+        String orgId = ((CustomAuthToken) authentication).getOrgId();
+        String username = authentication.getPrincipal().toString();
+        String password = authentication.getCredentials().toString();
+
+        log.info("Authenticating user: {} with Org ID: {}", username, orgId);
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
         if (!customBcryptEncoder.matches(password, userDetails.getPassword())) {
-            throw new BadCredentialsException("Invalid username or password");
+            throw new BadCredentialsException("Invalid credentials");
         }
+
         return new CustomAuthToken(
                 orgId,
                 username,
