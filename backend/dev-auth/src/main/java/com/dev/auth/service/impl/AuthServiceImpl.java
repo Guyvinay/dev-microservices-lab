@@ -43,7 +43,7 @@ public class AuthServiceImpl implements AuthService {
 
         String username = authenticated.getPrincipal().toString();
 
-        UserProfileResponseDTO userProfile = userProfileService.getUserByUsername(loginRequestDTO.getUsername());
+        UserProfileResponseDTO userProfile = userProfileService.getUserByUsername(username);
 
         JwtTokenDto jwtTokenDto = new JwtTokenDto(
                 userProfile.getId(),
