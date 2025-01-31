@@ -1,10 +1,13 @@
 package com.dev.auth.security.filter;
 
 import com.dev.auth.security.provider.JwtTokenProviderManager;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.nimbusds.jose.JOSEException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -14,14 +17,19 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 
 import java.io.IOException;
+import java.text.ParseException;
 
 @Component
 public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
     public static final RequestMatcher REQUESTMATCHER = new AntPathRequestMatcher("/signin", "POST");
+    private final JwtTokenProviderManager jwtTokenProvider;
+
+    public static final String AUTHENTICATION_SCHEME_BASIC = "Basic";
     public static final String USERNAME = "username";
     public static final String PASSWORD = "password";
-    private final JwtTokenProviderManager jwtTokenProvider;
+
+    public static final String ORGANIZATION = "organization";
 
     public JWTAuthenticationFilter(JwtTokenProviderManager jwtTokenProvider) {
         this.jwtTokenProvider = jwtTokenProvider;
@@ -44,33 +52,18 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
         System.out.println("JWTAuthenticationFilter invoked for: " + request.getRequestURI());
 
         String token = jwtTokenProvider.resolveToken(request);
+
         if (token == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
         try {
-            // 1️⃣ Validate Token
-//            if (!jwtTokenProvider.validateToken(token)) {
-//                System.out.println("Invalid JWT Token");
-//                filterChain.doFilter(request, response);
-//                return;
-//            }
-
-            // 2️⃣ Extract Username & Authorities from Token (NO DB CALL)
-//            String username = jwtTokenProvider.getUsernameFromToken(token);
-//            List<GrantedAuthority> authorities = jwtTokenProvider.getAuthoritiesFromToken(token);
-
-            // 3️⃣ Create Authentication Object
-//            Authentication authentication = new UsernamePasswordAuthenticationToken(username, null, authorities);
-
-            // 4️⃣ Set Security Context
-//            SecurityContextHolder.getContext().setAuthentication(authentication);
-
+            Authentication auth = jwtTokenProvider.getAuthentication(token);
+            SecurityContextHolder.getContext().setAuthentication(auth);
         } catch (Exception e) {
             System.out.println("Authentication failed: " + e.getMessage());
         }
-
         filterChain.doFilter(request, response);
     }
 
