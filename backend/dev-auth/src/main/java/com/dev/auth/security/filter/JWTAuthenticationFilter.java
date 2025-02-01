@@ -1,13 +1,11 @@
 package com.dev.auth.security.filter;
 
 import com.dev.auth.security.provider.JwtTokenProviderManager;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.nimbusds.jose.JOSEException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -17,19 +15,13 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 
 import java.io.IOException;
-import java.text.ParseException;
 
 @Component
+@Slf4j
 public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
     public static final RequestMatcher REQUESTMATCHER = new AntPathRequestMatcher("/signin", "POST");
     private final JwtTokenProviderManager jwtTokenProvider;
-
-    public static final String AUTHENTICATION_SCHEME_BASIC = "Basic";
-    public static final String USERNAME = "username";
-    public static final String PASSWORD = "password";
-
-    public static final String ORGANIZATION = "organization";
 
     public JWTAuthenticationFilter(JwtTokenProviderManager jwtTokenProvider) {
         this.jwtTokenProvider = jwtTokenProvider;
@@ -49,7 +41,7 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        System.out.println("JWTAuthenticationFilter invoked for: " + request.getRequestURI());
+        log.info("JWTAuthenticationFilter invoked for: {}", request.getRequestURI());
 
         String token = jwtTokenProvider.resolveToken(request);
 
@@ -60,18 +52,37 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             Authentication auth = jwtTokenProvider.getAuthentication(token);
-            SecurityContextHolder.getContext().setAuthentication(auth);
+            if (auth != null) {
+                SecurityContextHolder.getContext().setAuthentication(auth);
+            }
+            filterChain.doFilter(request, response);
         } catch (Exception e) {
-            System.out.println("Authentication failed: " + e.getMessage());
+            logger.error("Authentication failed:", e);
+            handleAuthenticationFailure(response);
+            resetAuthenticationAfterRequest();
+        } finally {
+            // Ensures security context is always cleared after request
+            resetAuthenticationAfterRequest();
         }
-        filterChain.doFilter(request, response);
     }
 
-    private String extractToken(HttpServletRequest request) {
-        String header = request.getHeader("Authorization");
-        if (header != null && header.startsWith("Bearer ")) {
-            return header.substring(7);
-        }
-        return null;
+    private void resetAuthenticationAfterRequest() {
+        SecurityContextHolder.clearContext();
+    }
+
+    private void handleAuthenticationFailure(HttpServletResponse response) throws IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.getWriter().write("{\"error\": \"Unauthorized\", \"message\": \"Invalid or expired token\"}");
+        response.getWriter().flush();
+    }
+
+    /**
+     * Skips JWT authentication for specific endpoints like /login
+     */
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        return path.equals("/dev-auth/api/auth/login");  // Skip JWT processing for login endpoint
     }
 }

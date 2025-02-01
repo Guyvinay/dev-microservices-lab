@@ -56,7 +56,6 @@ public class AuthServiceImpl implements AuthService {
                 List.of("123456", "234567", "345678", "56789", "67890")
         );
 
-        return jwtTokenProviderManager.createJwtToken( new ObjectMapper().writeValueAsString(jwtTokenDto), 2);
+        return jwtTokenProviderManager.createJwtToken( new ObjectMapper().writeValueAsString(jwtTokenDto), 36000);
     }
-
 }
