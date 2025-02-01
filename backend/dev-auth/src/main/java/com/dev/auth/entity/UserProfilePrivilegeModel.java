@@ -1,5 +1,7 @@
 package com.dev.auth.entity;
 
+import com.dev.auth.entity.enums.Area;
+import com.dev.auth.entity.enums.Privilege;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;

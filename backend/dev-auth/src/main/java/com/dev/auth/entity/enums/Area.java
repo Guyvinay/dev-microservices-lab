@@ -1,4 +1,4 @@
-package com.dev.auth.entity;
+package com.dev.auth.entity.enums;
 
 import lombok.Getter;
 
