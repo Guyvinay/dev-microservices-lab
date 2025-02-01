@@ -1,7 +1,10 @@
 package com.dev.auth.configuration;
 
+import com.dev.auth.dto.JwtTokenDto;
 import com.dev.auth.entity.AuthAuditRevisionEntity;
 import org.hibernate.envers.RevisionListener;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * CustomAuditEntityListener is a Hibernate Envers listener that captures
@@ -25,9 +28,19 @@ public class CustomAuditEntityListener implements RevisionListener {
     public void newRevision(Object revisionEntity) {
         AuthAuditRevisionEntity auditRevisionEntity = (AuthAuditRevisionEntity) revisionEntity;
 
-        // TODO: Replace with actual logic to fetch the authenticated user
-        auditRevisionEntity.setUserModified("Vinay Kr. Singh");
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        // Additional fields can be configured here if needed.
+        if (authentication != null) {
+            try {
+                if (authentication.getDetails() instanceof JwtTokenDto) {
+                    JwtTokenDto jwtTokenDto = (JwtTokenDto) authentication.getDetails();
+                    if (jwtTokenDto != null) {
+                        auditRevisionEntity.setUserModified(jwtTokenDto.getEmail());
+                    }
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 }
