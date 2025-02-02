@@ -3,18 +3,18 @@ package com.dev.auth.entity;
 import io.swagger.annotations.ApiModelProperty;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
 import java.util.UUID;
 
 @Entity
 @Table(name = "USER_PROFILE_ROLE_INFO_MODEL")
 @Getter
 @Setter
-@AllArgsConstructor
+@ToString
+@RequiredArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class UserProfileRoleModel {
 
     @Id

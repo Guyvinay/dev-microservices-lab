@@ -1,6 +1,7 @@
 package com.dev.auth.security.details;
 
 import com.dev.auth.entity.UserProfileModel;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -8,6 +9,7 @@ import org.springframework.security.core.userdetails.User;
 import java.util.Collection;
 import java.util.List;
 
+@Getter
 public class CustomUserDetails extends User {
 
     private final String orgId;
@@ -28,7 +30,4 @@ public class CustomUserDetails extends User {
         this.orgId = "CurrentOrgId";
     }
 
-    public String getOrgId() {
-        return orgId;
-    }
 }

@@ -1,16 +1,20 @@
 package com.dev.auth.entity;
 
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.*;
 import org.hibernate.envers.Audited;
 
 
 @Entity
 @Table(name = "ORGANIZATION_INFO_MODEL")
 @Audited
-@Data
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrganizationModel {

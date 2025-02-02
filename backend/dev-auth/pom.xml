@@ -52,11 +52,14 @@
 		</dependency>
 
 		<!-- Lombok to reduce boilerplate code (e.g., getters, setters, constructors) -->
+		<!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<optional>true</optional>
+			<version>1.18.36</version>
+			<scope>provided</scope>
 		</dependency>
+
 
 		<!-- SpringDoc OpenAPI UI for generating Swagger UI for API documentation -->
 		<dependency>
