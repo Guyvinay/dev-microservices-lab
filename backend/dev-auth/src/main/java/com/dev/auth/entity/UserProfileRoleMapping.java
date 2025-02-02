@@ -1,7 +1,6 @@
 package com.dev.auth.entity;
 
 import lombok.*;
-import org.hibernate.annotations.Type;
 import org.hibernate.envers.Audited;
 import jakarta.persistence.*;
 import java.util.UUID;
@@ -9,7 +8,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "USER_ROLES")
 @Audited
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserProfileRoleMapping {

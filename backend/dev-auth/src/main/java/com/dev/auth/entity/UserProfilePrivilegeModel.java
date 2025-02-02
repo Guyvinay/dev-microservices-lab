@@ -4,8 +4,7 @@ import com.dev.auth.entity.enums.Area;
 import com.dev.auth.entity.enums.Privilege;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import jakarta.persistence.*;
 import java.time.Instant;
@@ -13,6 +12,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
+@AllArgsConstructor
 @Entity
 @Table(name = "USER_PROFILE_PRIVILEGE_INFO_MODEL")
 @ApiModel(description = "Represents user privileges assigned to a specific role in the system.")

@@ -9,7 +9,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "USER_TENANT_MAPPING")
 @Audited
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserProfileTenantMapping {
