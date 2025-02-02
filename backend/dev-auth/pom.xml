@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.dev.auth</groupId>
 	<artifactId>dev-auth</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.3</version>
 	<name>dev-auth</name>
 	<description>SB Project for authentication</description>
 	<properties>
@@ -106,6 +106,13 @@
 		</dependency>
 
 	</dependencies>
+
+	<distributionManagement>
+		<repository>
+			<id>nexus</id> <!-- Match this ID with your server entry in settings.xml -->
+			<url>http://localhost:8081/repository/dev-releases/</url>
+		</repository>
+	</distributionManagement>
 
 	<build>
 		<plugins>

@@ -52,9 +52,10 @@ public class SecurityConfiguration {
                 )
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers("/swagger-ui*/**", "/v3/api-docs/**").permitAll()
-//                            .requestMatchers("/api/v1.0/users*/**").permitAll()
+                            .requestMatchers("/api/v1.0/users*/**").permitAll()
                             .requestMatchers("/api/auth/login").permitAll() // Allow login API
-                            .anyRequest().authenticated();
+                            .anyRequest()
+                            .authenticated();
                 })
                 .csrf(AbstractHttpConfigurer::disable)
                 .addFilterBefore(requestLoggingFilter, UsernamePasswordAuthenticationFilter.class)  // Log before authentication

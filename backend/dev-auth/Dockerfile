@@ -1,14 +1,17 @@
-# 1. Use OpenJDK 17 as the base image
-FROM openjdk:17-jdk-slim
+# Step 1: Use an official OpenJDK image as the base image
+FROM eclipse-temurin:21-jdk-alpine
 
-# 2. Set working directory inside the container
+# Step 2: Set the working directory inside the container
+# All subsequent commands will be executed in this directory
 WORKDIR /app
 
-# 3. Copy the built JAR file into the container
-COPY target/dev-auth.jar /app/dev-auth.jar
+# Step 3: Copy the packaged JAR file from the target folder to the container
+# Replace `my-spring-app-1.0.jar` with your actual JAR file name
+COPY target/dev-auth-1.0.3.jar /app/dev-auth.jar
 
-# 4. Expose the application port
-EXPOSE 8080
+# Step 4: Expose the application port (Spring Boot default port is 8080)
+EXPOSE 8088
 
-# 5. Define the startup command
+# Step 5: Define the command to run the Spring Boot application
+# Runs the JAR file using Java
 CMD ["java", "-jar", "/app/dev-auth.jar"]

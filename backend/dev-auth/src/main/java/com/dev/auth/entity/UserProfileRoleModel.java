@@ -11,8 +11,6 @@ import java.util.UUID;
 @Table(name = "USER_PROFILE_ROLE_INFO_MODEL")
 @Getter
 @Setter
-@ToString
-@RequiredArgsConstructor
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserProfileRoleModel {

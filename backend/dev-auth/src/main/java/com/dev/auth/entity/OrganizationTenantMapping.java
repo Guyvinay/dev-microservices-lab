@@ -7,7 +7,8 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "ORG_TENANT_MAPPING")
 @Audited
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrganizationTenantMapping {

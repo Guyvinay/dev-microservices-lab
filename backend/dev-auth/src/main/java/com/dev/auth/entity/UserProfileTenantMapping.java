@@ -11,8 +11,6 @@ import java.util.UUID;
 @Audited
 @Getter
 @Setter
-@ToString
-@RequiredArgsConstructor
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserProfileTenantMapping {

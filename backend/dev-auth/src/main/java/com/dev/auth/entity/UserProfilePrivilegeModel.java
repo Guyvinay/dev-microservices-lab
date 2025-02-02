@@ -12,6 +12,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
+@AllArgsConstructor
 @Entity
 @Table(name = "USER_PROFILE_PRIVILEGE_INFO_MODEL")
 @ApiModel(description = "Represents user privileges assigned to a specific role in the system.")

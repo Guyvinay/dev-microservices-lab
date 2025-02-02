@@ -13,8 +13,6 @@ import org.hibernate.envers.Audited;
 @Audited
 @Getter
 @Setter
-@ToString
-@RequiredArgsConstructor
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrganizationModel {
