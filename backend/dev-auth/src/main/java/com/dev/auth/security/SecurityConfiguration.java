@@ -63,6 +63,7 @@ public class SecurityConfiguration {
                 .formLogin(Customizer.withDefaults())
 //                .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(Customizer.withDefaults());
+
         return httpSecurity.build();
     }
 
