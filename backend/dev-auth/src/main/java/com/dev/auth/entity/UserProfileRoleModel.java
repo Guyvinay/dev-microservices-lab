@@ -1,7 +1,5 @@
 package com.dev.auth.entity;
 
-import io.swagger.annotations.ApiModelProperty;
-
 import jakarta.persistence.*;
 import lombok.*;
 

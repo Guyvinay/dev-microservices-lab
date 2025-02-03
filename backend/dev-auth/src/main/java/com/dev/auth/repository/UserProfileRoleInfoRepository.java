@@ -3,7 +3,6 @@ import com.dev.auth.entity.UserProfileRoleModel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Repository interface for performing CRUD operations on UserProfileRoleInfoModel.
@@ -11,7 +10,7 @@ import java.util.UUID;
  */
 
 @Repository
-public interface UserProfileRoleInfoRepository extends JpaRepository<UserProfileRoleModel, UUID> {
+public interface UserProfileRoleInfoRepository extends JpaRepository<UserProfileRoleModel, Long> {
 
     /**
      * Finds a list of UserProfileRoleInfoModel by the role ID.
