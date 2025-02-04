@@ -52,7 +52,7 @@ public class AuthServiceImpl implements AuthService {
                 userProfile.getFirstName(),
                 userProfile.getLastName(),
                 userProfile.getEmail(),
-                "tenant id",
+                userProfile.getUsername(),
                 List.of("123456", "234567", "345678", "56789", "67890")
         );
 
