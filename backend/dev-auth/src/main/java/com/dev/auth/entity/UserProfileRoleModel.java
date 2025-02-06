@@ -30,20 +30,20 @@ public class UserProfileRoleModel {
     @Column(name = "IS_ADMIN", nullable = false)
     private boolean adminFlag;
 
-    @Column(name = "DATE_MODIFIED", nullable = false)
-    private Long lastUpdated;
-
-    @Column(name = "DATE_CREATED", nullable = false, updatable = false)
-    private Long createdOn;
-
     @Column(name = "DESCRIPTION", length = 255)
     private String description;
 
-    @Column(name = "CREATED_BY")
-    private UUID createdBy;
+    @Column(name = "CREATED_AT")
+    private long createdAt;
 
-    @Column(name = "MODIFIED_BY")
-    private UUID modifiedBy;
+    @Column(name = "UPDATED_AT")
+    private long updatedAt;
+
+    @Column(name = "CREATED_BY")
+    private String createdBy;
+
+    @Column(name = "UPDATED_BY")
+    private String updatedBy;
 }
 
 /**

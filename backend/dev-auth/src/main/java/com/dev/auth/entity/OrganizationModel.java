@@ -7,6 +7,8 @@ import jakarta.persistence.Table;
 import lombok.*;
 import org.hibernate.envers.Audited;
 
+import java.util.UUID;
+
 
 @Entity
 @Table(name = "ORGANIZATION_INFO_MODEL")
@@ -18,29 +20,17 @@ import org.hibernate.envers.Audited;
 public class OrganizationModel {
 
     @Id
-    @Column(name = "ORGANIZATION_ID")
-    private Long organizationId;
+    @Column(name = "ORG_ID")
+    private UUID orgId;
 
-    @Column(name = "CONTACT_NUMBER")
-    private Long contactNumber;
+    @Column(name = "ORG_CONTACT")
+    private Long orgContact;
 
-    @Column(name = "TENANT_ID", columnDefinition = "nvarchar(100)")
-    private String tenantId;
+    @Column(name = "ORG_NAME", unique = true, nullable = false)
+    private String orgName;
 
-    @Column(name = "LOGO_URL")
-    private String logoUrl;
-
-    @Column(name = "NAME")
-    private String name;
-
-    @Column(name = "WEBSITE_URL")
-    private String websiteUrl;
-
-    @Column(name = "INDUSTRY_TYPE")
-    private String industryType;
-
-    @Column(name = "BILLING_EMAIL")
-    private String billingEmail;
+    @Column(name = "ORG_EMAIL", unique = true, nullable = false)
+    private String orgEmail;
 
     @Column(name = "CREATED_AT")
     private long createdAt;
@@ -48,9 +38,9 @@ public class OrganizationModel {
     @Column(name = "UPDATED_AT")
     private long updatedAt;
 
-    @Column(name = "CREATED_BY", columnDefinition = "nvarchar(150)")
+    @Column(name = "CREATED_BY")
     private String createdBy;
 
-    @Column(name = "UPDATED_BY", columnDefinition = "nvarchar(150)")
+    @Column(name = "UPDATED_BY")
     private String updatedBy;
 }
