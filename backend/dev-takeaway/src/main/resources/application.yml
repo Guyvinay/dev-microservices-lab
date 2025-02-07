@@ -37,7 +37,7 @@ spring:
 
 logging:
   pattern:
-    console: "%d{HH:mm:ss} -%5level --> %msg -- %logger%n"
+    console: "%clr(%d{HH:mm:ss}){blue} - %clr(%5level){cyan} --> %clr(%msg){green} -- %clr(%logger){yellow}%n"
   level:
     org:
       hibernate:

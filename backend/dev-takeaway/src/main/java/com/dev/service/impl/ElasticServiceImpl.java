@@ -222,7 +222,6 @@ public class ElasticServiceImpl implements ElasticService {
         List<ProfilingDocumentDTO> documents = null;
         File jsonFile = new File(fileClassPath);
 
-
         try {
             documents = objectMapper.readValue(jsonFile, new TypeReference<>() {
             });
@@ -263,7 +262,8 @@ public class ElasticServiceImpl implements ElasticService {
             throw new ProfilingNotFoundException("Technical profiling not found for field: " + fieldId);
         }
 
-        return profilingDocumentDTOS.getFirst();
+//        return profilingDocumentDTOS.getFirst();
+        return new ProfilingDocumentDTO();
     }
 
     /**

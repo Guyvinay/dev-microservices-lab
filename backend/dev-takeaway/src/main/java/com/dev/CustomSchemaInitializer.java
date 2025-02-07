@@ -16,7 +16,7 @@ import java.util.List;
 
 
 @Component(value = "custom-schema-initializer")
-//@DependsOn("spring-liquibase")
+@DependsOn("spring-liquibase")
 //@AutoConfigureAfter(DatasourceService.class)
 @Slf4j
 public class CustomSchemaInitializer implements SchemaInitializer {

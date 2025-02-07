@@ -19,8 +19,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@Component
-//@DependsOn("liquibase")
+@Component("liquibase-service")
+@DependsOn("spring-liquibase")
 @Slf4j
 public class LiquibaseService {
 
