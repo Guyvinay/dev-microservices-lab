@@ -1,9 +1,11 @@
 package com.dev.hibernate.multiTenant;
 
+import com.dev.hibernate.SchemaInitializer;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.engine.jdbc.connections.spi.AbstractDataSourceBasedMultiTenantConnectionProviderImpl;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer;
+import org.springframework.util.StringUtils;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -13,10 +15,13 @@ import java.util.Map;
 @Slf4j
 public class SchemaMultiTenantConnectionProvider extends AbstractDataSourceBasedMultiTenantConnectionProviderImpl<String> implements HibernatePropertiesCustomizer {
 
-    private DataSource ds;
+    private final DataSource ds;
+    private final SchemaInitializer initializer;
 
-    public SchemaMultiTenantConnectionProvider(DataSource source) {
+
+    public SchemaMultiTenantConnectionProvider(DataSource source, SchemaInitializer initializer) {
         this.ds = source;
+        this.initializer = initializer;
     }
 
     @Override
@@ -32,12 +37,15 @@ public class SchemaMultiTenantConnectionProvider extends AbstractDataSourceBased
     @Override
     public Connection getConnection(String tenantId) throws SQLException {
         Connection connection = super.getConnection(tenantId);
-
-        connection.setSchema(tenantId);
-
+        if (StringUtils.hasText(tenantId)) {
+            connection.setSchema(tenantId);
+        }
         try {
-            String metaData = connection.getSchema();// get the schema if exist in the database
-            log.info("schema: {}", metaData);
+            String schema = connection.getSchema();// get the schema if exist in the database
+            log.info("schema: {}", schema);
+            if (schema == null) {
+                initializer.initialize(tenantId);
+            }
         } catch (Exception e) {
             connection.close();
             throw e;

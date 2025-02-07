@@ -29,7 +29,6 @@ public class RabbitController {
     @GetMapping
     public String send(@RequestParam String queue) {
         String messageStr;
-//        Profile profile = new Profile(UUID.randomUUID().toString(), "Vinay Kumar Singh", "vinay@gmail.com", 23);
         Profile profile = new Profile(UUID.randomUUID().toString(), "Vinay Kumar Singh", "vinay@gmail.com", 23);
         Document document = createDocument();
         try {

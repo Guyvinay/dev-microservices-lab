@@ -107,4 +107,81 @@
 
     </changeSet>
 
+    <changeSet id="2025:02:06-23:20" author="vinay.singh">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="ORGANIZATION_INFO_MODEL_AUD"/>
+            </not>
+        </preConditions>
+        <createTable tableName="ORGANIZATION_INFO_MODEL_AUD">
+            <column name="ORG_ID" type="UUID"/>
+            <column name="ORG_CONTACT" type="BIGINT"/>
+            <column name="ORG_NAME" type="VARCHAR(100)"/>
+            <column name="ORG_EMAIL" type="VARCHAR(100)"/>
+            <column name="CREATED_AT" type="BIGINT"/>
+            <column name="UPDATED_AT" type="BIGINT"/>
+            <column name="CREATED_BY" type="VARCHAR(100)"/>
+            <column name="UPDATED_BY" type="VARCHAR(100)"/>
+
+            <!-- To enable auditing -->
+            <column name="REV" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="REVTYPE" type="tinyint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="TIMESTAMP" type="timestamp"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2025:02:05-23:32" author="vinay.singh">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="ORG_TENANT_MAPPING_AUD"/>
+            </not>
+        </preConditions>
+        <createTable tableName="ORG_TENANT_MAPPING_AUD">
+            <column name="TENANT_ID" type="VARCHAR(100)"/>
+            <column name="ORG_ID" type="UUID"/>
+            <column name="TENANT_NAME" type="VARCHAR(100)"/>
+            <column name="TENANT_ACTIVE" type="BOOLEAN"/>
+            <column name="CREATED_AT" type="BIGINT"/>
+            <column name="UPDATED_AT" type="BIGINT"/>
+
+            <!-- To enable auditing -->
+            <column name="REV" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="REVTYPE" type="tinyint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="TIMESTAMP" type="timestamp"/>
+        </createTable>
+
+    </changeSet>
+
+    <changeSet id="2025:02:06-00:00" author="vinay.singh">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="USER_TENANT_MAPPING_AUD"/>
+            </not>
+        </preConditions>
+        <createTable tableName="USER_TENANT_MAPPING_AUD">
+            <column name="id" type="UUID"/>
+            <column name="tenant_id" type="VARCHAR(255)"/>
+            <column name="user_id" type="UUID"/>
+            <column name="organization_id" type="UUID"/>
+
+            <!-- To enable auditing -->
+            <column name="REV" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="REVTYPE" type="tinyint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="TIMESTAMP" type="timestamp"/>
+        </createTable>
+    </changeSet>
+
+
 </databaseChangeLog>

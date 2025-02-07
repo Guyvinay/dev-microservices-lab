@@ -13,7 +13,6 @@ import jakarta.validation.constraints.Size;
 @AllArgsConstructor
 public class UserProfileRequestDTO {
 
-
     @NotBlank(message = "Username is required")
     @Size(min = 3, max = 50, message = "Username must be between 3-50 characters")
     private String username;

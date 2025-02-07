@@ -4,6 +4,7 @@ package com.dev.hibernate;
 import com.dev.hibernate.multiTenant.SchemaMultiTenantConnectionProvider;
 import com.dev.hibernate.multiTenant.TenantIdentifierResolver;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -19,9 +20,13 @@ public class MultiTenantDSAutoConfiguration {
     @Autowired
     private DataSource ds;
 
+    @Autowired
+    @Qualifier("custom-schema-initializer")
+    private SchemaInitializer initializer;
+
     @Bean
     public SchemaMultiTenantConnectionProvider connectionProvider() {
-        return new SchemaMultiTenantConnectionProvider(ds);
+        return new SchemaMultiTenantConnectionProvider(ds, initializer);
     }
 
     @Bean

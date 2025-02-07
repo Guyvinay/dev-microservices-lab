@@ -1,0 +1,8 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+    com.dev.AuthStaterSecurityConfiguration,\
+    com.dev.CustomCorsConfiguration,\
+    com.dev.SecurityConstants,\
+    com.dev.filter.JWTAuthenticationFilter,\
+    com.dev.filter.RequestLoggingFilter
+    com.dev.provider.CustomBcryptEncoder,\
+    com.dev.filter.JwtTokenProviderManager

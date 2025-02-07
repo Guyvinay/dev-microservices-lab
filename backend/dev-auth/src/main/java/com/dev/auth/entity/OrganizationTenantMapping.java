@@ -4,6 +4,8 @@ import lombok.*;
 import org.hibernate.envers.Audited;
 import jakarta.persistence.*;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "ORG_TENANT_MAPPING")
 @Audited
@@ -14,28 +16,21 @@ import jakarta.persistence.*;
 public class OrganizationTenantMapping {
 
     @Id
-    @Column(name = "TENANT_ID", nullable = false, updatable = false)
+    @Column(name = "TENANT_ID")
     private String tenantId;
 
-    @Column(name = "ORGANIZATION_ID", nullable = false)
-    private Long organizationId;
+    @Column(name = "ORG_ID", nullable = false)
+    private UUID orgId;
 
-    @Column(name = "TENANT_NAME", nullable = false)
+    @Column(name = "TENANT_NAME", nullable = false, unique = true)
     private String tenantName;
 
-    @Column(name = "CREATED_AT", updatable = false)
+    @Column(name = "TENANT_ACTIVE", nullable = false)
+    private boolean tenantActive;
+
+    @Column(name = "CREATED_AT")
     private long createdAt;
 
-    @Column(name = "UPDATED_AT", updatable = false)
+    @Column(name = "UPDATED_AT")
     private long updatedAt;
-
-    @Column(name = "IS_ACTIVE", nullable = false)
-    private boolean active;
-
-    @Column(name = "DEFAULT_LANGUAGE")
-    private String defaultLanguage;
-
-    @Column(name = "IS_MASTER_TENANT")
-    private Boolean masterTenant;
-
 }

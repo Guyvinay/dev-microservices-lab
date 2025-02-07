@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 
-//@Component
+@Component
 public class SpringLiquibaseConfig {
     @Autowired
     private DataSource dataSource;
@@ -16,7 +16,7 @@ public class SpringLiquibaseConfig {
     @Value("${liquibase.master.file.path}")
     private String changeLogFile;
 
-    @Bean
+    @Bean(name = "spring-liquibase")
     public SpringLiquibase liquibase() {
         SpringLiquibase liquibase = new SpringLiquibase();
         liquibase.setDataSource(dataSource);
