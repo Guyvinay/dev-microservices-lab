@@ -8,6 +8,8 @@ import org.springframework.web.socket.WebSocketSession;
 
 import java.io.IOException;
 
+import static com.dev.auth.utility.StringLiterals.PRIVATE;
+
 @Component
 public class PrivateChatMessageService {
 
@@ -20,7 +22,7 @@ public class PrivateChatMessageService {
     }
 
     public void sendPrivateMessage(ChatMessage chatMessage) throws IOException {
-        WebSocketSession receiverSession = webSocketSessionManager.getWebSocketSession(chatMessage.getReceiver());
+        WebSocketSession receiverSession = webSocketSessionManager.getUserSession(PRIVATE , chatMessage.getReceiver());
 
         if (receiverSession != null && receiverSession.isOpen()) {
             receiverSession.sendMessage(new TextMessage(objectMapper.writeValueAsString(chatMessage)));

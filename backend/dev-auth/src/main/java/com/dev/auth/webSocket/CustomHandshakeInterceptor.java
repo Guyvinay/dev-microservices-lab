@@ -24,7 +24,6 @@ public class CustomHandshakeInterceptor implements HandshakeInterceptor {
 
             // Store username and additional user details in the WebSocket session attributes
             attributes.put("username", jwtTokenDto.getUsername());
-            attributes.put("roles", jwtTokenDto.getRoles());  // Store user roles if needed
 
             return true; // Allow WebSocket connection
         }
