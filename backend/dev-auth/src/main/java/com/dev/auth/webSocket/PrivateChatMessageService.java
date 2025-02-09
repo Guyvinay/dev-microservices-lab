@@ -10,20 +10,39 @@ import java.io.IOException;
 
 import static com.dev.auth.utility.StringLiterals.PRIVATE;
 
+/**
+ * Service for handling private chat messages in a WebSocket-based chat system.
+ */
 @Component
 public class PrivateChatMessageService {
 
     private final WebSocketSessionManager webSocketSessionManager;
     private final ObjectMapper objectMapper;
 
+    /**
+     * Constructor for PrivateChatMessageService.
+     *
+     * @param webSocketSessionManager Manages WebSocket user sessions.
+     * @param objectMapper            Converts objects to JSON format.
+     */
     public PrivateChatMessageService(WebSocketSessionManager webSocketSessionManager, ObjectMapper objectMapper) {
         this.webSocketSessionManager = webSocketSessionManager;
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * Sends a private chat message to the receiver.
+     *
+     * @param chatMessage The chat message to be sent.
+     * @throws IOException If an error occurs while sending the message.
+     */
     public void sendPrivateMessage(ChatMessage chatMessage) throws IOException {
-        WebSocketSession receiverSession = webSocketSessionManager.getUserSession(PRIVATE , chatMessage.getReceiver());
 
+        // Retrieve the WebSocket session of the receiver in private chat
+        WebSocketSession receiverSession = webSocketSessionManager.getUserSession(
+                PRIVATE, chatMessage.getReceiver());
+
+        // Send the message if the session exists and is open
         if (receiverSession != null && receiverSession.isOpen()) {
             receiverSession.sendMessage(new TextMessage(objectMapper.writeValueAsString(chatMessage)));
         }
