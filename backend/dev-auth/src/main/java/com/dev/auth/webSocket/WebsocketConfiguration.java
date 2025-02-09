@@ -21,7 +21,7 @@ public class WebsocketConfiguration implements WebSocketConfigurer {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private GroupChatService groupChatService;
+    private GroupChatMessageService groupChatMessageService;
     /**
      * @param registry
      */
@@ -33,8 +33,9 @@ public class WebsocketConfiguration implements WebSocketConfigurer {
                                 webSocketSessionManager,
                                 privateChatMessageService,
                                 objectMapper,
-                                groupChatService),
-                        "/chat/{chatId}"
+                                groupChatMessageService),
+                "ws/chat/private",
+                        "ws/chat/group/{roomId}"
                 )
                 .addInterceptors(
                         new CustomHandshakeInterceptor()

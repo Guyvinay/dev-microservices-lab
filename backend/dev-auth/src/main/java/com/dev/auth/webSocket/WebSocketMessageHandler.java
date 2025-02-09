@@ -6,47 +6,67 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-public class WebSocketMessageHandler extends TextWebSocketHandler {
+import java.net.URI;
 
+public class WebSocketMessageHandler extends TextWebSocketHandler {
 
     private final WebSocketSessionManager webSocketSessionManager;
     private final PrivateChatMessageService privateChatMessageService;
     private final ObjectMapper objectMapper;
-    private final GroupChatService  groupChatService;
+    private final GroupChatMessageService groupChatMessageService;
 
-    public WebSocketMessageHandler(WebSocketSessionManager webSocketSessionManager, PrivateChatMessageService privateChatMessageService, ObjectMapper objectMapper, GroupChatService groupChatService) {
+    public WebSocketMessageHandler(WebSocketSessionManager webSocketSessionManager, PrivateChatMessageService privateChatMessageService, ObjectMapper objectMapper, GroupChatMessageService groupChatMessageService) {
         this.webSocketSessionManager = webSocketSessionManager;
         this.privateChatMessageService = privateChatMessageService;
         this.objectMapper = objectMapper;
-        this.groupChatService = groupChatService;
+        this.groupChatMessageService = groupChatMessageService;
     }
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        // Retrieve username from session attributes
+
+        URI uri = session.getUri();
+        if (uri == null) {
+            session.close();
+            return;
+        }
+
+        String uriPath = uri.getPath();
         String username = (String) session.getAttributes().get("username");
 
-        if (username != null) {
-            webSocketSessionManager.addSession(username, session);
-            System.out.println("WebSocket connection established for user: " + username);
-        } else {
+        if (username == null) {
             System.out.println("Unauthorized WebSocket connection attempt");
             session.close();
             session.close(CloseStatus.NOT_ACCEPTABLE);
+        }
+
+        if (uriPath.startsWith("/dev-auth/ws/chat/private")) {
+            webSocketSessionManager.addUserToPrivateChat(username, session);
+            System.out.println("WebSocket connection established for user: " + username);
+        } else if (uriPath.startsWith("/dev-auth/ws/chat/group")) {
+            String roomId = extractRoomId(uriPath);
+            System.out.println("WebSocket connection established for user: " + username);
+            webSocketSessionManager.addUserSession(roomId, username, session);
         }
     }
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         String sender = (String) session.getAttributes().get("username");
+        String uriPath = session.getUri().getPath();
 
         ChatMessage chatMessage = objectMapper.readValue(message.getPayload(), ChatMessage.class);
         if (chatMessage != null && chatMessage.getSender() == null) {
             chatMessage.setSender(sender);
         }
-
-        if (chatMessage != null && chatMessage.getType() == MessageType.PRIVATE) {
-            privateChatMessageService.sendPrivateMessage(chatMessage);
+        if(chatMessage != null) {
+            if (uriPath.startsWith("/dev-auth/ws/chat/private")) {
+                privateChatMessageService.sendPrivateMessage(chatMessage);
+            }
+            else if(uriPath.startsWith("/dev-auth/ws/chat/group")) {
+                String roomId = extractRoomId(uriPath);
+                groupChatMessageService.sendMessageToRoom(roomId, chatMessage);
+            }
         }
         System.out.println("message receive from : " + sender + ", " + message.getPayload());
     }
@@ -56,8 +76,12 @@ public class WebSocketMessageHandler extends TextWebSocketHandler {
         // Retrieve username from session attributes
         String username = (String) session.getAttributes().get("username");
         if (username != null) {
-            webSocketSessionManager.removeSession(username);
+            webSocketSessionManager.removeUserFromChat("", username);
             System.out.println("User disconnected: " + username);
         }
+    }
+
+    private String extractRoomId(String uriPath) {
+        return uriPath.substring(uriPath.lastIndexOf("/") + 1);
     }
 }
