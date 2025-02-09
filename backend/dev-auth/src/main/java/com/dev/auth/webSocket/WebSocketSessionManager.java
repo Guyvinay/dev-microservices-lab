@@ -8,9 +8,23 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static com.dev.auth.utility.StringLiterals.PRIVATE;
 
+/**
+ * Manages WebSocket sessions for private and group chats.
+ * <p>
+ * This class maintains a mapping of active WebSocket sessions using a `roomId` as the key.
+ * - "PRIVATE" is used as a key for private chat sessions.
+ * - Group chats use the `roomId` as the key.
+ * </p>
+ */
+
 @Component
 public class WebSocketSessionManager {
-    //* Map to store with roomId ('PRIVATE' | {roomId}).
+
+    /**
+     * Stores WebSocket sessions based on chat rooms.
+     * - Key: Room ID (either "PRIVATE" for private chats or an actual room ID for group chats).
+     * - Value: A map of usernames to their WebSocket sessions.
+     */
     private final Map<String, Map<String, WebSocketSession>> chatSessions = new ConcurrentHashMap<>();
 
     /**
@@ -35,8 +49,13 @@ public class WebSocketSessionManager {
     }
 
     /**
-     * @param roomId
-     * @param username
+     * Removes a user session from a specific chat room.
+     * <p>
+     * If the chat room becomes empty after removing the user, the room entry is also removed.
+     * </p>
+     *
+     * @param roomId   ID of the chat room ("PRIVATE" or specific group chat ID).
+     * @param username The username of the user to be removed.
      */
     public void removeUserFromChat(String roomId, String username) {
         Map<String, WebSocketSession> chatRoom = chatSessions.get(roomId);
@@ -48,6 +67,13 @@ public class WebSocketSessionManager {
         }
     }
 
+    /**
+     * Retrieves a user's WebSocket session from a specific chat room.
+     *
+     * @param roomId   ID of the chat room ("PRIVATE" or specific group chat ID).
+     * @param username The username of the user whose session is being retrieved.
+     * @return The WebSocket session if the user is present, otherwise null.
+     */
     public WebSocketSession getUserSession(String roomId, String username) {
         if (roomId != null && username != null) {
             Map<String, WebSocketSession> usersSession = chatSessions.get(roomId); // 'PRIVATE' | {roomId};
@@ -58,6 +84,12 @@ public class WebSocketSessionManager {
         return null;
     }
 
+    /**
+     * Retrieves all active WebSocket sessions for a specific chat room.
+     *
+     * @param roomId ID of the chat room ("PRIVATE" or specific group chat ID).
+     * @return A map of usernames to WebSocket sessions for the given chat room, or null if the room does not exist.
+     */
     public Map<String, WebSocketSession> getChatRoomSessions(String roomId) {
         if (roomId != null) {
             return chatSessions.get(roomId); // 'PRIVATE' | {roomId};

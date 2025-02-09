@@ -11,8 +11,24 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 
 import java.util.Map;
 
+/**
+ * Custom WebSocket handshake interceptor that integrates with Spring Security.
+ * Ensures that only authenticated users can establish a WebSocket connection.
+ */
 public class CustomHandshakeInterceptor implements HandshakeInterceptor {
 
+    /**
+     * Intercepts the WebSocket handshake request before the connection is established.
+     * Retrieves the authenticated user's details from the Spring Security context and
+     * stores the username in the WebSocket session attributes.
+     *
+     * @param request     The incoming handshake request.
+     * @param response    The outgoing handshake response.
+     * @param wsHandler   The WebSocket handler handling the connection.
+     * @param attributes  A map of attributes to be stored in the WebSocket session.
+     * @return {@code true} if the handshake should proceed; {@code false} if unauthorized.
+     * @throws Exception If any error occurs during authentication validation.
+     */
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
         // Retrieve authenticated user from the Spring Security context
@@ -33,6 +49,15 @@ public class CustomHandshakeInterceptor implements HandshakeInterceptor {
         return false;
     }
 
+    /**
+     * Intercepts the WebSocket handshake after it is completed.
+     * Currently, no additional processing is needed.
+     *
+     * @param request   The handshake request.
+     * @param response  The handshake response.
+     * @param wsHandler The WebSocket handler.
+     * @param exception Any exception that occurred during the handshake.
+     */
     @Override
     public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Exception exception) {
 

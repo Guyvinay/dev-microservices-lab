@@ -1,13 +1,21 @@
 package com.dev.auth.webSocket;
 
 import com.dev.auth.webSocket.dto.ChatMessage;
-import com.dev.auth.webSocket.dto.MessageType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.net.URI;
 
+/**
+ * Handles WebSocket connections and messages for private and group chats.
+ * <p>
+ * This handler is responsible for:
+ * - Establishing WebSocket connections.
+ * - Handling incoming messages and routing them to the appropriate chat service.
+ * - Removing users from active sessions when they disconnect.
+ * </p>
+ */
 public class WebSocketMessageHandler extends TextWebSocketHandler {
 
     private final WebSocketSessionManager webSocketSessionManager;
@@ -15,6 +23,14 @@ public class WebSocketMessageHandler extends TextWebSocketHandler {
     private final ObjectMapper objectMapper;
     private final GroupChatMessageService groupChatMessageService;
 
+    /**
+     * Constructs a WebSocketMessageHandler.
+     *
+     * @param webSocketSessionManager   Manages active WebSocket sessions.
+     * @param privateChatMessageService Service to handle private chat messages.
+     * @param objectMapper              ObjectMapper for JSON deserialization.
+     * @param groupChatMessageService   Service to handle group chat messages.
+     */
     public WebSocketMessageHandler(WebSocketSessionManager webSocketSessionManager, PrivateChatMessageService privateChatMessageService, ObjectMapper objectMapper, GroupChatMessageService groupChatMessageService) {
         this.webSocketSessionManager = webSocketSessionManager;
         this.privateChatMessageService = privateChatMessageService;
@@ -22,6 +38,12 @@ public class WebSocketMessageHandler extends TextWebSocketHandler {
         this.groupChatMessageService = groupChatMessageService;
     }
 
+    /**
+     * Called when a new WebSocket connection is established.
+     *
+     * @param session The WebSocket session.
+     * @throws Exception If an error occurs during connection establishment.
+     */
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
 
@@ -40,6 +62,7 @@ public class WebSocketMessageHandler extends TextWebSocketHandler {
             session.close(CloseStatus.NOT_ACCEPTABLE);
         }
 
+        // Determine if the connection is for private or group chat and add the user to the session
         if (uriPath.startsWith("/dev-auth/ws/chat/private")) {
             webSocketSessionManager.addUserToPrivateChat(username, session);
             System.out.println("WebSocket connection established for user: " + username);
@@ -50,20 +73,29 @@ public class WebSocketMessageHandler extends TextWebSocketHandler {
         }
     }
 
+    /**
+     * Handles incoming text messages from WebSocket clients.
+     *
+     * @param session The WebSocket session that sent the message.
+     * @param message The incoming message.
+     * @throws Exception If an error occurs while processing the message.
+     */
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         String sender = (String) session.getAttributes().get("username");
         String uriPath = session.getUri().getPath();
 
+        // Deserialize the received message
         ChatMessage chatMessage = objectMapper.readValue(message.getPayload(), ChatMessage.class);
         if (chatMessage != null && chatMessage.getSender() == null) {
             chatMessage.setSender(sender);
         }
-        if(chatMessage != null) {
+        if (chatMessage != null) {
+
+            // Route the message based on chat type (private or group)
             if (uriPath.startsWith("/dev-auth/ws/chat/private")) {
                 privateChatMessageService.sendPrivateMessage(chatMessage);
-            }
-            else if(uriPath.startsWith("/dev-auth/ws/chat/group")) {
+            } else if (uriPath.startsWith("/dev-auth/ws/chat/group")) {
                 String roomId = extractRoomId(uriPath);
                 groupChatMessageService.sendMessageToRoom(roomId, chatMessage);
             }
@@ -71,6 +103,13 @@ public class WebSocketMessageHandler extends TextWebSocketHandler {
         System.out.println("message receive from : " + sender + ", " + message.getPayload());
     }
 
+    /**
+     * Called when a WebSocket connection is closed.
+     *
+     * @param session The WebSocket session.
+     * @param status  The reason for disconnection.
+     * @throws Exception If an error occurs during disconnection handling.
+     */
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         // Retrieve username from session attributes
@@ -81,6 +120,12 @@ public class WebSocketMessageHandler extends TextWebSocketHandler {
         }
     }
 
+    /**
+     * Extracts the room ID from the WebSocket URI path.
+     *
+     * @param uriPath The URI path of the WebSocket connection.
+     * @return The extracted room ID.
+     */
     private String extractRoomId(String uriPath) {
         return uriPath.substring(uriPath.lastIndexOf("/") + 1);
     }

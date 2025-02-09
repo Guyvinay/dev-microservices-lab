@@ -7,6 +7,13 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 
+/**
+ * Configuration class for WebSocket setup.
+ * <p>
+ * This class enables WebSocket support in the Spring Boot application
+ * and registers WebSocket handlers for private and group chats.
+ * </p>
+ */
 @Configuration
 @EnableWebSocket
 public class WebsocketConfiguration implements WebSocketConfigurer {
@@ -22,8 +29,11 @@ public class WebsocketConfiguration implements WebSocketConfigurer {
 
     @Autowired
     private GroupChatMessageService groupChatMessageService;
+
     /**
-     * @param registry
+     * Registers WebSocket handlers for private and group chat messaging.
+     *
+     * @param registry The WebSocket handler registry.
      */
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
@@ -34,12 +44,12 @@ public class WebsocketConfiguration implements WebSocketConfigurer {
                                 privateChatMessageService,
                                 objectMapper,
                                 groupChatMessageService),
-                "ws/chat/private",
-                        "ws/chat/group/{roomId}"
+                "ws/chat/private",   // Private chat WebSocket endpoint
+                        "ws/chat/group/{roomId}" // Group chat WebSocket endpoint
                 )
                 .addInterceptors(
-                        new CustomHandshakeInterceptor()
+                        new CustomHandshakeInterceptor()  // Interceptor for authentication/authorizatio
                 )
-                .setAllowedOrigins("*");
+                .setAllowedOrigins("*");// Allow all origins
     }
 }
