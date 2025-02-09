@@ -1,6 +1,7 @@
 package com.dev.auth.webSocket;
 
 import com.dev.auth.webSocket.dto.ChatMessage;
+import com.dev.auth.webSocket.dto.STATUS;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
@@ -44,8 +45,31 @@ public class PrivateChatMessageService {
 
         // Send the message if the session exists and is open
         if (receiverSession != null && receiverSession.isOpen()) {
-            receiverSession.sendMessage(new TextMessage(objectMapper.writeValueAsString(chatMessage)));
+            chatMessage.setStatus(STATUS.DELIVERED);
+            receiverSession.sendMessage(
+                    new TextMessage(
+                            objectMapper.writeValueAsString(chatMessage)
+                    )
+            );
+        } else {
+            /**
+             * Fallback handling if receiverSession is null means receiver not connected
+             * send to sender session about receiver not connected.
+             */
+            WebSocketSession senderSession = webSocketSessionManager.getUserSession(
+                    PRIVATE,
+                    chatMessage.getSender()
+            );
+
+            if (senderSession != null && senderSession.isOpen()) {
+                chatMessage.setMessage("Receiver: "+ chatMessage.getReceiver()+", not connected.");
+                chatMessage.setStatus(STATUS.USER_NOT_CONNECTED);
+                senderSession.sendMessage(
+                        new TextMessage(
+                                objectMapper.writeValueAsString(chatMessage)
+                        )
+                );
+            }
         }
     }
-
 }

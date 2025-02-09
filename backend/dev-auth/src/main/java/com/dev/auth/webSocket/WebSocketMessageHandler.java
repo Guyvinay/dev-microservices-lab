@@ -1,11 +1,13 @@
 package com.dev.auth.webSocket;
 
 import com.dev.auth.webSocket.dto.ChatMessage;
+import com.dev.auth.webSocket.dto.MessageType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.net.URI;
+import java.time.Instant;
 
 /**
  * Handles WebSocket connections and messages for private and group chats.
@@ -87,18 +89,20 @@ public class WebSocketMessageHandler extends TextWebSocketHandler {
 
         // Deserialize the received message
         ChatMessage chatMessage = objectMapper.readValue(message.getPayload(), ChatMessage.class);
-        if (chatMessage != null && chatMessage.getSender() == null) {
+        chatMessage.setTimeStamp(Instant.now().toEpochMilli());
+        if (chatMessage.getSender() == null) {
             chatMessage.setSender(sender);
         }
-        if (chatMessage != null) {
 
-            // Route the message based on chat type (private or group)
-            if (uriPath.startsWith("/dev-auth/ws/chat/private")) {
-                privateChatMessageService.sendPrivateMessage(chatMessage);
-            } else if (uriPath.startsWith("/dev-auth/ws/chat/group")) {
-                String roomId = extractRoomId(uriPath);
-                groupChatMessageService.sendMessageToRoom(roomId, chatMessage);
-            }
+        // Route the message based on chat type (private or group)
+        if (uriPath.startsWith("/dev-auth/ws/chat/private")) {
+            chatMessage.setType(MessageType.PRIVATE);
+            privateChatMessageService.sendPrivateMessage(chatMessage);
+        } else if (uriPath.startsWith("/dev-auth/ws/chat/group")) {
+            String roomId = extractRoomId(uriPath);
+            chatMessage.setType(MessageType.GROUP);
+            chatMessage.setRoomId(roomId);
+            groupChatMessageService.sendMessageToRoom(roomId, chatMessage);
         }
         System.out.println("message receive from : " + sender + ", " + message.getPayload());
     }
