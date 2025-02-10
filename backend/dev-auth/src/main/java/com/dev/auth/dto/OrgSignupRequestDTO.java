@@ -26,11 +26,17 @@ public class OrgSignupRequestDTO {
     private Long organizationContact;
 
     @NotBlank(message = "Admin full name is required")
-    private String adminFullName;
+    private String adminFirstName;
+
+    @NotBlank(message = "Admin last name is required")
+    private String adminLastName;
 
     @NotBlank(message = "Admin email is required")
     @Email(message = "Invalid email format")
     private String adminEmail;
+
+    @NotBlank(message = "Admin username is required")
+    private String adminUsername;
 
     @NotBlank(message = "Admin password is required")
     @Size(min = 8, message = "Password must be at least 8 characters")
