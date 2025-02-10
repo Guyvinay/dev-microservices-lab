@@ -4,7 +4,7 @@ import com.dev.auth.dto.OrganizationTenantDTO;
 import com.dev.auth.entity.OrganizationTenantMapping;
 import com.dev.auth.exception.DuplicateResourceException;
 import com.dev.auth.exception.ResourceNotFoundException;
-import com.dev.auth.repository.OrganizationTenantRepository;
+import com.dev.auth.repository.OrganizationTenantMappingRepository;
 import com.dev.auth.service.OrganizationTenantService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class OrganizationTenantServiceImpl implements OrganizationTenantService {
 
-    private final OrganizationTenantRepository tenantRepository;
+    private final OrganizationTenantMappingRepository tenantRepository;
     private final ModelMapper modelMapper;
 
     @Override

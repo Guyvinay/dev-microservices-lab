@@ -1,5 +1,6 @@
 package com.dev.auth.service;
 
+import com.dev.auth.dto.OrgSignupRequestDTO;
 import com.dev.auth.dto.OrganizationDTO;
 
 import java.util.List;
@@ -8,6 +9,8 @@ import java.util.UUID;
 public interface OrganizationService {
 
     OrganizationDTO createOrganization(OrganizationDTO dto);
+
+    OrganizationDTO registerOrganizationWithDefaultTenant(OrgSignupRequestDTO dto);
 
     OrganizationDTO getOrganizationById(UUID orgId);
 

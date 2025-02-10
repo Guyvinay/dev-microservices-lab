@@ -1,9 +1,6 @@
 package com.dev.auth.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.envers.Audited;
 
@@ -20,6 +17,7 @@ import java.util.UUID;
 public class OrganizationModel {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "ORG_ID")
     private UUID orgId;
 
