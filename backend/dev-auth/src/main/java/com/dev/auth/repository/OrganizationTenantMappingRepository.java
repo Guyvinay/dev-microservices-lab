@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface OrganizationTenantRepository extends JpaRepository<OrganizationTenantMapping, String> {
+public interface OrganizationTenantMappingRepository extends JpaRepository<OrganizationTenantMapping, String> {
 
     Optional<OrganizationTenantMapping> findByTenantName(String tenantName);
 
