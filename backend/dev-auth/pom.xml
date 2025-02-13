@@ -123,12 +123,12 @@
 
 	</dependencies>
 
-<!--	<distributionManagement>-->
-<!--		<repository>-->
-<!--			<id>nexus</id> &lt;!&ndash; Match this ID with your server entry in settings.xml &ndash;&gt;-->
-<!--			<url>http://localhost:8081/repository/dev-releases/</url>-->
-<!--		</repository>-->
-<!--	</distributionManagement>-->
+	<distributionManagement>
+		<repository>
+			<id>nexus</id> <!-- Match this ID with your server entry in settings.xml -->
+			<url>http://localhost:8081/repository/dev-release/</url>
+		</repository>
+	</distributionManagement>
 
 	<build>
 		<plugins>
