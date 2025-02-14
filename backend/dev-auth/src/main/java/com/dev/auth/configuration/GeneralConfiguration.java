@@ -1,13 +1,16 @@
 package com.dev.auth.configuration;
 
+import com.dev.auth.elastic.properties.ElasticConfigurationProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.modelmapper.ModelMapper;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@EnableConfigurationProperties({ElasticConfigurationProperties.class})
 public class GeneralConfiguration {
 
     @Bean
