@@ -1,8 +1,7 @@
 package com.dev.auth.elastic;
 
+import com.dev.auth.elastic.client.EsRestHighLevelClient;
 import com.dev.auth.elastic.properties.ElasticConfigurationProperties;
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
@@ -16,21 +15,22 @@ import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.RestHighLevelClientBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
+@Configuration
 @Slf4j
 public class ElasticSearchConfiguration {
+
     private RestHighLevelClient restHighLevelClient;
 
     @Autowired
     private ElasticConfigurationProperties configurationProperties;
 
-    @PostConstruct
+    @Bean
     public RestHighLevelClient restHighLevelClient() {
 
         // prepare credential provider
@@ -70,9 +70,8 @@ public class ElasticSearchConfiguration {
         return restHighLevelClient;
     }
 
-    @PreDestroy
-    public void preDestroy() throws IOException {
-        restHighLevelClient.close();
+    @Bean
+    public EsRestHighLevelClient esRestHighLevelClient() {
+        return new EsRestHighLevelClient(restHighLevelClient);
     }
-
 }
