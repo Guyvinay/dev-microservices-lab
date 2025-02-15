@@ -10,11 +10,12 @@
 	</parent>
 	<groupId>com.dev.auth</groupId>
 	<artifactId>dev-auth</artifactId>
-	<version>1.0.3</version>
+	<version>1.0.4</version>
 	<name>dev-auth</name>
 	<description>SB Project for authentication</description>
 	<properties>
 		<java.version>17</java.version>
+		<elasticsearch-java>7.17.18</elasticsearch-java>
 	</properties>
 
 	<dependencies>
@@ -59,7 +60,6 @@
 			<version>1.18.36</version>
 			<scope>provided</scope>
 		</dependency>
-
 
 		<!-- SpringDoc OpenAPI UI for generating Swagger UI for API documentation -->
 		<dependency>
@@ -119,6 +119,12 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.elasticsearch.client</groupId>
+			<artifactId>elasticsearch-rest-high-level-client</artifactId>
+			<version>${elasticsearch-java}</version>
 		</dependency>
 
 	</dependencies>
