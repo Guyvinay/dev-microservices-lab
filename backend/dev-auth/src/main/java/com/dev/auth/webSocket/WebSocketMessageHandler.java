@@ -2,12 +2,14 @@ package com.dev.auth.webSocket;
 
 import com.dev.auth.webSocket.dto.ChatMessage;
 import com.dev.auth.webSocket.dto.MessageType;
+import com.dev.auth.webSocket.messageService.OfflineMessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.net.URI;
 import java.time.Instant;
+import java.util.Queue;
 
 /**
  * Handles WebSocket connections and messages for private and group chats.
@@ -24,6 +26,7 @@ public class WebSocketMessageHandler extends TextWebSocketHandler {
     private final PrivateChatMessageService privateChatMessageService;
     private final ObjectMapper objectMapper;
     private final GroupChatMessageService groupChatMessageService;
+    private final OfflineMessageService offlineMessageService;
 
     /**
      * Constructs a WebSocketMessageHandler.
@@ -32,12 +35,14 @@ public class WebSocketMessageHandler extends TextWebSocketHandler {
      * @param privateChatMessageService Service to handle private chat messages.
      * @param objectMapper              ObjectMapper for JSON deserialization.
      * @param groupChatMessageService   Service to handle group chat messages.
+     * @param offlineMessageService     Service to handle offline message delivery.
      */
-    public WebSocketMessageHandler(WebSocketSessionManager webSocketSessionManager, PrivateChatMessageService privateChatMessageService, ObjectMapper objectMapper, GroupChatMessageService groupChatMessageService) {
+    public WebSocketMessageHandler(WebSocketSessionManager webSocketSessionManager, PrivateChatMessageService privateChatMessageService, ObjectMapper objectMapper, GroupChatMessageService groupChatMessageService, OfflineMessageService offlineMessageService) {
         this.webSocketSessionManager = webSocketSessionManager;
         this.privateChatMessageService = privateChatMessageService;
         this.objectMapper = objectMapper;
         this.groupChatMessageService = groupChatMessageService;
+        this.offlineMessageService = offlineMessageService;
     }
 
     /**
@@ -68,6 +73,11 @@ public class WebSocketMessageHandler extends TextWebSocketHandler {
         if (uriPath.startsWith("/dev-auth/ws/chat/private")) {
             webSocketSessionManager.addUserToPrivateChat(username, session);
             System.out.println("WebSocket connection established for user: " + username);
+            Queue<ChatMessage> pendingMessages = offlineMessageService.getOfflineMessages(username);
+            while(!pendingMessages.isEmpty()) {
+                privateChatMessageService.sendPrivateMessage(pendingMessages.poll());
+            }
+            offlineMessageService.removeOfflineMessages(username);
         } else if (uriPath.startsWith("/dev-auth/ws/chat/group")) {
             String roomId = extractRoomId(uriPath);
             System.out.println("WebSocket connection established for user: " + username);

@@ -1,5 +1,6 @@
 package com.dev.auth.webSocket;
 
+import com.dev.auth.webSocket.messageService.OfflineMessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -30,6 +31,9 @@ public class WebsocketConfiguration implements WebSocketConfigurer {
     @Autowired
     private GroupChatMessageService groupChatMessageService;
 
+    @Autowired
+    private OfflineMessageService offlineMessageService;
+
     /**
      * Registers WebSocket handlers for private and group chat messaging.
      *
@@ -43,7 +47,8 @@ public class WebsocketConfiguration implements WebSocketConfigurer {
                                 webSocketSessionManager,
                                 privateChatMessageService,
                                 objectMapper,
-                                groupChatMessageService),
+                                groupChatMessageService,
+                                offlineMessageService),
                 "ws/chat/private",   // Private chat WebSocket endpoint
                         "ws/chat/group/{roomId}" // Group chat WebSocket endpoint
                 )

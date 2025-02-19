@@ -2,7 +2,9 @@ package com.dev.auth.webSocket;
 
 import com.dev.auth.webSocket.dto.ChatMessage;
 import com.dev.auth.webSocket.dto.STATUS;
+import com.dev.auth.webSocket.messageService.OfflineMessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -15,10 +17,12 @@ import static com.dev.auth.utility.StringLiterals.PRIVATE;
  * Service for handling private chat messages in a WebSocket-based chat system.
  */
 @Component
+@Slf4j
 public class PrivateChatMessageService {
 
     private final WebSocketSessionManager webSocketSessionManager;
     private final ObjectMapper objectMapper;
+    private final OfflineMessageService offlineMessageService;
 
     /**
      * Constructor for PrivateChatMessageService.
@@ -26,9 +30,10 @@ public class PrivateChatMessageService {
      * @param webSocketSessionManager Manages WebSocket user sessions.
      * @param objectMapper            Converts objects to JSON format.
      */
-    public PrivateChatMessageService(WebSocketSessionManager webSocketSessionManager, ObjectMapper objectMapper) {
+    public PrivateChatMessageService(WebSocketSessionManager webSocketSessionManager, ObjectMapper objectMapper, OfflineMessageService offlineMessageService) {
         this.webSocketSessionManager = webSocketSessionManager;
         this.objectMapper = objectMapper;
+        this.offlineMessageService = offlineMessageService;
     }
 
     /**
@@ -52,6 +57,9 @@ public class PrivateChatMessageService {
                     )
             );
         } else {
+            log.info("user not connected storing message {}", chatMessage);
+            offlineMessageService.storeOfflineMessage(chatMessage.getReceiver(), chatMessage);
+
             /**
              * Fallback handling if receiverSession is null means receiver not connected
              * send to sender session about receiver not connected.
@@ -70,6 +78,7 @@ public class PrivateChatMessageService {
                         )
                 );
             }
+
         }
     }
 }
