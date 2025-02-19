@@ -17,6 +17,7 @@ import org.elasticsearch.client.RestHighLevelClientBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,6 +72,7 @@ public class ElasticSearchConfiguration {
     }
 
     @Bean
+    @DependsOn("restHighLevelClient")
     public EsRestHighLevelClient esRestHighLevelClient() {
         return new EsRestHighLevelClient(restHighLevelClient);
     }
