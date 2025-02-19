@@ -30,5 +30,6 @@ public class UserProfileRoleDTO {
     private String description;
 
     private String createdBy;
+
     private String updatedBy;
 }

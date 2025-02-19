@@ -5,6 +5,18 @@ spring:
     change-log: classpath:/db/changelog/dev-auth.changelog-master.xml
     contexts: "!test"
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: my-group
+      auto-offset-reset: earliest
+    producer:
+      retries: 3
+      acks: all
+      properties:
+        linger.ms: 5
+        enable.idempotence: true
+
   # Validate schema against hibernate models
   jpa:
     open-in-view: false
