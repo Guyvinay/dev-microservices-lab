@@ -1,8 +1,9 @@
-package com.dev.auth.webSocket;
+package com.dev.auth.webSocket.messageService;
 
+import com.dev.auth.elastic.service.MessageElasticSyncService;
+import com.dev.auth.webSocket.WebSocketSessionManager;
 import com.dev.auth.webSocket.dto.ChatMessage;
 import com.dev.auth.webSocket.dto.STATUS;
-import com.dev.auth.webSocket.messageService.OfflineMessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -23,6 +24,7 @@ public class PrivateChatMessageService {
     private final WebSocketSessionManager webSocketSessionManager;
     private final ObjectMapper objectMapper;
     private final OfflineMessageService offlineMessageService;
+    private final MessageElasticSyncService messageElasticSyncService;
 
     /**
      * Constructor for PrivateChatMessageService.
@@ -30,10 +32,11 @@ public class PrivateChatMessageService {
      * @param webSocketSessionManager Manages WebSocket user sessions.
      * @param objectMapper            Converts objects to JSON format.
      */
-    public PrivateChatMessageService(WebSocketSessionManager webSocketSessionManager, ObjectMapper objectMapper, OfflineMessageService offlineMessageService) {
+    public PrivateChatMessageService(WebSocketSessionManager webSocketSessionManager, ObjectMapper objectMapper, OfflineMessageService offlineMessageService, MessageElasticSyncService messageElasticSyncService) {
         this.webSocketSessionManager = webSocketSessionManager;
         this.objectMapper = objectMapper;
         this.offlineMessageService = offlineMessageService;
+        this.messageElasticSyncService = messageElasticSyncService;
     }
 
     /**
@@ -51,11 +54,13 @@ public class PrivateChatMessageService {
         // Send the message if the session exists and is open
         if (receiverSession != null && receiverSession.isOpen()) {
             chatMessage.setStatus(STATUS.DELIVERED);
+            log.info("Sending message to {}: ", chatMessage.getReceiver());
             receiverSession.sendMessage(
                     new TextMessage(
                             objectMapper.writeValueAsString(chatMessage)
                     )
             );
+            messageElasticSyncService.syncMessageToElastic(chatMessage, "private_message_index");
         } else {
             log.info("user not connected storing message {}", chatMessage);
             offlineMessageService.storeOfflineMessage(chatMessage.getReceiver(), chatMessage);
@@ -78,7 +83,6 @@ public class PrivateChatMessageService {
                         )
                 );
             }
-
         }
     }
 }

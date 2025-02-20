@@ -1,5 +1,7 @@
-package com.dev.auth.webSocket;
+package com.dev.auth.webSocket.messageService;
 
+import com.dev.auth.elastic.service.MessageElasticSyncService;
+import com.dev.auth.webSocket.WebSocketSessionManager;
 import com.dev.auth.webSocket.dto.ChatMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
@@ -17,6 +19,7 @@ public class GroupChatMessageService {
 
     private final WebSocketSessionManager sessionManager;
     private final ObjectMapper objectMapper;
+    private final MessageElasticSyncService messageElasticSyncService;
 
 
     /**
@@ -25,9 +28,10 @@ public class GroupChatMessageService {
      * @param sessionManager Manages WebSocket user sessions.
      * @param objectMapper   Converts objects to JSON format.
      */
-    public GroupChatMessageService(WebSocketSessionManager sessionManager, ObjectMapper objectMapper) {
+    public GroupChatMessageService(WebSocketSessionManager sessionManager, ObjectMapper objectMapper, MessageElasticSyncService messageElasticSyncService) {
         this.sessionManager = sessionManager;
         this.objectMapper = objectMapper;
+        this.messageElasticSyncService = messageElasticSyncService;
     }
 
     /**

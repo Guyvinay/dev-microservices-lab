@@ -2,7 +2,9 @@ package com.dev.auth.webSocket;
 
 import com.dev.auth.webSocket.dto.ChatMessage;
 import com.dev.auth.webSocket.dto.MessageType;
+import com.dev.auth.webSocket.messageService.GroupChatMessageService;
 import com.dev.auth.webSocket.messageService.OfflineMessageService;
+import com.dev.auth.webSocket.messageService.PrivateChatMessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
@@ -114,7 +116,6 @@ public class WebSocketMessageHandler extends TextWebSocketHandler {
             chatMessage.setRoomId(roomId);
             groupChatMessageService.sendMessageToRoom(roomId, chatMessage);
         }
-        System.out.println("message receive from : " + sender + ", " + message.getPayload());
     }
 
     /**
