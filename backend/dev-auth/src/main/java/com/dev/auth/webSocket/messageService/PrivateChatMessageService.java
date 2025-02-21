@@ -60,7 +60,7 @@ public class PrivateChatMessageService {
                             objectMapper.writeValueAsString(chatMessage)
                     )
             );
-            messageElasticSyncService.syncMessageToElastic(chatMessage, "private_message_index");
+            messageElasticSyncService.syncMessageToElastic(chatMessage, "es_private_message_index");
         } else {
             log.info("user not connected storing message {}", chatMessage);
             offlineMessageService.storeOfflineMessage(chatMessage.getReceiver(), chatMessage);
