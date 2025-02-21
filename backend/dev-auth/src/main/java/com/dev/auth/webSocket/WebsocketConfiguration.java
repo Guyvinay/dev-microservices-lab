@@ -1,6 +1,8 @@
 package com.dev.auth.webSocket;
 
+import com.dev.auth.webSocket.messageService.GroupChatMessageService;
 import com.dev.auth.webSocket.messageService.OfflineMessageService;
+import com.dev.auth.webSocket.messageService.PrivateChatMessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
