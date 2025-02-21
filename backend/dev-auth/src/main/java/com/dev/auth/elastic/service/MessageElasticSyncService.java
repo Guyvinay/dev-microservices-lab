@@ -2,7 +2,6 @@ package com.dev.auth.elastic.service;
 
 import com.dev.auth.elastic.client.EsRestHighLevelClient;
 import com.dev.auth.webSocket.dto.ChatMessage;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.index.IndexRequest;
@@ -40,14 +39,11 @@ public class MessageElasticSyncService {
             }
             IndexRequest request = new IndexRequest(index)
                     .id(messageId)
-                    .source(new ObjectMapper().writeValueAsString(chatMessage), XContentType.JSON);
+                    .source(objectMapper.writeValueAsString(chatMessage), XContentType.JSON);
             IndexResponse response = esRestHighLevelClient.indexDocument(request);
             log.info("Message  synced to elastic");
         } catch (IOException exception) {
             log.error("Error while syncing message to elastic: ", exception.getStackTrace());
         }
-
     }
-
-
 }

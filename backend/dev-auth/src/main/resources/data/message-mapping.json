@@ -1,176 +1,348 @@
-{
-  "mappings": {
-    "properties": {
-      "messageId": {
-        "type": "keyword"
-      },
-      "chatType": {
-        "type": "keyword"
-      },
-      "roomId": {
-        "type": "keyword",
-        "null_value": null
-      },
-      "conversationId": {
-        "type": "keyword",
-        "null_value": null
-      },
-      "groupDetails": {
+[
+  {
+    "mapping-1": {
+      "mappings": {
         "properties": {
-          "groupId": {
+          "messageId": {
             "type": "keyword"
           },
-          "groupName": {
-            "type": "text"
-          }
-        },
-        "null_value": null
-      },
-      "participants": {
-        "type": "nested",
-        "properties": {
-          "userId": {
+          "chatType": {
             "type": "keyword"
           },
-          "username": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword"
-              }
-            }
-          }
-        }
-      },
-      "sender": {
-        "properties": {
-          "userId": {
-            "type": "keyword"
+          "roomId": {
+            "type": "keyword",
+            "null_value": null
           },
-          "username": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword"
-              }
-            }
-          }
-        }
-      },
-      "receiver": {
-        "properties": {
-          "userId": {
-            "type": "keyword"
+          "conversationId": {
+            "type": "keyword",
+            "null_value": null
           },
-          "username": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword"
-              }
-            }
-          }
-        },
-        "null_value": null
-      },
-      "messageDetails": {
-        "properties": {
-          "text": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword"
-              }
-            }
-          },
-          "attachments": {
-            "type": "nested",
+          "groupDetails": {
             "properties": {
-              "type": {
+              "groupId": {
                 "type": "keyword"
               },
-              "url": {
+              "groupName": {
                 "type": "text"
               }
-            }
+            },
+            "null_value": null
           },
-          "reactions": {
+          "participants": {
             "type": "nested",
             "properties": {
               "userId": {
                 "type": "keyword"
               },
-              "reactionType": {
-                "type": "keyword"
-              },
-              "timestamp": {
-                "type": "date",
-                "format": "epoch_millis"
+              "username": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword"
+                  }
+                }
               }
             }
           },
-          "replyTo": {
-            "type": "keyword",
+          "sender": {
+            "properties": {
+              "userId": {
+                "type": "keyword"
+              },
+              "username": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword"
+                  }
+                }
+              }
+            }
+          },
+          "receiver": {
+            "properties": {
+              "userId": {
+                "type": "keyword"
+              },
+              "username": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword"
+                  }
+                }
+              }
+            },
             "null_value": null
-          }
-        }
-      },
-      "status": {
-        "type": "nested",
-        "properties": {
-          "userId": {
-            "type": "keyword"
           },
-          "delivered": {
-            "type": "boolean"
+          "messageDetails": {
+            "properties": {
+              "text": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword"
+                  }
+                }
+              },
+              "attachments": {
+                "type": "nested",
+                "properties": {
+                  "type": {
+                    "type": "keyword"
+                  },
+                  "url": {
+                    "type": "text"
+                  }
+                }
+              },
+              "reactions": {
+                "type": "nested",
+                "properties": {
+                  "userId": {
+                    "type": "keyword"
+                  },
+                  "reactionType": {
+                    "type": "keyword"
+                  },
+                  "timestamp": {
+                    "type": "date",
+                    "format": "epoch_millis"
+                  }
+                }
+              },
+              "replyTo": {
+                "type": "keyword",
+                "null_value": null
+              }
+            }
           },
-          "read": {
-            "type": "boolean"
+          "status": {
+            "type": "nested",
+            "properties": {
+              "userId": {
+                "type": "keyword"
+              },
+              "delivered": {
+                "type": "boolean"
+              },
+              "read": {
+                "type": "boolean"
+              },
+              "deliveredAt": {
+                "type": "date",
+                "format": "epoch_millis",
+                "null_value": null
+              },
+              "readAt": {
+                "type": "date",
+                "format": "epoch_millis",
+                "null_value": null
+              }
+            }
           },
-          "deliveredAt": {
-            "type": "date",
-            "format": "epoch_millis",
-            "null_value": null
+          "timestamps": {
+            "properties": {
+              "sentAt": {
+                "type": "date",
+                "format": "epoch_millis"
+              },
+              "updatedAt": {
+                "type": "date",
+                "format": "epoch_millis",
+                "null_value": null
+              }
+            }
           },
-          "readAt": {
-            "type": "date",
-            "format": "epoch_millis",
-            "null_value": null
-          }
-        }
-      },
-      "timestamps": {
-        "properties": {
-          "sentAt": {
-            "type": "date",
-            "format": "epoch_millis"
-          },
-          "updatedAt": {
-            "type": "date",
-            "format": "epoch_millis",
-            "null_value": null
-          }
-        }
-      },
-      "metadata": {
-        "properties": {
-          "edited": {
-            "type": "boolean"
-          },
-          "deleted": {
-            "type": "boolean"
-          },
-          "pinned": {
-            "type": "boolean"
-          },
-          "priority": {
-            "type": "keyword"
-          },
-          "forwarded": {
-            "type": "boolean"
+          "metadata": {
+            "properties": {
+              "edited": {
+                "type": "boolean"
+              },
+              "deleted": {
+                "type": "boolean"
+              },
+              "pinned": {
+                "type": "boolean"
+              },
+              "priority": {
+                "type": "keyword"
+              },
+              "forwarded": {
+                "type": "boolean"
+              }
+            }
           }
         }
       }
+    },
+    "current-mapping": {
+      "settings": {
+        "index": {
+          "number_of_shards": 1,
+          "number_of_replicas": 1
+        }
+      },
+      "mappings": {
+        "properties": {
+          "messageId": {
+            "type": "keyword"
+          },
+          "chatType": {
+            "type": "keyword"
+          },
+          "conversationId": {
+            "type": "keyword",
+            "null_value": null
+          },
+          "roomId": {
+            "type": "keyword",
+            "null_value": null
+          },
+          "groupDetails": {
+            "properties": {
+              "groupId": { "type": "keyword" },
+              "groupName": { "type": "text" }
+            }
+          },
+          "participants": {
+            "type": "nested",
+            "properties": {
+              "userId": { "type": "keyword" },
+              "username": { "type": "text" }
+            }
+          },
+          "sender": {
+            "properties": {
+              "userId": { "type": "keyword" },
+              "username": { "type": "text" }
+            }
+          },
+          "receiver": {
+            "properties": {
+              "userId": { "type": "keyword" },
+              "username": { "type": "text" }
+            }
+          },
+          "messageDetails": {
+            "properties": {
+              "contentType": { "type": "keyword" },
+              "text": { "type": "text" },
+              "attachments": {
+                "type": "nested",
+                "properties": {
+                  "type": { "type": "keyword" },
+                  "url": { "type": "keyword" }
+                }
+              },
+              "mentions": {
+                "type": "keyword"
+              }
+            }
+          },
+          "status": {
+            "type": "nested",
+            "properties": {
+              "userId": { "type": "keyword" },
+              "delivered": { "type": "boolean" },
+              "read": { "type": "boolean" },
+              "readAt": { "type": "date", "format": "epoch_millis" }
+            }
+          },
+          "timestamps": {
+            "properties": {
+              "sentAt": { "type": "date", "format": "epoch_millis" },
+              "deliveredAt": { "type": "date", "format": "epoch_millis" },
+              "updatedAt": { "type": "date", "format": "epoch_millis" }
+            }
+          },
+          "metadata": {
+            "properties": {
+              "edited": { "type": "boolean" },
+              "deleted": { "type": "boolean" },
+              "replyToMessageId": { "type": "keyword" },
+              "reactions": {
+                "type": "nested",
+                "properties": {
+                  "userId": { "type": "keyword" },
+                  "reaction": { "type": "keyword" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "current-mapping-private-demo-record": {
+      "messageId": "uuid-1234",
+      "chatType": "PRIVATE",
+      "conversationId": "userA-userB",
+      "receiver": {
+        "userId": "userB",
+        "username": "Bob"
+      },
+      "participants": [
+        { "userId": "userA", "username": "Alice" },
+        { "userId": "userB", "username": "Bob" }
+      ],
+      "sender": { "userId": "userA", "username": "Alice" },
+      "messageDetails": {
+        "text": "Hello, Bob!",
+        "attachments": []
+      },
+      "status": [
+        {
+          "userId": "userB",
+          "delivered": true,
+          "read": false
+        }
+      ],
+      "timestamps": {
+        "sentAt": 1707594385000,
+        "deliveredAt": 1707594390000
+      },
+      "metadata": {
+        "edited": false,
+        "deleted": false
+      }
+    },
+    "current-mapping-group-demo-record": {
+      "messageId": "uuid-5678",
+      "chatType": "GROUP",
+      "roomId": "group-456",
+      "groupDetails": {
+        "groupId": "group-456",
+        "groupName": "Tech Team"
+      },
+      "participants": [
+        { "userId": "userA", "username": "Alice" },
+        { "userId": "userB", "username": "Bob" },
+        { "userId": "userC", "username": "Charlie" }
+      ],
+      "sender": { "userId": "userA", "username": "Alice" },
+      "messageDetails": {
+        "text": "Hello team!",
+        "attachments": []
+      },
+      "status": [
+        {
+          "userId": "userB",
+          "delivered": true,
+          "read": false
+        },
+        {
+          "userId": "userC",
+          "delivered": true,
+          "read": true
+        }
+      ],
+      "timestamps": {
+        "sentAt": 1707594385000
+      },
+      "metadata": {
+        "edited": false,
+        "deleted": false
+      }
     }
   }
-}
+]
