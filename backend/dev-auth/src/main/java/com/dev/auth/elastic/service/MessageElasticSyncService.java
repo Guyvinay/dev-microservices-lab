@@ -26,7 +26,7 @@ public class MessageElasticSyncService {
         this.objectMapper = objectMapper;
     }
 
-    @Async("elasticsearchExecutor")
+    @Async()
     public void syncMessageToElastic(ChatMessageDTO messagePayload, String index) throws IOException {
         log.info("Message received to sync");
         try {
