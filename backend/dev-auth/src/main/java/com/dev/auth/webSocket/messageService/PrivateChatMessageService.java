@@ -2,10 +2,12 @@ package com.dev.auth.webSocket.messageService;
 
 import com.dev.auth.elastic.service.MessageElasticSyncService;
 import com.dev.auth.webSocket.WebSocketSessionManager;
-import com.dev.auth.webSocket.dto.ChatMessage;
-import com.dev.auth.webSocket.dto.STATUS;
+import com.dev.auth.webSocket.dto.ChatMessageDTO;
+import com.dev.auth.webSocket.dto.ChatMessagePayload;
+import com.dev.auth.webSocket.utility.MessageUtilityWrapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -25,6 +27,8 @@ public class PrivateChatMessageService {
     private final ObjectMapper objectMapper;
     private final OfflineMessageService offlineMessageService;
     private final MessageElasticSyncService messageElasticSyncService;
+    @Value("elastic.index.private")
+    private String index;
 
     /**
      * Constructor for PrivateChatMessageService.
@@ -45,44 +49,46 @@ public class PrivateChatMessageService {
      * @param chatMessage The chat message to be sent.
      * @throws IOException If an error occurs while sending the message.
      */
-    public void sendPrivateMessage(ChatMessage chatMessage) throws IOException {
+    public void sendPrivateMessage(ChatMessagePayload chatMessage) throws IOException {
 
         // Retrieve the WebSocket session of the receiver in private chat
         WebSocketSession receiverSession = webSocketSessionManager.getUserSession(
                 PRIVATE, chatMessage.getReceiver());
 
+        ChatMessageDTO chatMessageDTO = MessageUtilityWrapper.chatMessageDTO(chatMessage);
+
+
         // Send the message if the session exists and is open
         if (receiverSession != null && receiverSession.isOpen()) {
-            chatMessage.setStatus(STATUS.DELIVERED);
             log.info("Sending message to {}: ", chatMessage.getReceiver());
             receiverSession.sendMessage(
                     new TextMessage(
-                            objectMapper.writeValueAsString(chatMessage)
+                            objectMapper.writeValueAsString(chatMessageDTO)
                     )
             );
-            messageElasticSyncService.syncMessageToElastic(chatMessage, "es_private_message_index");
+            messageElasticSyncService.syncMessageToElastic(chatMessageDTO, index    );
         } else {
             log.info("user not connected storing message {}", chatMessage);
-            offlineMessageService.storeOfflineMessage(chatMessage.getReceiver(), chatMessage);
+//            offlineMessageService.storeOfflineMessage(chatMessage.getReceiver(), chatMessage);
 
             /**
              * Fallback handling if receiverSession is null means receiver not connected
              * send to sender session about receiver not connected.
              */
-            WebSocketSession senderSession = webSocketSessionManager.getUserSession(
-                    PRIVATE,
-                    chatMessage.getSender()
-            );
+//            WebSocketSession senderSession = webSocketSessionManager.getUserSession(
+//                    PRIVATE,
+//                    chatMessage.getSender()
+//            );
 
-            if (senderSession != null && senderSession.isOpen()) {
-                chatMessage.setMessage("Receiver: "+ chatMessage.getReceiver()+", not connected.");
-                chatMessage.setStatus(STATUS.USER_NOT_CONNECTED);
-                senderSession.sendMessage(
-                        new TextMessage(
-                                objectMapper.writeValueAsString(chatMessage)
-                        )
-                );
-            }
+//            if (senderSession != null && senderSession.isOpen()) {
+//                chatMessage.setMessage("Receiver: "+ chatMessage.getReceiver()+", not connected.");
+//                chatMessage.setStatus(STATUS.USER_NOT_CONNECTED);
+//                senderSession.sendMessage(
+//                        new TextMessage(
+//                                objectMapper.writeValueAsString(chatMessage)
+//                        )
+//                );
+//            }
         }
     }
 }

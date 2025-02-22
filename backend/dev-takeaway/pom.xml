@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.dev</groupId>
     <artifactId>dev-takeaway</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.1</version>
     <name>dev-takeaway</name>
     <description>Demo project for Spring Boot</description>
     <properties>
@@ -258,6 +258,13 @@
         </dependency>
 
     </dependencies>
+    <distributionManagement>
+        <repository>
+            <id>nexus</id> <!-- Match this ID with your server entry in settings.xml -->
+            <url>http://localhost:8081/repository/dev-maven-releases/</url>
+        </repository>
+    </distributionManagement>
+
     <build>
         <plugins>
             <plugin>

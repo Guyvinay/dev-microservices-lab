@@ -1,7 +1,7 @@
 package com.dev.auth.elastic.service;
 
 import com.dev.auth.elastic.client.EsRestHighLevelClient;
-import com.dev.auth.webSocket.dto.ChatMessage;
+import com.dev.auth.webSocket.dto.ChatMessageDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.index.IndexRequest;
@@ -27,10 +27,9 @@ public class MessageElasticSyncService {
     }
 
     @Async("elasticsearchExecutor")
-    public void syncMessageToElastic(ChatMessage chatMessage, String index) throws IOException {
+    public void syncMessageToElastic(ChatMessageDTO messagePayload, String index) throws IOException {
         log.info("Message received to sync");
         try {
-            String messageId = UUID.randomUUID().toString();
             log.info("Executing syncMessageToElastic in thread: {}", Thread.currentThread().getName());
             boolean indexExists = esRestHighLevelClient.indexExists(index);
             if(!indexExists) {
@@ -38,8 +37,8 @@ public class MessageElasticSyncService {
                 esRestHighLevelClient.createIndex(createIndexRequest);
             }
             IndexRequest request = new IndexRequest(index)
-                    .id(messageId)
-                    .source(objectMapper.writeValueAsString(chatMessage), XContentType.JSON);
+                    .id(messagePayload.getMessageId())
+                    .source(objectMapper.writeValueAsString(messagePayload), XContentType.JSON);
             IndexResponse response = esRestHighLevelClient.indexDocument(request);
             log.info("Message  synced to elastic");
         } catch (IOException exception) {

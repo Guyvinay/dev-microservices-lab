@@ -59,7 +59,7 @@
     <distributionManagement>
         <repository>
             <id>nexus</id> <!-- Match this ID with your server entry in settings.xml -->
-            <url>http://localhost:8081/repository/dev-starter-release/</url>
+            <url>http://localhost:8081/repository/dev-maven-starter-releases/</url>
         </repository>
     </distributionManagement>
 

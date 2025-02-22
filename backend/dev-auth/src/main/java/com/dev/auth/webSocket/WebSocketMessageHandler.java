@@ -1,6 +1,7 @@
 package com.dev.auth.webSocket;
 
 import com.dev.auth.webSocket.dto.ChatMessage;
+import com.dev.auth.webSocket.dto.ChatMessagePayload;
 import com.dev.auth.webSocket.dto.MessageType;
 import com.dev.auth.webSocket.messageService.GroupChatMessageService;
 import com.dev.auth.webSocket.messageService.OfflineMessageService;
@@ -77,7 +78,7 @@ public class WebSocketMessageHandler extends TextWebSocketHandler {
             System.out.println("WebSocket connection established for user: " + username);
             Queue<ChatMessage> pendingMessages = offlineMessageService.getOfflineMessages(username);
             while(!pendingMessages.isEmpty()) {
-                privateChatMessageService.sendPrivateMessage(pendingMessages.poll());
+//                privateChatMessageService.sendPrivateMessage(pendingMessages.poll());
             }
             offlineMessageService.removeOfflineMessages(username);
         } else if (uriPath.startsWith("/dev-auth/ws/chat/group")) {
@@ -101,15 +102,20 @@ public class WebSocketMessageHandler extends TextWebSocketHandler {
 
         // Deserialize the received message
         ChatMessage chatMessage = objectMapper.readValue(message.getPayload(), ChatMessage.class);
+
+        ChatMessagePayload messagePayload = objectMapper.readValue(message.getPayload(), ChatMessagePayload.class);
+
         chatMessage.setTimeStamp(Instant.now().toEpochMilli());
         if (chatMessage.getSender() == null) {
             chatMessage.setSender(sender);
+            messagePayload.setSender(sender);
         }
 
         // Route the message based on chat type (private or group)
         if (uriPath.startsWith("/dev-auth/ws/chat/private")) {
             chatMessage.setType(MessageType.PRIVATE);
-            privateChatMessageService.sendPrivateMessage(chatMessage);
+            messagePayload.setChatType(MessageType.PRIVATE);
+            privateChatMessageService.sendPrivateMessage(messagePayload);
         } else if (uriPath.startsWith("/dev-auth/ws/chat/group")) {
             String roomId = extractRoomId(uriPath);
             chatMessage.setType(MessageType.GROUP);
