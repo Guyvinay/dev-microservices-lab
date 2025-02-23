@@ -3,6 +3,7 @@ package com.dev.auth.service;
 import com.dev.auth.dto.UserProfileRequestDTO;
 import com.dev.auth.dto.UserProfileResponseDTO;
 
+import java.util.List;
 import java.util.UUID;
 
 
@@ -73,4 +74,6 @@ public interface UserProfileService {
      * @throws com.dev.auth.exception.UserNotFoundException if no user is found with the given ID.
      */
     String deleteUser(UUID id);
+
+    List<UserProfileResponseDTO> getAllUsers();
 }

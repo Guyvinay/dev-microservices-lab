@@ -1,3 +1,8 @@
+type Query {
+    getUserByUsername(username: String!): UserProfileResponse
+    getUserByEmail(email: String!): UserProfileResponse
+    getAllUsers: [UserProfileResponse]
+}
 
 type UserProfile {
     id: ID!
@@ -6,6 +11,17 @@ type UserProfile {
     firstName: String!
     lastName: String!
     isActive: Boolean!
-    createdAt: Int!
-    updatedAt: Int!
+    createdAt: Float!
+    updatedAt: Float!
+}
+
+type UserProfileResponse {
+    id: ID!
+    username: String!
+    email: String!
+    firstName: String!
+    lastName: String!
+    isActive: Boolean!
+    createdAt: Float!
+    updatedAt: Float!
 }

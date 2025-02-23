@@ -171,20 +171,20 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
-			<plugin>
-				<groupId>com.google.cloud.tools</groupId>
-				<artifactId>jib-maven-plugin</artifactId>
-				<version>3.3.1</version>
-				<configuration>
-					<to>
-						<image>localhost:8083/repository/dev-docker-releases:latest</image>
-						<auth>
-							<username>admin</username>
-							<password>admin123</password>
-						</auth>
-					</to>
-				</configuration>
-			</plugin>
+<!--			<plugin>-->
+<!--				<groupId>com.google.cloud.tools</groupId>-->
+<!--				<artifactId>jib-maven-plugin</artifactId>-->
+<!--				<version>3.3.1</version>-->
+<!--				<configuration>-->
+<!--					<to>-->
+<!--						<image>localhost:8083/repository/dev-docker-releases:latest</image>-->
+<!--						<auth>-->
+<!--							<username>admin</username>-->
+<!--							<password>admin123</password>-->
+<!--						</auth>-->
+<!--					</to>-->
+<!--				</configuration>-->
+<!--			</plugin>-->
 		</plugins>
 	</build>
 
