@@ -9,16 +9,16 @@ import java.util.concurrent.Executor;
 
 //@Configuration
 //@EnableAsync
-public class AsyncConfigurations {
-
-//    @Bean
-    public Executor elasticsearchExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(5);   // Minimum active threads
-        executor.setMaxPoolSize(10);   // Maximum threads
-        executor.setQueueCapacity(100); // Queue size before rejecting tasks
-        executor.setThreadNamePrefix("ElasticSearch-Async-");
-        executor.initialize();
-        return executor;
-    }
-}
+//public class AsyncConfigurations {
+//
+////    @Bean
+//    public Executor elasticsearchExecutor() {
+//        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+//        executor.setCorePoolSize(5);   // Minimum active threads
+//        executor.setMaxPoolSize(10);   // Maximum threads
+//        executor.setQueueCapacity(100); // Queue size before rejecting tasks
+//        executor.setThreadNamePrefix("ElasticSearch-Async-");
+//        executor.initialize();
+//        return executor;
+//    }
+//}

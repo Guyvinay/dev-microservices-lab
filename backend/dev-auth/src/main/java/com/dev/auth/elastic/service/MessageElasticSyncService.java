@@ -12,7 +12,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -26,7 +25,7 @@ public class MessageElasticSyncService {
         this.objectMapper = objectMapper;
     }
 
-    @Async()
+    @Async
     public void syncMessageToElastic(ChatMessageDTO messagePayload, String index) throws IOException {
         log.info("Message received to sync");
         try {
@@ -40,7 +39,7 @@ public class MessageElasticSyncService {
                     .id(messagePayload.getMessageId())
                     .source(objectMapper.writeValueAsString(messagePayload), XContentType.JSON);
             IndexResponse response = esRestHighLevelClient.indexDocument(request);
-            log.info("Message  synced to elastic");
+            log.info("Message  synced to elastic {}", response.status());
         } catch (IOException exception) {
             log.error("Error while syncing message to elastic: ", exception.getStackTrace());
         }
