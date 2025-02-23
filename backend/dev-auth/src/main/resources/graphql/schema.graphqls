@@ -1,0 +1,11 @@
+
+type UserProfile {
+    id: ID!
+    username: String!
+    email: String!
+    firstName: String!
+    lastName: String!
+    isActive: Boolean!
+    createdAt: Int!
+    updatedAt: Int!
+}
