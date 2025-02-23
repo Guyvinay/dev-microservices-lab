@@ -27,7 +27,6 @@ public class UserProfileController {
 
     private final UserProfileService userProfileService;
 
-
     @Operation(
             summary = "Create a new user",
             description = "Creates a new user profile and returns the created user details."

@@ -133,6 +133,28 @@
 			<artifactId>spring-kafka</artifactId>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-graphql -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-graphql</artifactId>
+			<version>3.4.3</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/com.graphql-java/graphql-java-tools -->
+		<dependency>
+			<groupId>com.graphql-java</groupId>
+			<artifactId>graphql-java-tools</artifactId>
+			<version>5.2.4</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/com.graphql-java/graphql-spring-boot-starter -->
+		<dependency>
+			<groupId>com.graphql-java</groupId>
+			<artifactId>graphql-spring-boot-starter</artifactId>
+			<version>5.0.2</version>
+		</dependency>
+
+
 
 	</dependencies>
 
@@ -149,20 +171,20 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
-			<plugin>
-				<groupId>com.google.cloud.tools</groupId>
-				<artifactId>jib-maven-plugin</artifactId>
-				<version>3.3.1</version>
-				<configuration>
-					<to>
-						<image>localhost:8083/repository/dev-docker-releases:latest</image>
-						<auth>
-							<username>admin</username>
-							<password>admin123</password>
-						</auth>
-					</to>
-				</configuration>
-			</plugin>
+<!--			<plugin>-->
+<!--				<groupId>com.google.cloud.tools</groupId>-->
+<!--				<artifactId>jib-maven-plugin</artifactId>-->
+<!--				<version>3.3.1</version>-->
+<!--				<configuration>-->
+<!--					<to>-->
+<!--						<image>localhost:8083/repository/dev-docker-releases:latest</image>-->
+<!--						<auth>-->
+<!--							<username>admin</username>-->
+<!--							<password>admin123</password>-->
+<!--						</auth>-->
+<!--					</to>-->
+<!--				</configuration>-->
+<!--			</plugin>-->
 		</plugins>
 	</build>
 

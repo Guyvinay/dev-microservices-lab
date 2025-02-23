@@ -10,11 +10,14 @@ import com.dev.auth.security.provider.CustomBcryptEncoder;
 import com.dev.auth.service.UserProfileService;
 import com.dev.auth.utility.EntityDtoMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of the UserProfileService interface that handles
@@ -30,6 +33,7 @@ import java.util.UUID;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserProfileServiceImpl implements UserProfileService {
 
     // Repositories and mappers
@@ -168,5 +172,13 @@ public class UserProfileServiceImpl implements UserProfileService {
 
         userProfileModelRepository.deleteById(id);
         return "User profile deleted: " + id;
+    }
+
+    @Override
+    public List<UserProfileResponseDTO> getAllUsers() {
+        log.info("Fetching all user profiles");
+        List<UserProfileModel> profiles = userProfileModelRepository.findAll();
+        log.info("user profiles: {}", profiles.size());
+        return profiles.stream().map(entityDtoMapper::toUserProfileResponseDTO).collect(Collectors.toList());
     }
 }
