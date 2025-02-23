@@ -25,9 +25,8 @@ public class MessageElasticSyncService {
         this.objectMapper = objectMapper;
     }
 
-    @Async
+    @Async("threadPoolTaskExecutor")
     public void syncMessageToElastic(ChatMessageDTO messagePayload, String index) throws IOException {
-        log.info("Message received to sync");
         try {
             log.info("Executing syncMessageToElastic in thread: {}", Thread.currentThread().getName());
             boolean indexExists = esRestHighLevelClient.indexExists(index);
