@@ -27,7 +27,7 @@ public class PrivateChatMessageService {
     private final ObjectMapper objectMapper;
     private final OfflineMessageService offlineMessageService;
     private final MessageElasticSyncService messageElasticSyncService;
-    @Value("elastic.index.private")
+    @Value("${elastic.index.private}")
     private String index;
 
     /**
