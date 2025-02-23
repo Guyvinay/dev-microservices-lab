@@ -36,39 +36,3 @@ public class ChatMessageDTO {
     private MetadataDTO metadata; // Flags for edit/delete
 }
 
-/**
- * {
- * "messageId": "uuid-1234",
- * "chatType": "PRIVATE",
- * "conversationId": "userA-userB",
- * "receiver": {
- * "userId": "userB",
- * "username": "Bob"
- * },
- * "participants": [
- * { "userId": "userA", "username": "Alice" },
- * { "userId": "userB", "username": "Bob" }
- * ],
- * "sender": { "userId": "userA", "username": "Alice" },
- * "messageDetails": {
- * "text": "Hello, Bob!",
- * "attachments": []
- * },
- * "status": [
- * {
- * "userId": "userB",
- * "delivered": true,
- * "read": false
- * }
- * ],
- * "timestamps": {
- * "sentAt": 1707594385000,
- * "deliveredAt": 1707594390000
- * },
- * "metadata": {
- * "edited": false,
- * "deleted": false
- * }
- * }
- */
-

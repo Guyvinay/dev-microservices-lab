@@ -9,12 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserDTO {
+public class ReactionDTO {
     private String userId;
-    private String username;
-
-    public UserDTO(String username) {
-        this.username = username;
-        this.userId = username;
-    }
+    private String reaction;
 }
