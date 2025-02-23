@@ -68,7 +68,7 @@ public class PrivateChatMessageService {
             );
             log.info("sending message for syncing to elastic");
             messageElasticSyncService.syncMessageToElastic(chatMessageDTO, index);
-            log.info("message send to elastic");
+            log.info("sync completed");
         } else {
             log.info("user not connected storing message {}", chatMessage);
 //            offlineMessageService.storeOfflineMessage(chatMessage.getReceiver(), chatMessage);
