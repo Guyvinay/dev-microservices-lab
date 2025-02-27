@@ -1,10 +1,12 @@
 package com.dev.auth.security;
 
+import com.dev.auth.oauth2.service.CustomOAuth2UserService;
 import com.dev.auth.security.details.CustomUserDetailsService;
 import com.dev.auth.security.filter.JWTAuthenticationFilter;
 import com.dev.auth.security.filter.RequestLoggingFilter;
 import com.dev.auth.security.provider.CustomAuthenticationProvider;
 import com.dev.auth.security.provider.CustomBcryptEncoder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,6 +26,9 @@ import java.util.List;
 @EnableWebSecurity(debug = true)
 //@EnableWebSecurity
 public class SecurityConfiguration {
+
+    @Autowired
+    private CustomOAuth2UserService customOAuth2UserService;
 
     private final CustomBcryptEncoder customBcryptEncoder;
     private final CustomAuthenticationProvider customAuthenticationProvider;
@@ -53,6 +58,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers("/swagger-ui*/**", "/v3/api-docs/**").permitAll()
                             .requestMatchers("/api/v1.0/users*/**").permitAll()
+                            .requestMatchers("/", "/login").permitAll()
                             .requestMatchers("/api/auth/login").permitAll() // Allow login API
                             .anyRequest()
                             .authenticated();
@@ -62,6 +68,12 @@ public class SecurityConfiguration {
                 .addFilterAfter(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 //                .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(Customizer.withDefaults())
+//                .oauth2Login(oauth2->
+//                        oauth2.userInfoEndpoint(userInfo->
+//                                userInfo.userService(customOAuth2UserService)
+//                        )
+//                ) // Enables OAuth2 login
+                .oauth2Login(Customizer.withDefaults())
 //                .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(Customizer.withDefaults());
 
