@@ -25,6 +25,15 @@ spring:
 #      naming.physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     properties.org.hibernate.envers.store_data_at_delete: true
 
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: client-id
+            client-secret: client-secret
+            scope: read:user, user:email
+
 server:
   port: 8080
   canonical.url: http://localhost:8080/dev-auth
@@ -35,6 +44,7 @@ security:
   jwt:
     secret: mySecretKeyForJwtToken
     expiration: 3600000 # 1 hour in milliseconds
+
 
 elastic:
   index:

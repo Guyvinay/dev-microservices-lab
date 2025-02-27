@@ -12,7 +12,7 @@ import java.util.List;
 
 //@Component
 @Slf4j
-@Controller  // ✅ Instead of @Component
+@Controller
 public class UserProfileGraphQLResolver implements GraphQLQueryResolver {
 
     private final UserProfileService userProfileService;
@@ -21,10 +21,9 @@ public class UserProfileGraphQLResolver implements GraphQLQueryResolver {
         this.userProfileService = userProfileService;
     }
 
-    // ✅ GET ALL USERS
-    @QueryMapping(name = "getAllUsers")  // ✅ Explicitly maps to the schema
+    // GET ALL USERS
+    @QueryMapping(name = "getAllUsers")  // Explicitly maps to the schema
     public List<UserProfileResponseDTO> getAllUsers() {
-        log.info("all profiles");
         return userProfileService.getAllUsers();
     }
 

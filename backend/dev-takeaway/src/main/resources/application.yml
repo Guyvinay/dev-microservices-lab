@@ -2,7 +2,7 @@ spring:
   application:
     name: dev-takeaway
   datasource:
-    url: jdbc:postgresql://localhost:5434/dev_takeaway
+    url: jdbc:postgresql://localhost:5432/dev_takeaway
     username: postgres
     password: root
     driver-class-name: org.postgresql.Driver
@@ -26,7 +26,7 @@ spring:
 #        liquibase: DEBUG
   rabbitmq:
     host: localhost
-    port: 15673
+    port: 15672
     username: guest
     password: guest
 
