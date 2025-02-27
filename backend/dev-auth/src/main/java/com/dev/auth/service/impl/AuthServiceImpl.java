@@ -4,6 +4,7 @@ import com.dev.auth.dto.JwtTokenDto;
 import com.dev.auth.dto.LoginRequestDTO;
 import com.dev.auth.dto.UserProfileResponseDTO;
 import com.dev.auth.security.details.CustomAuthToken;
+import com.dev.auth.security.dto.JWTRefreshTokenDto;
 import com.dev.auth.security.provider.JwtTokenProviderManager;
 import com.dev.auth.service.AuthService;
 import com.dev.auth.service.UserProfileService;
@@ -15,11 +16,19 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class AuthServiceImpl implements AuthService {
 
+    public static final String JWT_TOKEN = "JWT_TOKEN";
+    public static final String JWT_REFRESH_TOKEN = "JWT_REFRESH_TOKEN";
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProviderManager jwtTokenProviderManager;
     private final UserProfileService userProfileService;
@@ -36,16 +45,31 @@ public class AuthServiceImpl implements AuthService {
      * @return
      */
     @Override
-    public String login(LoginRequestDTO loginRequestDTO) throws JsonProcessingException, JOSEException {
+    public Map<String, String> login(LoginRequestDTO loginRequestDTO) throws JsonProcessingException, JOSEException {
         Authentication authentication = new CustomAuthToken(loginRequestDTO.getOrgId(), loginRequestDTO.getUsername(), loginRequestDTO.getPassword());
         Authentication authenticated = authenticationManager.authenticate(authentication);
         SecurityContextHolder.getContext().setAuthentication(authenticated);
 
         String username = authenticated.getPrincipal().toString();
+        int jwtExpiredIn = 2;
+        int refreshExpiredIn = 10;
+        Map<String, String> tokensMap = new HashMap<>();
 
         UserProfileResponseDTO userProfile = userProfileService.getUserByUsername(username);
+        JwtTokenDto jwtTokenDto = createJwtTokeDto(userProfile, 2);
+        JWTRefreshTokenDto jwtRefreshTokenDto = createRefreshJwtTokeDto(userProfile, refreshExpiredIn);
+        tokensMap.put(JWT_TOKEN, jwtTokenProviderManager.createJwtToken( new ObjectMapper().writeValueAsString(jwtTokenDto), jwtExpiredIn));
+        tokensMap.put(JWT_REFRESH_TOKEN, jwtTokenProviderManager.createJwtToken( new ObjectMapper().writeValueAsString(jwtRefreshTokenDto), refreshExpiredIn));
 
-        JwtTokenDto jwtTokenDto = new JwtTokenDto(
+        return tokensMap;
+    }
+
+    private JwtTokenDto createJwtTokeDto(UserProfileResponseDTO userProfile, int expiredIn) {
+        ZonedDateTime zdt = LocalDateTime.now().atZone(ZoneOffset.UTC);
+        Date createdDate = Date.from(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
+        Date expiaryDate = Date.from(zdt.plusMinutes(expiredIn).toInstant());
+
+        return new JwtTokenDto(
                 userProfile.getId(),
                 userProfile.getUsername(),
                 "org",
@@ -53,9 +77,27 @@ public class AuthServiceImpl implements AuthService {
                 userProfile.getLastName(),
                 userProfile.getEmail(),
                 userProfile.getUsername(),
+                createdDate,
+                expiaryDate,
                 List.of("123456", "234567", "345678", "56789", "67890")
         );
+    }
 
-        return jwtTokenProviderManager.createJwtToken( new ObjectMapper().writeValueAsString(jwtTokenDto), 36000);
+    private JWTRefreshTokenDto createRefreshJwtTokeDto(UserProfileResponseDTO userProfile, int expiredIn) {
+        ZonedDateTime zdt = LocalDateTime.now().atZone(ZoneOffset.UTC);
+        Date createdDate = Date.from(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
+        Date expiaryDate = Date.from(zdt.plusMinutes(expiredIn).toInstant());
+        return new JWTRefreshTokenDto(
+                userProfile.getId(),
+                userProfile.getUsername(),
+                "org",
+                userProfile.getFirstName(),
+                userProfile.getLastName(),
+                userProfile.getEmail(),
+                userProfile.getUsername(),
+                createdDate,
+                expiaryDate,
+                List.of("123456", "234567", "345678", "56789", "67890")
+        );
     }
 }

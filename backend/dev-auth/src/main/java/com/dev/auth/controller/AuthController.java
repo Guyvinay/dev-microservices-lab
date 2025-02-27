@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 @Tag(name = "Authentication", description = "Endpoints for user authentication")
@@ -51,13 +53,12 @@ public class AuthController {
                     content = @Content(mediaType = "application/json"))
     })
     @PostMapping("/login")
-    public ResponseEntity<String> login(
+    public ResponseEntity<Map<String, String>> login(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Login request containing username and password",
                     required = true
             )
             @RequestBody LoginRequestDTO loginRequestDTO) throws JsonProcessingException, JOSEException {
-        authService.login(loginRequestDTO);
         return ResponseEntity.ok(authService.login(loginRequestDTO));
     }
 }
