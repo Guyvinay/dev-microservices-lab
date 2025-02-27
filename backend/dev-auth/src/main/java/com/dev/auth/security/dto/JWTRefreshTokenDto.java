@@ -1,16 +1,20 @@
-package com.dev.auth.dto;
+package com.dev.auth.security.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class JwtTokenDto {
+public class JWTRefreshTokenDto {
 
     private UUID userId;
     private String username;
@@ -22,7 +26,4 @@ public class JwtTokenDto {
     private Date createdDate;
     private Date expiryDate;
     private List<String> roles;
-
 }
-
-

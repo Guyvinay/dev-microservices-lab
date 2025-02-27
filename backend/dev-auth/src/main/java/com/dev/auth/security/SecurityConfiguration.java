@@ -68,12 +68,12 @@ public class SecurityConfiguration {
                 .addFilterAfter(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 //                .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(Customizer.withDefaults())
-//                .oauth2Login(oauth2->
-//                        oauth2.userInfoEndpoint(userInfo->
-//                                userInfo.userService(customOAuth2UserService)
-//                        )
-//                ) // Enables OAuth2 login
-                .oauth2Login(Customizer.withDefaults())
+                .oauth2Login(oauth2->
+                        oauth2.userInfoEndpoint(userInfo->
+                                userInfo.userService(customOAuth2UserService)
+                        )
+                ) // Enables OAuth2 login
+//                .oauth2Login(Customizer.withDefaults())
 //                .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(Customizer.withDefaults());
 
