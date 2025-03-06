@@ -70,8 +70,10 @@ public class SecurityConfiguration {
                 .addFilterBefore(requestLoggingFilter, UsernamePasswordAuthenticationFilter.class)  // Log before authentication
                 .addFilterAfter(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 //                .httpBasic(AbstractHttpConfigurer::disable)
-                .formLogin(Customizer.withDefaults())
                 .oauth2Login(oauth2 -> oauth2
+                        .authorizationEndpoint(authz ->
+                                authz.baseUri("/oauth2/authorize") // Custom login URL
+                        ) //http://localhost:8080/dev-auth/oauth2/authorize/github
                         .userInfoEndpoint(userInfo ->
                                 userInfo.userService(customOAuth2UserService)
                         )
@@ -81,7 +83,11 @@ public class SecurityConfiguration {
                 ) // Enables OAuth2 login
 //                .oauth2Login(Customizer.withDefaults())
 //                .formLogin(AbstractHttpConfigurer::disable)
-                .httpBasic(Customizer.withDefaults());
+//                .formLogin(Customizer.withDefaults())
+//                .httpBasic(Customizer.withDefaults());
+
+                .formLogin(AbstractHttpConfigurer::disable) // Disable default form login
+                .httpBasic(AbstractHttpConfigurer::disable); // Disable basic auth
 
         return httpSecurity.build();
     }

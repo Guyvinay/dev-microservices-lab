@@ -144,8 +144,7 @@ public class UserProfileServiceImpl implements UserProfileService {
                         () -> new UserNotFoundException("User not found with ID: " + id)
                 );
         // Map request to existing model
-        existingUser.setFirstName(request.getFirstName());
-        existingUser.setLastName(request.getLastName());
+        existingUser.setName(request.getName());
         existingUser.setActive(request.getIsActive());
 
         UserProfileModel updatedModule = userProfileModelRepository.save(existingUser);
@@ -180,5 +179,10 @@ public class UserProfileServiceImpl implements UserProfileService {
         List<UserProfileModel> profiles = userProfileModelRepository.findAll();
         log.info("user profiles: {}", profiles.size());
         return profiles.stream().map(entityDtoMapper::toUserProfileResponseDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return userProfileModelRepository.existsByEmail(email);
     }
 }

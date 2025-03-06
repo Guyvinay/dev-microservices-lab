@@ -13,10 +13,8 @@ import java.util.UUID;
 public class JwtTokenDto {
 
     private UUID userId;
-    private String username;
     private String org;
-    private String firstName;
-    private String lastName;
+    private String name;
     private String email;
     private String tenantId;
     private Date createdDate;

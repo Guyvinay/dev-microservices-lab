@@ -76,4 +76,6 @@ public interface UserProfileService {
     String deleteUser(UUID id);
 
     List<UserProfileResponseDTO> getAllUsers();
+
+    boolean existsByEmail(String email);
 }

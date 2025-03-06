@@ -11,10 +11,8 @@ import java.util.UUID;
 @Builder
 public class UserProfileResponseDTO {
     private UUID id;
-    private String username;
     private String email;
-    private String firstName;
-    private String lastName;
+    private String name;
     private boolean isActive;
     private long createdAt;
     private long updatedAt;

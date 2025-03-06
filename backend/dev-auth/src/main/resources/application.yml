@@ -33,11 +33,12 @@ spring:
             client-id: Iv23liap9b0pCJfbCrxs
             client-secret: fd28c44ee0ec0ba7a458fbc7d7c836aa37b36219
             scope: read:user, user:email
-#        provider:
-#          github:
-#            authorization-uri: https://github.com/login/oauth/authorize
-#            token-uri: https://github.com/login/oauth/access_token
-#            user-info-uri: https://api.github.com/user
+            redirect-uri: "{baseUrl}/login/oauth2/code/github"
+        provider:
+          github:
+            authorization-uri: https://github.com/login/oauth/authorize
+            token-uri: https://github.com/login/oauth/access_token
+            user-info-uri: https://api.github.com/user
 
 server:
   port: 8080

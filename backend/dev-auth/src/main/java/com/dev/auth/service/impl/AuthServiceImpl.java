@@ -71,12 +71,10 @@ public class AuthServiceImpl implements AuthService {
 
         return new JwtTokenDto(
                 userProfile.getId(),
-                userProfile.getUsername(),
                 "org",
-                userProfile.getFirstName(),
-                userProfile.getLastName(),
+                userProfile.getName(),
                 userProfile.getEmail(),
-                userProfile.getUsername(),
+                "tenantId",
                 createdDate,
                 expiaryDate,
                 List.of("123456", "234567", "345678", "56789", "67890")
@@ -89,12 +87,10 @@ public class AuthServiceImpl implements AuthService {
         Date expiaryDate = Date.from(zdt.plusMinutes(expiredIn).toInstant());
         return new JWTRefreshTokenDto(
                 userProfile.getId(),
-                userProfile.getUsername(),
                 "org",
-                userProfile.getFirstName(),
-                userProfile.getLastName(),
+                userProfile.getName(),
                 userProfile.getEmail(),
-                userProfile.getUsername(),
+                "tenant",
                 createdDate,
                 expiaryDate,
                 List.of("123456", "234567", "345678", "56789", "67890")

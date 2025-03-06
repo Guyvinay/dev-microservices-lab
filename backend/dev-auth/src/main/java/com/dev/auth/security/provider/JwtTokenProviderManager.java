@@ -1,6 +1,7 @@
 package com.dev.auth.security.provider;
 
 import com.dev.auth.dto.JwtTokenDto;
+import com.dev.auth.dto.UserProfileResponseDTO;
 import com.dev.auth.exception.JWTTokenExpiredException;
 import com.dev.auth.security.SecurityConstants;
 import com.dev.auth.security.details.CustomAuthToken;
@@ -51,6 +52,24 @@ public class JwtTokenProviderManager {
     public String createJwtToken(String payload, int expInMinutes) throws JOSEException {
         return createJwtToken(payload, expInMinutes, reqSigner);
     }
+
+    public JwtTokenDto createJwtTokeDto(UserProfileResponseDTO userProfile, int expiredIn) {
+        ZonedDateTime zdt = LocalDateTime.now().atZone(ZoneOffset.UTC);
+        Date createdDate = Date.from(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
+        Date expiaryDate = Date.from(zdt.plusMinutes(expiredIn).toInstant());
+
+        return new JwtTokenDto(
+                userProfile.getId(),
+                "org",
+                userProfile.getName(),
+                userProfile.getEmail(),
+                "tenantId",
+                createdDate,
+                expiaryDate,
+                List.of("123456", "234567", "345678", "56789", "67890")
+        );
+    }
+
 
     public String createJwtToken(String payload, int expiryTimeMinutes, JWSSigner jwsSigner) throws JOSEException {
 
@@ -136,7 +155,7 @@ public class JwtTokenProviderManager {
 
     public Authentication getAuthentication(String token) throws JsonProcessingException {
         JwtTokenDto jwtToken = OM.readValue(getSubjectPayload(token), JwtTokenDto.class);
-        CustomAuthToken customAuthToken = new CustomAuthToken(jwtToken.getOrg(), jwtToken.getUsername(), "", null);
+        CustomAuthToken customAuthToken = new CustomAuthToken(jwtToken.getOrg(), jwtToken.getEmail(), "", null);
         customAuthToken.setDetails(jwtToken); // set jwtToken payload as user details ...
         return customAuthToken;
     }

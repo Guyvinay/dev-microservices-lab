@@ -21,5 +21,9 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         log.info("OAuth2 Authentication successful {}", oAuth2User);
 
         // Redirect with JWT token
+
+        response.setContentType("application/json");
+        response.getWriter().write("{\"token\": \"" + oAuth2User + "\"}");
+
     }
 }
