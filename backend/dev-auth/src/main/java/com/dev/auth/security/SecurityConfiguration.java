@@ -1,5 +1,6 @@
 package com.dev.auth.security;
 
+import com.dev.auth.oauth2.handler.OAuth2LoginSuccessHandler;
 import com.dev.auth.oauth2.service.CustomOAuth2UserService;
 import com.dev.auth.security.details.CustomUserDetailsService;
 import com.dev.auth.security.filter.JWTAuthenticationFilter;
@@ -27,23 +28,24 @@ import java.util.List;
 //@EnableWebSecurity
 public class SecurityConfiguration {
 
-    @Autowired
-    private CustomOAuth2UserService customOAuth2UserService;
-
     private final CustomBcryptEncoder customBcryptEncoder;
     private final CustomAuthenticationProvider customAuthenticationProvider;
     private final CustomUserDetailsService customUserDetailsService;
     private final JWTAuthenticationFilter jwtAuthenticationFilter;
     private final CustomCorsConfiguration corsConfiguration;
     private final RequestLoggingFilter requestLoggingFilter;
+    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+    private final CustomOAuth2UserService customOAuth2UserService;
 
-    public SecurityConfiguration(CustomBcryptEncoder customBcryptEncoder, CustomAuthenticationProvider customAuthenticationProvider, CustomUserDetailsService customUserDetailsService, JWTAuthenticationFilter jwtAuthenticationFilter, CustomCorsConfiguration corsConfiguration, RequestLoggingFilter requestLoggingFilter) {
+    public SecurityConfiguration(CustomOAuth2UserService customOAuth2UserService, CustomBcryptEncoder customBcryptEncoder, CustomAuthenticationProvider customAuthenticationProvider, CustomUserDetailsService customUserDetailsService, JWTAuthenticationFilter jwtAuthenticationFilter, CustomCorsConfiguration corsConfiguration, RequestLoggingFilter requestLoggingFilter, OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler) {
+        this.customOAuth2UserService = customOAuth2UserService;
         this.customBcryptEncoder = customBcryptEncoder;
         this.customAuthenticationProvider = customAuthenticationProvider;
         this.customUserDetailsService = customUserDetailsService;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.corsConfiguration = corsConfiguration;
         this.requestLoggingFilter = requestLoggingFilter;
+        this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
     }
 
     @Bean
@@ -60,6 +62,7 @@ public class SecurityConfiguration {
                             .requestMatchers("/api/v1.0/users*/**").permitAll()
                             .requestMatchers("/", "/login").permitAll()
                             .requestMatchers("/api/auth/login").permitAll() // Allow login API
+                            .requestMatchers("/graphiql*/**").permitAll()
                             .anyRequest()
                             .authenticated();
                 })
@@ -68,9 +71,12 @@ public class SecurityConfiguration {
                 .addFilterAfter(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 //                .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(Customizer.withDefaults())
-                .oauth2Login(oauth2->
-                        oauth2.userInfoEndpoint(userInfo->
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo ->
                                 userInfo.userService(customOAuth2UserService)
+                        )
+                        .successHandler(
+                                oAuth2LoginSuccessHandler
                         )
                 ) // Enables OAuth2 login
 //                .oauth2Login(Customizer.withDefaults())
