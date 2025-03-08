@@ -37,8 +37,8 @@ spring:
             authorization-grant-type: authorization_code
             client-name: GitHub
           google:
-            client-id: your-google-client-id
-            client-secret: your-google-client-secret
+            client-id: 190624024371-5rnr5nhn766nk7okgev8vp126oqpd96d.apps.googleusercontent.com
+            client-secret: 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
             scope: profile, email
             redirect-uri: "{baseUrl}/login/oauth2/code/google"
             authorization-grant-type: authorization_code
@@ -55,8 +55,9 @@ spring:
 
 server:
   port: 8080
-  canonical.url: http://localhost:8080/dev-auth
-  servlet.context-path: /dev-auth
+  address: 0.0.0.0
+#  canonical.url: http://localhost:8080/dev-auths
+#  servlet.context-path: /dev-auths
   name: localhost
 
 security:

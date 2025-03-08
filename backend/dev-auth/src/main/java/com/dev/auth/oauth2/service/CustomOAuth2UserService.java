@@ -15,6 +15,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -41,10 +42,15 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         OAuth2User oauth2User = new DefaultOAuth2UserService().loadUser(userRequest);
 
         // Extract user details
+        Map<String, Object> attributes = oauth2User.getAttributes();
+        log.info("attributes: {}", attributes.size());
         String provider = userRequest.getClientRegistration().getRegistrationId();
-        String providerId = oauth2User.getAttribute("id").toString();
-        String name = oauth2User.getAttribute("name");
-        String email = oauth2User.getAttribute("email");
+        String providerId = String.valueOf(attributes.get("id"));
+        if(provider.equalsIgnoreCase("google")) {
+            providerId = String.valueOf(attributes.get("sub"));
+        }
+        String name = String.valueOf(attributes.get("name"));
+        String email = String.valueOf(attributes.get("email"));
 
         log.info("provider: {}, providerId: {}, name: {}, email: {}", provider, providerId, name, email);
 
@@ -61,7 +67,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         JwtTokenDto jwtTokenDto = securityUtils.createJwtTokeDtoFromModel(profileModel, 2);
 
-        CustomOAuth2User customOAuth2User = new CustomOAuth2User(jwtTokenDto, oauth2User.getAttributes(), oauth2User.getAuthorities());
+        CustomOAuth2User customOAuth2User = new CustomOAuth2User(jwtTokenDto, attributes, oauth2User.getAuthorities());
 
         return customOAuth2User;
     }
