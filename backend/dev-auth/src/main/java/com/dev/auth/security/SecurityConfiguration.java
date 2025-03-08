@@ -62,29 +62,20 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers("/swagger-ui*/**", "/v3/api-docs/**").permitAll()
                             .requestMatchers("/api/v1.0/users*/**").permitAll()
-                            .requestMatchers("/", "/login").permitAll()
                             .requestMatchers("/api/auth/login").permitAll() // Allow login API
                             .requestMatchers("/graphiql*/**").permitAll()
-                            .anyRequest()
-                            .authenticated();
+                            .anyRequest().authenticated();
                 })
                 .csrf(AbstractHttpConfigurer::disable)
                 .addFilterBefore(requestLoggingFilter, UsernamePasswordAuthenticationFilter.class)  // Log before authentication
-                .addFilterAfter(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-//                .httpBasic(AbstractHttpConfigurer::disable)
-                .oauth2Login(oauth2 -> oauth2
-                        .authorizationEndpoint(authz ->
-                                authz.baseUri("/oauth2/authorize") // Custom login URL
-                        ) //http://localhost:8080/dev-auth/oauth2/authorize/github
+                .addFilterAfter(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // Process JWT after username/password authentication
+                .oauth2Login(oauth2 -> oauth2 // Enables OAuth2 login
+                        .authorizationEndpoint(authz -> authz.baseUri("/oauth2/authorize")) // Custom login URL
+                        .redirectionEndpoint(redir -> redir.baseUri("/login/oauth2/code/*")) // Ensures GitHub redirects correctly
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-                        .successHandler(oAuth2LoginSuccessHandler)
+                        .successHandler(oAuth2LoginSuccessHandler) // Custom JWT handler
                         .failureHandler(customAuthenticationFailureHandler)
-                ) // Enables OAuth2 login
-//                .oauth2Login(Customizer.withDefaults())
-//                .formLogin(AbstractHttpConfigurer::disable)
-//                .formLogin(Customizer.withDefaults())
-//                .httpBasic(Customizer.withDefaults());
-
+                ) // http://localhost:8080/dev-auth/oauth2/authorize/github
                 .formLogin(AbstractHttpConfigurer::disable) // Disable default form login
                 .httpBasic(AbstractHttpConfigurer::disable); // Disable basic auth
 
