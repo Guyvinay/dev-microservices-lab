@@ -34,6 +34,8 @@ spring:
             client-secret: fd28c44ee0ec0ba7a458fbc7d7c836aa37b36219
             scope: read:user, user:email
             redirect-uri: "{baseUrl}/login/oauth2/code/github"
+            authorization-grant-type: authorization_code
+            client-name: GitHub
         provider:
           github:
             authorization-uri: https://github.com/login/oauth/authorize

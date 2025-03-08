@@ -25,7 +25,7 @@ public class CustomUserDetails extends User {
     }
 
     public CustomUserDetails(UserProfileModel user) {
-        super(user.getUsername(), user.getPassword(), user.isActive(), true, true, true,
+        super(user.getEmail(), user.getPassword(), user.isActive(), true, true, true,
                 List.of(new SimpleGrantedAuthority("ROLE_USER")));
         this.orgId = "CurrentOrgId";
     }

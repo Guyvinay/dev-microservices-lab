@@ -39,7 +39,7 @@ public class CustomHandshakeInterceptor implements HandshakeInterceptor {
             JwtTokenDto jwtTokenDto = (JwtTokenDto) authentication.getDetails();
 
             // Store username and additional user details in the WebSocket session attributes
-            attributes.put("username", jwtTokenDto.getUsername());
+            attributes.put("username", jwtTokenDto.getEmail());
 
             return true; // Allow WebSocket connection
         }

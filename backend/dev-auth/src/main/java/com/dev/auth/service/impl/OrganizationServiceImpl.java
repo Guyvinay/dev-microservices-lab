@@ -105,11 +105,9 @@ public class OrganizationServiceImpl implements OrganizationService {
         userProfileModel.setActive(true);
         userProfileModel.setCreatedAt(Instant.now().toEpochMilli());
         userProfileModel.setUpdatedAt(Instant.now().toEpochMilli());
-        userProfileModel.setFirstName(orgSignupRequestDTO.getAdminFirstName());
-        userProfileModel.setLastName(orgSignupRequestDTO.getAdminLastName());
+        userProfileModel.setName(orgSignupRequestDTO.getName());
         userProfileModel.setEmail(orgSignupRequestDTO.getAdminEmail());
         userProfileModel.setPassword(customBcryptEncoder.encode(orgSignupRequestDTO.getAdminPassword()));
-        userProfileModel.setUsername(orgSignupRequestDTO.getAdminUsername());
 
         return userProfileModelRepository.save(userProfileModel);
     }

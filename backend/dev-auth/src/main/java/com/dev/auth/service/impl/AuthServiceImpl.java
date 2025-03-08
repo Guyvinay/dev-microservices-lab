@@ -55,7 +55,7 @@ public class AuthServiceImpl implements AuthService {
         int refreshExpiredIn = 10;
         Map<String, String> tokensMap = new HashMap<>();
 
-        UserProfileResponseDTO userProfile = userProfileService.getUserByUsername(username);
+        UserProfileResponseDTO userProfile = userProfileService.getUserByEmail(username);
         JwtTokenDto jwtTokenDto = createJwtTokeDto(userProfile, 2);
         JWTRefreshTokenDto jwtRefreshTokenDto = createRefreshJwtTokeDto(userProfile, refreshExpiredIn);
         tokensMap.put(JWT_TOKEN, jwtTokenProviderManager.createJwtToken( new ObjectMapper().writeValueAsString(jwtTokenDto), jwtExpiredIn));

@@ -31,7 +31,7 @@ public class UserProfileModel {
     @ApiModelProperty(name = "id", value = "Unique identifier of the user", example = "550e8400-e29b-41d4-a716-446655440000")
     private UUID id;
 
-    @Column(name = "PASSWORD", nullable = false)
+    @Column(name = "PASSWORD")
     @ApiModelProperty(name = "password", value = "Hashed password for the user", example = "$2a$10$...")
     private String password;
 

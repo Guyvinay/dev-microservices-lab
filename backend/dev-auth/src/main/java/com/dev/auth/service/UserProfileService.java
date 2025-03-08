@@ -44,17 +44,6 @@ public interface UserProfileService {
     UserProfileResponseDTO getUserByEmail(String email);
 
     /**
-     * Retrieves the user profile by its unique ID.
-     *
-     * @param username The unique identifier of the user.
-     * @return A DTO containing the user profile details.
-     * @throws com.dev.auth.exception.InvalidInputException if the ID is null.
-     * @throws com.dev.auth.exception.UserNotFoundException if no user is found with the given ID.
-     */
-    UserProfileResponseDTO getUserByUsername(String username);
-
-
-    /**
      * Updates an existing user profile.
      *
      * @param id      The unique identifier of the user to be updated.

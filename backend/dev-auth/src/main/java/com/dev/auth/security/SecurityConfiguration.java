@@ -1,5 +1,6 @@
 package com.dev.auth.security;
 
+import com.dev.auth.oauth2.handler.CustomAuthenticationFailureHandler;
 import com.dev.auth.oauth2.handler.OAuth2LoginSuccessHandler;
 import com.dev.auth.oauth2.service.CustomOAuth2UserService;
 import com.dev.auth.security.details.CustomUserDetailsService;
@@ -7,13 +8,11 @@ import com.dev.auth.security.filter.JWTAuthenticationFilter;
 import com.dev.auth.security.filter.RequestLoggingFilter;
 import com.dev.auth.security.provider.CustomAuthenticationProvider;
 import com.dev.auth.security.provider.CustomBcryptEncoder;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -26,6 +25,7 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity(debug = true)
 //@EnableWebSecurity
+//@RequiredArgsConstructor
 public class SecurityConfiguration {
 
     private final CustomBcryptEncoder customBcryptEncoder;
@@ -35,9 +35,10 @@ public class SecurityConfiguration {
     private final CustomCorsConfiguration corsConfiguration;
     private final RequestLoggingFilter requestLoggingFilter;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+    private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
     private final CustomOAuth2UserService customOAuth2UserService;
 
-    public SecurityConfiguration(CustomOAuth2UserService customOAuth2UserService, CustomBcryptEncoder customBcryptEncoder, CustomAuthenticationProvider customAuthenticationProvider, CustomUserDetailsService customUserDetailsService, JWTAuthenticationFilter jwtAuthenticationFilter, CustomCorsConfiguration corsConfiguration, RequestLoggingFilter requestLoggingFilter, OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler) {
+    public SecurityConfiguration(CustomOAuth2UserService customOAuth2UserService, CustomBcryptEncoder customBcryptEncoder, CustomAuthenticationProvider customAuthenticationProvider, CustomUserDetailsService customUserDetailsService, JWTAuthenticationFilter jwtAuthenticationFilter, CustomCorsConfiguration corsConfiguration, RequestLoggingFilter requestLoggingFilter, OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler, CustomAuthenticationFailureHandler customAuthenticationFailureHandler) {
         this.customOAuth2UserService = customOAuth2UserService;
         this.customBcryptEncoder = customBcryptEncoder;
         this.customAuthenticationProvider = customAuthenticationProvider;
@@ -46,6 +47,7 @@ public class SecurityConfiguration {
         this.corsConfiguration = corsConfiguration;
         this.requestLoggingFilter = requestLoggingFilter;
         this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
+        this.customAuthenticationFailureHandler = customAuthenticationFailureHandler;
     }
 
     @Bean
@@ -74,12 +76,9 @@ public class SecurityConfiguration {
                         .authorizationEndpoint(authz ->
                                 authz.baseUri("/oauth2/authorize") // Custom login URL
                         ) //http://localhost:8080/dev-auth/oauth2/authorize/github
-                        .userInfoEndpoint(userInfo ->
-                                userInfo.userService(customOAuth2UserService)
-                        )
-                        .successHandler(
-                                oAuth2LoginSuccessHandler
-                        )
+                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                        .successHandler(oAuth2LoginSuccessHandler)
+                        .failureHandler(customAuthenticationFailureHandler)
                 ) // Enables OAuth2 login
 //                .oauth2Login(Customizer.withDefaults())
 //                .formLogin(AbstractHttpConfigurer::disable)
