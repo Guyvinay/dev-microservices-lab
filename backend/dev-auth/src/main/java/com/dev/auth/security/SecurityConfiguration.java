@@ -1,5 +1,6 @@
 package com.dev.auth.security;
 
+import com.dev.auth.oauth2.handler.CustomAuthenticationFailureHandler;
 import com.dev.auth.oauth2.handler.OAuth2LoginSuccessHandler;
 import com.dev.auth.oauth2.service.CustomOAuth2UserService;
 import com.dev.auth.security.details.CustomUserDetailsService;
@@ -7,13 +8,11 @@ import com.dev.auth.security.filter.JWTAuthenticationFilter;
 import com.dev.auth.security.filter.RequestLoggingFilter;
 import com.dev.auth.security.provider.CustomAuthenticationProvider;
 import com.dev.auth.security.provider.CustomBcryptEncoder;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -26,6 +25,7 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity(debug = true)
 //@EnableWebSecurity
+//@RequiredArgsConstructor
 public class SecurityConfiguration {
 
     private final CustomBcryptEncoder customBcryptEncoder;
@@ -35,9 +35,10 @@ public class SecurityConfiguration {
     private final CustomCorsConfiguration corsConfiguration;
     private final RequestLoggingFilter requestLoggingFilter;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+    private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
     private final CustomOAuth2UserService customOAuth2UserService;
 
-    public SecurityConfiguration(CustomOAuth2UserService customOAuth2UserService, CustomBcryptEncoder customBcryptEncoder, CustomAuthenticationProvider customAuthenticationProvider, CustomUserDetailsService customUserDetailsService, JWTAuthenticationFilter jwtAuthenticationFilter, CustomCorsConfiguration corsConfiguration, RequestLoggingFilter requestLoggingFilter, OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler) {
+    public SecurityConfiguration(CustomOAuth2UserService customOAuth2UserService, CustomBcryptEncoder customBcryptEncoder, CustomAuthenticationProvider customAuthenticationProvider, CustomUserDetailsService customUserDetailsService, JWTAuthenticationFilter jwtAuthenticationFilter, CustomCorsConfiguration corsConfiguration, RequestLoggingFilter requestLoggingFilter, OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler, CustomAuthenticationFailureHandler customAuthenticationFailureHandler) {
         this.customOAuth2UserService = customOAuth2UserService;
         this.customBcryptEncoder = customBcryptEncoder;
         this.customAuthenticationProvider = customAuthenticationProvider;
@@ -46,6 +47,7 @@ public class SecurityConfiguration {
         this.corsConfiguration = corsConfiguration;
         this.requestLoggingFilter = requestLoggingFilter;
         this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
+        this.customAuthenticationFailureHandler = customAuthenticationFailureHandler;
     }
 
     @Bean
@@ -60,28 +62,22 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers("/swagger-ui*/**", "/v3/api-docs/**").permitAll()
                             .requestMatchers("/api/v1.0/users*/**").permitAll()
-                            .requestMatchers("/", "/login").permitAll()
                             .requestMatchers("/api/auth/login").permitAll() // Allow login API
                             .requestMatchers("/graphiql*/**").permitAll()
-                            .anyRequest()
-                            .authenticated();
+                            .anyRequest().authenticated();
                 })
                 .csrf(AbstractHttpConfigurer::disable)
                 .addFilterBefore(requestLoggingFilter, UsernamePasswordAuthenticationFilter.class)  // Log before authentication
-                .addFilterAfter(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-//                .httpBasic(AbstractHttpConfigurer::disable)
-                .formLogin(Customizer.withDefaults())
-                .oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(userInfo ->
-                                userInfo.userService(customOAuth2UserService)
-                        )
-                        .successHandler(
-                                oAuth2LoginSuccessHandler
-                        )
-                ) // Enables OAuth2 login
-//                .oauth2Login(Customizer.withDefaults())
-//                .formLogin(AbstractHttpConfigurer::disable)
-                .httpBasic(Customizer.withDefaults());
+                .addFilterAfter(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // Process JWT after username/password authentication
+                .oauth2Login(oauth2 -> oauth2 // Enables OAuth2 login
+                        .authorizationEndpoint(authz -> authz.baseUri("/oauth2/authorize")) // Custom login URL
+                        .redirectionEndpoint(redir -> redir.baseUri("/login/oauth2/code/*")) // Ensures GitHub redirects correctly
+                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                        .successHandler(oAuth2LoginSuccessHandler) // Custom JWT handler
+                        .failureHandler(customAuthenticationFailureHandler)
+                ) // http://localhost:8080/dev-auth/oauth2/authorize/github
+                .formLogin(AbstractHttpConfigurer::disable) // Disable default form login
+                .httpBasic(AbstractHttpConfigurer::disable); // Disable basic auth
 
         return httpSecurity.build();
     }

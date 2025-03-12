@@ -11,31 +11,24 @@
             </not>
         </preConditions>
         <createTable tableName="USER_PROFILE_MODEL">
-            <column name="id" type="UUID">
+            <column name="ID" type="UUID">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="username" type="VARCHAR(50)">
+            <column name="PASSWORD" type="VARCHAR(255)">
+            </column>
+            <column name="EMAIL" type="VARCHAR(100)">
                 <constraints nullable="false" unique="true"/>
             </column>
-            <column name="password" type="VARCHAR(255)">
+            <column name="NAME" type="VARCHAR(50)">
                 <constraints nullable="false"/>
             </column>
-            <column name="email" type="VARCHAR(100)">
-                <constraints nullable="false" unique="true"/>
-            </column>
-            <column name="first_name" type="VARCHAR(50)">
+            <column name="IS_ACTIVE" type="BOOLEAN">
                 <constraints nullable="false"/>
             </column>
-            <column name="last_name" type="VARCHAR(50)">
+            <column name="CREATED_AT" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="is_active" type="BOOLEAN">
-                <constraints nullable="false"/>
-            </column>
-            <column name="created_at" type="BIGINT">
-                <constraints nullable="false"/>
-            </column>
-            <column name="updated_at" type="BIGINT">
+            <column name="UPDATED_AT" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -169,6 +162,23 @@
                 <constraints nullable="false"/>
             </column>
             <column name="organization_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2025.03.08-09.42" author="vinay.singh">
+        <createTable tableName="OAUTH_PROVIDERS">
+            <column name="ID" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="USER_ID" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PROVIDER" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PROVIDER_ID" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
         </createTable>

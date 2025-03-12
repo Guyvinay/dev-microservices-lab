@@ -1,10 +1,17 @@
 package com.dev.auth.oauth2.handler;
 
+import com.dev.auth.dto.JwtTokenDto;
+import com.dev.auth.oauth2.dto.CustomOAuth2User;
+import com.dev.auth.security.details.CustomAuthToken;
+import com.dev.auth.security.provider.JwtTokenProviderManager;
+import com.dev.auth.security.utility.SecurityUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nimbusds.jose.JOSEException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
@@ -14,12 +21,36 @@ import java.io.IOException;
 @Slf4j
 public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
+    private final SecurityUtils securityUtils;
+    private final JwtTokenProviderManager jwtTokenProviderManager;
+    private final ObjectMapper objectMapper;
+
+
+    public OAuth2LoginSuccessHandler(SecurityUtils securityUtils, JwtTokenProviderManager jwtTokenProviderManager, ObjectMapper objectMapper) {
+        this.securityUtils = securityUtils;
+        this.jwtTokenProviderManager = jwtTokenProviderManager;
+        this.objectMapper = objectMapper;
+    }
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
-        OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
+        CustomOAuth2User customUser = (CustomOAuth2User) authentication.getPrincipal();
+        JwtTokenDto jwtTokenDto = customUser.getJwtTokenDto();
+        CustomAuthToken customAuthToken = new CustomAuthToken(jwtTokenDto.getOrg(), jwtTokenDto.getEmail(), null, customUser.getAuthorities());
+        customAuthToken.setDetails(jwtTokenDto);
+        SecurityContextHolder.getContext().setAuthentication(customAuthToken);
+        String token;
+        try {
+            token = jwtTokenProviderManager.createJwtToken(objectMapper.writeValueAsString(jwtTokenDto), 1);
+        } catch (JOSEException e) {
+            throw new RuntimeException(e);
+        }
 
-        log.info("OAuth2 Authentication successful {}", oAuth2User);
+        log.info("OAuth2 Authentication successful: {}", jwtTokenDto);
 
         // Redirect with JWT token
+        response.setContentType("application/json");
+//        response.getWriter().write("{\"token\": \"" + token + "\"}");
+        response.getWriter().write(token);
     }
 }

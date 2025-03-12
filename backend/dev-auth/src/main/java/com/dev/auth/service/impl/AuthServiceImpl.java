@@ -55,7 +55,7 @@ public class AuthServiceImpl implements AuthService {
         int refreshExpiredIn = 10;
         Map<String, String> tokensMap = new HashMap<>();
 
-        UserProfileResponseDTO userProfile = userProfileService.getUserByUsername(username);
+        UserProfileResponseDTO userProfile = userProfileService.getUserByEmail(username);
         JwtTokenDto jwtTokenDto = createJwtTokeDto(userProfile, 2);
         JWTRefreshTokenDto jwtRefreshTokenDto = createRefreshJwtTokeDto(userProfile, refreshExpiredIn);
         tokensMap.put(JWT_TOKEN, jwtTokenProviderManager.createJwtToken( new ObjectMapper().writeValueAsString(jwtTokenDto), jwtExpiredIn));
@@ -71,12 +71,10 @@ public class AuthServiceImpl implements AuthService {
 
         return new JwtTokenDto(
                 userProfile.getId(),
-                userProfile.getUsername(),
                 "org",
-                userProfile.getFirstName(),
-                userProfile.getLastName(),
+                userProfile.getName(),
                 userProfile.getEmail(),
-                userProfile.getUsername(),
+                "tenantId",
                 createdDate,
                 expiaryDate,
                 List.of("123456", "234567", "345678", "56789", "67890")
@@ -89,12 +87,10 @@ public class AuthServiceImpl implements AuthService {
         Date expiaryDate = Date.from(zdt.plusMinutes(expiredIn).toInstant());
         return new JWTRefreshTokenDto(
                 userProfile.getId(),
-                userProfile.getUsername(),
                 "org",
-                userProfile.getFirstName(),
-                userProfile.getLastName(),
+                userProfile.getName(),
                 userProfile.getEmail(),
-                userProfile.getUsername(),
+                "tenant",
                 createdDate,
                 expiaryDate,
                 List.of("123456", "234567", "345678", "56789", "67890")

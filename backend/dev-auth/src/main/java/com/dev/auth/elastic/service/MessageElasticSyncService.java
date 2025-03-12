@@ -40,7 +40,7 @@ public class MessageElasticSyncService {
             IndexResponse response = esRestHighLevelClient.indexDocument(request);
             log.info("Message  synced to elastic {}", response.status());
         } catch (IOException exception) {
-            log.error("Error while syncing message to elastic: ", exception.getStackTrace());
+            log.error("Error while syncing message to elastic: ", exception);
         }
     }
 }

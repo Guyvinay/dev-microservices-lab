@@ -103,27 +103,6 @@ public class UserProfileServiceImpl implements UserProfileService {
     }
 
     /**
-     * Retrieves the user profile by its unique ID.
-     *
-     * @param username The unique identifier of the user.
-     * @return A DTO containing the user profile details.
-     * @throws InvalidInputException if the ID is null.
-     * @throws UserNotFoundException if no user is found with the given ID.
-     */
-    @Override
-    public UserProfileResponseDTO getUserByUsername(String username) {
-        if (Objects.isNull(username)) throw new InvalidInputException("User ID cannot be null");
-
-        Optional<UserProfileModel> userProfile = userProfileModelRepository.findByUsername(username);
-
-        if (userProfile.isEmpty()) {
-            throw new UserNotFoundException("User not found with Username: " + username);
-        }
-
-        return entityDtoMapper.toUserProfileResponseDTO(userProfile.get());
-    }
-
-    /**
      * Updates the user profile.
      *
      * @param id      The unique identifier of the user.
@@ -144,8 +123,7 @@ public class UserProfileServiceImpl implements UserProfileService {
                         () -> new UserNotFoundException("User not found with ID: " + id)
                 );
         // Map request to existing model
-        existingUser.setFirstName(request.getFirstName());
-        existingUser.setLastName(request.getLastName());
+        existingUser.setName(request.getName());
         existingUser.setActive(request.getIsActive());
 
         UserProfileModel updatedModule = userProfileModelRepository.save(existingUser);
@@ -180,5 +158,10 @@ public class UserProfileServiceImpl implements UserProfileService {
         List<UserProfileModel> profiles = userProfileModelRepository.findAll();
         log.info("user profiles: {}", profiles.size());
         return profiles.stream().map(entityDtoMapper::toUserProfileResponseDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return userProfileModelRepository.existsByEmail(email);
     }
 }

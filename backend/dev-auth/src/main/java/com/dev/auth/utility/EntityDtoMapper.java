@@ -12,11 +12,9 @@ public class EntityDtoMapper {
 
     public UserProfileModel toUserProfileModelEntity(UserProfileRequestDTO requestDTO) {
         return UserProfileModel.builder()
-                .username(requestDTO.getUsername())
                 .password(requestDTO.getPassword()) //hash password before saving
                 .email(requestDTO.getEmail())
-                .firstName(requestDTO.getFirstName())
-                .lastName(requestDTO.getLastName())
+                .name(requestDTO.getName())
                 .isActive(Objects.nonNull(requestDTO.getIsActive()) ? requestDTO.getIsActive() : false)
                 .updatedAt(System.currentTimeMillis())
                 .build();
@@ -26,10 +24,8 @@ public class EntityDtoMapper {
     public UserProfileResponseDTO toUserProfileResponseDTO(UserProfileModel userProfileModel) {
         return UserProfileResponseDTO.builder()
                 .id(userProfileModel.getId())
-                .username(userProfileModel.getUsername())
                 .email(userProfileModel.getEmail())
-                .firstName(userProfileModel.getFirstName())
-                .lastName(userProfileModel.getLastName())
+                .name(userProfileModel.getName())
                 .isActive(userProfileModel.isActive())
                 .createdAt(userProfileModel.getCreatedAt())
                 .updatedAt(userProfileModel.getUpdatedAt())

@@ -33,16 +33,31 @@ spring:
             client-id: Iv23liap9b0pCJfbCrxs
             client-secret: fd28c44ee0ec0ba7a458fbc7d7c836aa37b36219
             scope: read:user, user:email
-#        provider:
-#          github:
-#            authorization-uri: https://github.com/login/oauth/authorize
-#            token-uri: https://github.com/login/oauth/access_token
-#            user-info-uri: https://api.github.com/user
+            redirect-uri: "{baseUrl}/login/oauth2/code/github"
+            authorization-grant-type: authorization_code
+            client-name: GitHub
+          google:
+            client-id: 190624024371-5rnr5nhn766nk7okgev8vp126oqpd96d.apps.googleusercontent.com
+            client-secret: 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
+            scope: profile, email
+            redirect-uri: "{baseUrl}/login/oauth2/code/google"
+            authorization-grant-type: authorization_code
+            client-name: Google
+        provider:
+          github:
+            authorization-uri: https://github.com/login/oauth/authorize
+            token-uri: https://github.com/login/oauth/access_token
+            user-info-uri: https://api.github.com/user
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
 
 server:
   port: 8080
-  canonical.url: http://localhost:8080/dev-auth
-  servlet.context-path: /dev-auth
+  address: 0.0.0.0
+#  canonical.url: http://localhost:8080/dev-auths
+#  servlet.context-path: /dev-auths
   name: localhost
 
 security:

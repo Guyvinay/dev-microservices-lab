@@ -14,7 +14,7 @@
 	<name>dev-auth</name>
 	<description>SB Project for authentication</description>
 	<properties>
-		<java.version>17</java.version>
+		<java.version>21</java.version>
 		<elasticsearch-java>7.17.18</elasticsearch-java>
 	</properties>
 
@@ -127,7 +127,6 @@
 			<version>${elasticsearch-java}</version>
 		</dependency>
 
-
 		<dependency>
 			<groupId>org.springframework.kafka</groupId>
 			<artifactId>spring-kafka</artifactId>
@@ -164,7 +163,7 @@
 	<distributionManagement>
 		<repository>
 			<id>nexus</id> <!-- Match this ID with your server entry in settings.xml -->
-			<url>http://localhost:8081/repository/dev-maven-releases/</url>
+			<url>http://localhost:8088/repository/dev-maven-releases/</url>
 		</repository>
 	</distributionManagement>
 

@@ -26,9 +26,4 @@ public class UserProfileGraphQLResolver implements GraphQLQueryResolver {
     public List<UserProfileResponseDTO> getAllUsers() {
         return userProfileService.getAllUsers();
     }
-
-    @QueryMapping(name = "getUserByUsername")
-    public UserProfileResponseDTO getUserByUsername(@Argument String username) {
-        return userProfileService.getUserByUsername(username);
-    }
 }

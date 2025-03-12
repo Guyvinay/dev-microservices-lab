@@ -28,11 +28,9 @@
         </preConditions>
         <createTable tableName="USER_PROFILE_MODEL_AUD">
             <column name="id" type="UUID"/>
-            <column name="username" type="VARCHAR(50)"/>
             <column name="password" type="VARCHAR(255)"/>
             <column name="email" type="VARCHAR(100)"/>
-            <column name="first_name" type="VARCHAR(50)"/>
-            <column name="last_name" type="VARCHAR(50)"/>
+            <column name="name" type="VARCHAR(50)"/>
             <column name="is_active" type="BOOLEAN"/>
 
             <column name="created_at" type="BIGINT"/>
