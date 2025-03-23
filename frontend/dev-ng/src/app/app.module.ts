@@ -19,11 +19,13 @@ import { MatTableModule } from "@angular/material/table"; // Import MatTableModu
 import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatTabsModule } from "@angular/material/tabs";
 import { MatMenuModule } from "@angular/material/menu";
-import { ChartJsComponent } from "./_modules/home/_components/chart-js/chart.js.component";
 import { MatTreeModule } from '@angular/material/tree';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTableComponent } from "./_modules/home/_components/ng-material/mat-table/mat.table.component";
+import { userReducer } from "./store-v2/reducers/user.reducer";
+import { UserEffects } from "./store-v2/effects/user.effects";
+import { StoreUsageComponent } from "./store-v2/usage/store.usage.component";
 
 @NgModule({
   declarations: [
@@ -31,8 +33,8 @@ import { MatTableComponent } from "./_modules/home/_components/ng-material/mat-t
     CounterComponent,
     PostComponent,
     RxjsComponent,
+    StoreUsageComponent,
     NgMaterialComponent,
-    ChartJsComponent,
     MatTableComponent
   ],
   imports: [
@@ -47,8 +49,8 @@ import { MatTableComponent } from "./_modules/home/_components/ng-material/mat-t
     MatTreeModule,
     MatIconModule,
     MatButtonModule,
-    StoreModule.forRoot({ count: counterReducer, posts: postsReducer }),
-    EffectsModule.forRoot([PostEffects]),
+    StoreModule.forRoot({ count: counterReducer, posts: postsReducer, users: userReducer }),
+    EffectsModule.forRoot([PostEffects, UserEffects]),
     StoreDevtoolsModule.instrument({ maxAge: 25 }),
   ],
   providers: [],

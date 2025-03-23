@@ -4,6 +4,9 @@ spring:
     enabled: true
     change-log: classpath:/db/changelog/dev-auth.changelog-master.xml
     contexts: "!test"
+#    liquibase-schema: public
+#    database-change-log-table: DATABASECHANGELOG
+#    database-change-log-lock-table: DATABASECHANGELOGLOCK
 
   kafka:
     bootstrap-servers: localhost:9092

@@ -10,12 +10,13 @@
 	</parent>
 	<groupId>com.dev.auth</groupId>
 	<artifactId>dev-auth</artifactId>
-	<version>1.0.5</version>
+	<version>1.0.7</version>
 	<name>dev-auth</name>
 	<description>SB Project for authentication</description>
 	<properties>
-		<java.version>21</java.version>
+		<java.version>17</java.version>
 		<elasticsearch-java>7.17.18</elasticsearch-java>
+<!--		<ngrok.version>0.5.0</ngrok.version>-->
 	</properties>
 
 	<dependencies>
@@ -157,13 +158,12 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-oauth2-client</artifactId>
 		</dependency>
-
 	</dependencies>
 
 	<distributionManagement>
 		<repository>
 			<id>nexus</id> <!-- Match this ID with your server entry in settings.xml -->
-			<url>http://localhost:8088/repository/dev-maven-releases/</url>
+			<url>http://localhost:8081/repository/maven-releases/</url>
 		</repository>
 	</distributionManagement>
 
@@ -188,6 +188,13 @@
 <!--				</configuration>-->
 <!--			</plugin>-->
 		</plugins>
+		<extensions>
+			<extension>
+				<groupId>kr.motd.maven</groupId>
+				<artifactId>os-maven-plugin</artifactId>
+				<version>1.7.0</version>
+			</extension>
+		</extensions>
 	</build>
 
 </project>
