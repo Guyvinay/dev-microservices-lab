@@ -7,7 +7,7 @@ WORKDIR /app
 
 # Step 3: Copy the packaged JAR file from the target folder to the container
 # Replace `my-spring-app-1.0.jar` with your actual JAR file name
-COPY target/dev-auth-1.0.5.jar /app/dev-auth.jar
+COPY target/dev-auth-1.0.7.jar /app/dev-auth.jar
 
 # Step 4: Expose the application port (Spring Boot default port is 8080)
 EXPOSE 8088

@@ -9,13 +9,23 @@ import { Post, User } from "../_models/models";
 export class HttpService {
   private usersUrl = "https://jsonplaceholder.typicode.com/users";
   private postsUrl = "https://jsonplaceholder.typicode.com/posts";
+  private commentsUrl = 'https://jsonplaceholder.typicode.com/comments';
 
   constructor(private http: HttpClient) {}
 
   getUsers(): Observable<User[]> {
     return this.http.get<User[]>(this.usersUrl);
   }
+  getPosts(): Observable<Post[]> {
+    return this.http.get<Post[]>(this.postsUrl);
+  }
 
+  getComments(): Observable<any[]> {
+    return this.http.get<any[]>(this.commentsUrl);
+  }
+  getUserById(userId: number): Observable<User> {
+    return this.http.get<User>(`${this.usersUrl}/${userId}`);
+  }
   getPostsForAUser(userId: number): Observable<Post[]> {
     return this.http.get<Post[]>(`${this.usersUrl}?userId=${userId}`);
   }
