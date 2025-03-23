@@ -1,0 +1,10 @@
+<button (click)="fetchUsers()">Load Users</button>
+
+<p *ngIf="loading$ | async">Loading...</p>
+<p *ngIf="error$ | async">Error: {{ error$ | async }}</p>
+
+<ul>
+  <li *ngFor="let user of users$ | async">
+    {{ user.name }} - {{ user.email }}
+  </li>
+</ul>
