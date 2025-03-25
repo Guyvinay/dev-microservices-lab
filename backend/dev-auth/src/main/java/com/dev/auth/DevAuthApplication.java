@@ -17,7 +17,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 				@SecurityRequirement(name = "bearerToken")
 		},
 		servers = {
-				@Server(url = "/dev-auth", description = "Default Server URL")
+				@Server(url = "", description = "Default Server URL")
 		}
 )
 @SecuritySchemes({

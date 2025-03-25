@@ -83,6 +83,6 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
-        return path.equals("/dev-auth/api/auth/login");  // Skip JWT processing for login endpoint
+        return path.equals("/api/auth/login");  // Skip JWT processing for login endpoint
     }
 }
