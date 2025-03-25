@@ -2,9 +2,17 @@ import { HttpClient } from "@angular/common/http";
 import { Component, OnInit } from "@angular/core";
 import { ThemePalette } from "@angular/material/core";
 import { ProgressSpinnerMode } from "@angular/material/progress-spinner";
-import { forkJoin, catchError, of, Observable, from } from "rxjs";
-import { interval, fromEvent, takeUntil } from "rxjs";
-import { Post, User } from "src/app/_models/models";
+import {
+  catchError,
+  concatMap,
+  forkJoin,
+  from,
+  map,
+  mergeMap,
+  of,
+  switchMap,
+} from "rxjs";
+import { User } from "src/app/_models/models";
 import { HttpService } from "src/app/_services/http.service";
 
 @Component({
@@ -25,22 +33,160 @@ export class RxjsComponent implements OnInit {
     // result.subscribe(x => console.log(x));
     // this.fetchUserPosts();
 
-
     // this.fetchBothApisWithAsync();
     // this.fetchBothApisWithMergeMap();
     // this.fetchBothApisWithConcatMap();
-    this.fetchBothApisWithConcatMapV2();
-    this.fetchBothApisWithMergeMapV2();
+    // this.fetchBothApisWithConcatMapV2();
+    // this.fetchBothApisWithMergeMapV2();
+    // this.fetchDataWithErrorHandling();
+    // this.fetchUserDetailsWithMergeMap();
+    // this.fetchUserDetailsWithConcatMap();
+    // this.fetchUserDetailsWithMergeMapV2();
+    this.fetchUserDetailsWithSwitchMap();
+  }
+
+
+
+  fetchDataWithErrorHandling() {
+    forkJoin({
+      users: this.httpService.getUsers().pipe(
+        catchError((err) => {
+          console.error("Users API failed:", err);
+          return of([]); // Fallback: Return empty array
+        })
+      ),
+      posts: this.httpService.getPosts().pipe(
+        catchError((err) => {
+          console.error("Posts API failed:", err);
+          return of([]); // Fallback: Return empty array
+        })
+      ),
+      comments: this.httpService.getComments().pipe(
+        catchError((err) => {
+          console.error("Comments API failed:", err);
+          return of([]); // Fallback: Return empty array
+        })
+      ),
+    }).subscribe((response) => {
+      console.log("Users:", response.users);
+      console.log("Posts:", response.posts);
+      console.log("Comments:", response.comments);
+    });
+  }
+
+  /**
+   * when you need to fetch multiple independent data points without waiting for one to finish.
+   */
+  fetchUserDetailsWithMergeMap() {
+    from([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]) // List of user IDs
+      .pipe(
+        mergeMap((id) => this.httpService.getUserById(id)),
+        catchError((err) => {
+          console.error("Posts API failed:", err);
+          return of([]); // Fallback: Return empty array
+        })
+      )
+      .subscribe({
+        next: (user: User | null) => {
+          if (user) {
+            console.log("User Details:", user);
+          } else {
+            console.log("Skipping failed user request.");
+          }
+        },
+        error: (error) => {
+          console.error("Unexpected error: ", error);
+        },
+      });
+  }
+
+  /**
+   * Calls APIs one user at a time.
+    Ensures first API completes before calling the second API.
+    Best for ordered execution (e.g., processing transactions).
+   */
+  fetchUserDetailsWithConcatMap() {
+    from([1, 2, 3, 4, 5]) // User IDs
+      .pipe(
+        concatMap((id) => {
+          console.log("fetching user info for userId: ", id);
+          return this.httpService.getUserById(id).pipe(
+            concatMap((user) =>
+              this.httpService.getPostsForAUser(user.id).pipe(
+                catchError((err) => {
+                  console.error(`Posts for User ${user.id} failed:`, err);
+                  return of([]); // Fallback: Empty posts list
+                }),
+                map((posts) => ({ user, posts })) // Combine user & posts
+              )
+            ),
+            catchError((err) => {
+              console.error(`User ${id} fetch failed:`, err);
+              return of(null); // Skip this user
+            })
+          );
+        })
+      )
+      .subscribe((result) => {
+        if (result) console.log("User & Posts:", result);
+      });
+  }
+
+  /**
+   * Calls both APIs for all users in parallel.
+    Best for independent requests (where order doesn’t matter).
+    Faster than concatMap, but can overload the server.
+  */
+  fetchUserDetailsWithMergeMapV2() {
+    from([1, 2, 3, 4, 5]) // User IDs
+      .pipe(
+        mergeMap((id) => {
+          console.log("fetching user info for userId: ", id);
+          return this.httpService.getUserById(id).pipe(
+            mergeMap((user) =>
+              this.httpService.getPostsForAUser(user.id).pipe(
+                catchError(() => of([])),
+                map((posts) => ({ user, posts }))
+              )
+            ),
+            catchError(() => of(null))
+          );
+        })
+      )
+      .subscribe((result) => {
+        if (result) console.log("User & Posts:", result);
+      });
+  }
+
+  fetchUserDetailsWithSwitchMap() {
+    from([1, 2, 3, 4, 5]) // User IDs
+      .pipe(
+        switchMap((id) => {
+          console.log("fetching user info for userId: ", id);
+          return this.httpService.getUserById(id).pipe(
+            switchMap((user) => {
+              return this.httpService.getPostsForAUser(user.id).pipe(
+                catchError(() => of([])),
+                map((posts) => ({ user, posts }))
+              );
+            }),
+            catchError(() => of(null))
+          );
+        })
+      )
+      .subscribe((result) => {
+        if (result) console.log("Latest User & Posts:", result);
+      });
   }
 
   async fetchBothApisWithAsync() {
     try {
       console.log("fetching fetchBothApisWithAsync");
       this.data = await this.httpService.fetchBothApisWithAsync();
-      console.log("fetchBothApisWithAsync: ",this.data);
+      console.log("fetchBothApisWithAsync: ", this.data);
       console.log("fetched fetchBothApisWithAsync");
     } catch (error) {
-      console.error('Error in fetching data', error);
+      console.error("Error in fetching data", error);
     }
   }
 
