@@ -1,9 +1,7 @@
 package com.dev.auth.service.impl;
 
 import com.dev.auth.dto.JwtTokenDto;
-import com.dev.auth.dto.LoginRequestDTO;
 import com.dev.auth.dto.UserProfileResponseDTO;
-import com.dev.auth.security.details.CustomAuthToken;
 import com.dev.auth.security.dto.JWTRefreshTokenDto;
 import com.dev.auth.security.provider.JwtTokenProviderManager;
 import com.dev.auth.service.AuthService;
@@ -41,16 +39,16 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * @param loginRequestDTO
      * @return
      */
     @Override
-    public Map<String, String> login(LoginRequestDTO loginRequestDTO) throws JsonProcessingException, JOSEException {
-        Authentication authentication = new CustomAuthToken(loginRequestDTO.getOrgId(), loginRequestDTO.getUsername(), loginRequestDTO.getPassword());
-        Authentication authenticated = authenticationManager.authenticate(authentication);
-        SecurityContextHolder.getContext().setAuthentication(authenticated);
+    public Map<String, String> login() throws JsonProcessingException, JOSEException {
+//        Authentication authentication = new CustomAuthToken(loginRequestDTO.getOrgId(), loginRequestDTO.getUsername(), loginRequestDTO.getPassword());
+//        Authentication authenticated = authenticationManager.authenticate(authentication);
+//        SecurityContextHolder.getContext().setAuthentication(authenticated);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        String username = authenticated.getPrincipal().toString();
+        String username = authentication.getPrincipal().toString();
         int jwtExpiredIn = 2;
         int refreshExpiredIn = 10;
         Map<String, String> tokensMap = new HashMap<>();

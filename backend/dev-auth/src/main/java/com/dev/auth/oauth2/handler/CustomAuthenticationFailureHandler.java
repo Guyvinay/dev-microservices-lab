@@ -16,6 +16,6 @@ public class CustomAuthenticationFailureHandler extends SimpleUrlAuthenticationF
                                         AuthenticationException exception) throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
-        response.getWriter().write("{\"error\": \"Login Failed\"}");
+        response.getWriter().write("{\"error\": \"Login Failed, please try again\"}");
     }
 }

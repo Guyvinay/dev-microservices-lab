@@ -1,88 +1,97 @@
 package com.dev.auth.security.filter;
 
-import com.dev.auth.security.provider.JwtTokenProviderManager;
+import com.dev.auth.exception.AuthenticationException;
+import com.dev.auth.security.details.CustomAuthToken;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-
 import java.io.IOException;
+import java.util.Base64;
+import java.util.Objects;
 
-@Component
+import static com.dev.auth.security.SecurityConstants.*;
+
+//@Component
 @Slf4j
 public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
-    public static final RequestMatcher REQUESTMATCHER = new AntPathRequestMatcher("/signin", "POST");
-    private final JwtTokenProviderManager jwtTokenProvider;
+    private final AuthenticationManager authenticationManager;
 
-    public JWTAuthenticationFilter(JwtTokenProviderManager jwtTokenProvider) {
-        this.jwtTokenProvider = jwtTokenProvider;
+    public JWTAuthenticationFilter(AuthenticationManager authenticationManager) {
+        this.authenticationManager = authenticationManager;
     }
 
     /**
-     * Same contract as for {@code doFilter}, but guaranteed to be
-     * just invoked once per request within a single request thread.
-     * See {@link #shouldNotFilterAsyncDispatch()} for details.
-     * <p>Provides HttpServletRequest and HttpServletResponse arguments instead of the
-     * default ServletRequest and ServletResponse ones.
-     *
      * @param request
      * @param response
      * @param filterChain
+     * @throws ServletException
+     * @throws IOException
      */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-
-        log.info("JWTAuthenticationFilter invoked for: {}", request.getRequestURI());
-
-        String token = jwtTokenProvider.resolveToken(request);
-
-        if (token == null) {
-            filterChain.doFilter(request, response);
-            return;
+        String username = request.getParameter(USERNAME);
+        String password = request.getParameter(PASSWORD);
+        String organization = request.getHeader(ORGANIZATION);
+        CustomAuthToken authToken = null;
+        if(StringUtils.hasText(username) && StringUtils.hasText(password) && StringUtils.hasText(organization)) {
+            authToken = new CustomAuthToken(organization, username, password);
         }
+
+        if(authToken == null) {
+            authToken = getAuthTokenFromBasicAuth(request);
+        }
+
+        if(authToken == null) throw new AuthenticationException("Invalid Authentication request.");
 
         try {
-            Authentication auth = jwtTokenProvider.getAuthentication(token);
-            if (auth != null) {
-                SecurityContextHolder.getContext().setAuthentication(auth);
-            }
-            filterChain.doFilter(request, response);
+            Authentication authentication = authenticationManager.authenticate(authToken);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            log.info("Authentication successful for: {}", authentication.getPrincipal());
         } catch (Exception e) {
-            logger.error("Authentication failed:", e);
-            handleAuthenticationFailure(response);
-            resetAuthenticationAfterRequest();
-        } finally {
-            // Ensures security context is always cleared after request
-            resetAuthenticationAfterRequest();
+            SecurityContextHolder.clearContext();
+            log.error("Authentication failed: ", e);
+            response.getWriter().write(e.getLocalizedMessage());
         }
+        filterChain.doFilter(request, response);
     }
 
-    private void resetAuthenticationAfterRequest() {
-        SecurityContextHolder.clearContext();
+    private CustomAuthToken getAuthTokenFromBasicAuth(HttpServletRequest request) {
+        String authorizationHeader = request.getHeader(AUTHORIZATION);
+        if(Objects.isNull(authorizationHeader)) return null;
+        authorizationHeader = authorizationHeader.trim();
+        if(!StringUtils.startsWithIgnoreCase(authorizationHeader, BASIC_AUTH)) return null;
+        // Extract and decode credentials from Basic Auth header
+        String base64Credentials = authorizationHeader.substring("Basic ".length()).trim();
+        byte[] decodedBytes = Base64.getDecoder().decode(base64Credentials);
+        String decodedCredentials = new String(decodedBytes);
+
+        // Split into username and password (format: "username:password")
+        String[] credentials = decodedCredentials.split(":", 2);
+        if (credentials.length != 2) {
+            throw new AuthenticationException("Invalid Basic Authentication format");
+        }
+
+        String username = credentials[0];
+        String password = credentials[1];
+        String organization = request.getHeader(ORGANIZATION);
+
+        return new CustomAuthToken(organization, username, password);
     }
 
-    private void handleAuthenticationFailure(HttpServletResponse response) throws IOException {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.setContentType("application/json");
-        response.getWriter().write("{\"error\": \"Unauthorized\", \"message\": \"Invalid or expired token\"}");
-        response.getWriter().flush();
-    }
-
-    /**
-     * Skips JWT authentication for specific endpoints like /login
-     */
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
-        return path.equals("/dev-auth/api/auth/login");  // Skip JWT processing for login endpoint
+        return !path.equals("/api/auth/login");  // Skip JWT processing for endpoint other that /login
     }
 }

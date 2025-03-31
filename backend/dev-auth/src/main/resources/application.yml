@@ -33,8 +33,8 @@ spring:
       client:
         registration:
           github:
-            client-id: Iv23liap9b0pCJfbCrxs
-            client-secret: fd28c44ee0ec0ba7a458fbc7d7c836aa37b36219
+            client-id: Ov23li30OfNzzSRFzDHs
+            client-secret: e709014c4f6eed9ad55b97ce32182fb61dc9ed0d
             scope: read:user, user:email
             redirect-uri: "{baseUrl}/login/oauth2/code/github"
             authorization-grant-type: authorization_code

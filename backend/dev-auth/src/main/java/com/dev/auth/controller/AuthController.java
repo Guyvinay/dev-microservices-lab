@@ -11,10 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -52,13 +49,8 @@ public class AuthController {
             @ApiResponse(responseCode = "500", description = "Internal server error",
                     content = @Content(mediaType = "application/json"))
     })
-    @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Login request containing username and password",
-                    required = true
-            )
-            @RequestBody LoginRequestDTO loginRequestDTO) throws JsonProcessingException, JOSEException {
-        return ResponseEntity.ok(authService.login(loginRequestDTO));
+    @GetMapping("/login")
+    public ResponseEntity<Map<String, String>> login() throws JsonProcessingException, JOSEException {
+        return ResponseEntity.ok(authService.login());
     }
 }

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -46,6 +47,22 @@ public class UserProfileController {
             @Valid @RequestBody UserProfileRequestDTO request) {
         UserProfileResponseDTO response = userProfileService.createUser(request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @Operation(
+            summary = "Gets all users",
+            description = "Returns all the user details."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "User details fetched successfully",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = UserProfileResponseDTO.class))),
+            @ApiResponse(responseCode = "500", description = "Internal server error",
+                    content = @Content(mediaType = "application/json"))
+    })
+    @GetMapping
+    public List<UserProfileResponseDTO> getAllUsers() {
+        return userProfileService.getAllUsers();
     }
 
     @Operation(

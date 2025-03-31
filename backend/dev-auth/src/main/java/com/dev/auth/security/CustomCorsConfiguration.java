@@ -19,6 +19,14 @@ public class CustomCorsConfiguration {
      * cfg.setExposedHeaders(Arrays.asList("Authorization", "X-Response-Time"));
      * cfg.setMaxAge(3600L); // Cache for 1 hour (in seconds)
      *
+     *     CorsConfiguration config = new CorsConfiguration();
+     *     config.setAllowedOrigins(List.of("https://yourfrontend.com")); // Restrict origin
+     *     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+     *     config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+     *     config.setAllowCredentials(true);
+     *
+     *     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+     *     source.registerCorsConfiguration("/**", config);
      * @param request
      * @return
      */
