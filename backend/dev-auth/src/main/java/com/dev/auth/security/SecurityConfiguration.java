@@ -5,6 +5,7 @@ import com.dev.auth.oauth2.handler.OAuth2LoginSuccessHandler;
 import com.dev.auth.oauth2.service.CustomOAuth2UserService;
 import com.dev.auth.security.details.CustomUserDetailsService;
 import com.dev.auth.security.filter.JWTAuthenticationFilter;
+import com.dev.auth.security.filter.JWTAuthorizationFilter;
 import com.dev.auth.security.filter.RequestLoggingFilter;
 import com.dev.auth.security.provider.CustomAuthenticationEntryPoint;
 import com.dev.auth.security.provider.CustomAuthenticationProvider;
@@ -33,7 +34,7 @@ public class SecurityConfiguration {
     private final CustomBcryptEncoder customBcryptEncoder;
     private final CustomAuthenticationProvider customAuthenticationProvider;
     private final CustomUserDetailsService customUserDetailsService;
-    private final JWTAuthenticationFilter jwtAuthenticationFilter;
+    private final JWTAuthorizationFilter jwtAuthorizationFilter;
     private final CustomCorsConfiguration corsConfiguration;
     private final RequestLoggingFilter requestLoggingFilter;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
@@ -41,12 +42,22 @@ public class SecurityConfiguration {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
-    public SecurityConfiguration(CustomOAuth2UserService customOAuth2UserService, CustomBcryptEncoder customBcryptEncoder, CustomAuthenticationProvider customAuthenticationProvider, CustomUserDetailsService customUserDetailsService, JWTAuthenticationFilter jwtAuthenticationFilter, CustomCorsConfiguration corsConfiguration, RequestLoggingFilter requestLoggingFilter, OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler, CustomAuthenticationFailureHandler customAuthenticationFailureHandler, CustomAuthenticationEntryPoint customAuthenticationEntryPoint) {
+    public SecurityConfiguration(
+            CustomOAuth2UserService customOAuth2UserService,
+            CustomBcryptEncoder customBcryptEncoder,
+            CustomAuthenticationProvider customAuthenticationProvider,
+            CustomUserDetailsService customUserDetailsService,
+            JWTAuthorizationFilter jwtAuthorizationFilter,
+            CustomCorsConfiguration corsConfiguration,
+            RequestLoggingFilter requestLoggingFilter,
+            OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
+            CustomAuthenticationFailureHandler customAuthenticationFailureHandler,
+            CustomAuthenticationEntryPoint customAuthenticationEntryPoint) {
         this.customOAuth2UserService = customOAuth2UserService;
         this.customBcryptEncoder = customBcryptEncoder;
         this.customAuthenticationProvider = customAuthenticationProvider;
         this.customUserDetailsService = customUserDetailsService;
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.jwtAuthorizationFilter = jwtAuthorizationFilter;
         this.corsConfiguration = corsConfiguration;
         this.requestLoggingFilter = requestLoggingFilter;
         this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
@@ -65,15 +76,16 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth -> { auth
                         .requestMatchers("/swagger-ui*/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/oauth2/authorize/github", "/oauth2/authorize/google").permitAll()
-                        .requestMatchers("/api/v1.0/users*/**").permitAll()
-                        .requestMatchers("/actuator/prometheus").permitAll()
-                        .requestMatchers("/api/auth/login").permitAll() // Allow login API
+//                        .requestMatchers("/api/v1.0/users*/**").permitAll()
+//                        .requestMatchers("/actuator/prometheus").permitAll()
+//                        .requestMatchers("/api/auth/login").permitAll() // Allow login API
                         .requestMatchers("/graphiql*/**").permitAll()
                         .anyRequest().authenticated();
                 })
                 .csrf(AbstractHttpConfigurer::disable)
+                .addFilterBefore(new JWTAuthenticationFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(requestLoggingFilter, UsernamePasswordAuthenticationFilter.class)  // Log before authentication
-                .addFilterAfter(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // Process JWT after username/password authentication
+                .addFilterAfter(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class) // Process JWT after username/password authentication
                 .oauth2Login(oauth2 -> oauth2 // Enables OAuth2 login
                         .authorizationEndpoint(authz -> authz
                                 .baseUri("/oauth2/authorize")

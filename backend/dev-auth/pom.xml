@@ -159,10 +159,10 @@
 			<artifactId>spring-boot-starter-oauth2-client</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>io.micrometer</groupId>
-			<artifactId>micrometer-registry-prometheus</artifactId>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>io.micrometer</groupId>-->
+<!--			<artifactId>micrometer-registry-prometheus</artifactId>-->
+<!--		</dependency>-->
 
 
 	</dependencies>
@@ -195,13 +195,13 @@
 <!--				</configuration>-->
 <!--			</plugin>-->
 		</plugins>
-		<extensions>
-			<extension>
-				<groupId>kr.motd.maven</groupId>
-				<artifactId>os-maven-plugin</artifactId>
-				<version>1.7.0</version>
-			</extension>
-		</extensions>
+<!--		<extensions>-->
+<!--			<extension>-->
+<!--				<groupId>kr.motd.maven</groupId>-->
+<!--				<artifactId>os-maven-plugin</artifactId>-->
+<!--				<version>1.7.0</version>-->
+<!--			</extension>-->
+<!--		</extensions>-->
 	</build>
 
 </project>
