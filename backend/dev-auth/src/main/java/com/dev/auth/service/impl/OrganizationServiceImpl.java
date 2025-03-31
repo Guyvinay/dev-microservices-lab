@@ -1,17 +1,19 @@
 package com.dev.auth.service.impl;
 
-import com.dev.auth.dto.OrgSignupRequestDTO;
-import com.dev.auth.dto.OrganizationDTO;
+import com.dev.auth.dto.*;
 import com.dev.auth.entity.*;
 import com.dev.auth.exception.DuplicateResourceException;
 import com.dev.auth.exception.ResourceNotFoundException;
 import com.dev.auth.repository.*;
 import com.dev.auth.security.provider.CustomBcryptEncoder;
 import com.dev.auth.service.OrganizationService;
+import com.dev.auth.service.UserProfileService;
 import com.dev.auth.utility.AuthUtility;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
@@ -22,6 +24,7 @@ import static com.dev.auth.utility.StringLiterals.ADMINISTRATOR;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OrganizationServiceImpl implements OrganizationService {
 
     private final OrganizationModelRepository organizationRepository;
@@ -29,8 +32,10 @@ public class OrganizationServiceImpl implements OrganizationService {
     private final ModelMapper modelMapper;
     private final CustomBcryptEncoder customBcryptEncoder;
     private final UserProfileModelRepository userProfileModelRepository;
+    private final UserProfileService userProfileService;
     private final UserProfileTenantRepository userProfileTenantRepository;
-    private final UserProfileRoleInfoRepository  userProfileRoleInfoRepository;
+    private final UserProfileRoleInfoRepository userProfileRoleInfoRepository;
+    private final UserProfileRoleMappingRepository userProfileRoleMappingRepository;
 
 
     @Override
@@ -57,31 +62,45 @@ public class OrganizationServiceImpl implements OrganizationService {
      * @param orgSignupRequestDTO
      * @return
      */
+    @Transactional
     @Override
-    public OrganizationDTO registerOrganizationWithDefaultTenant(OrgSignupRequestDTO orgSignupRequestDTO) {
-
-        OrganizationModel savedOrg = saveOrganization(orgSignupRequestDTO);
+    public OrgSignupResponseDTO registerOrganizationWithDefaultTenant(OrgSignupRequestDTO orgSignupRequestDTO) {
+        log.info("Starting organization registration process");
+        OrganizationDTO savedOrg = saveOrganization(orgSignupRequestDTO);
         OrganizationTenantMapping tenantMapping = saveOrgTenant(savedOrg.getOrgId(), orgSignupRequestDTO);
-        UserProfileModel savedUser =  createAdminUser(tenantMapping.getTenantId(), orgSignupRequestDTO);
-        UserProfileTenantMapping savedUserTenantMapping = saveUserProfileTenantMapping(tenantMapping.getTenantId(), savedUser.getId(), savedOrg.getOrgId());
+        UserProfileResponseDTO savedUser = createAdminUser(tenantMapping.getTenantId(), orgSignupRequestDTO);
+        UserProfileTenantMapping userProfileTenantMapping =  saveUserProfileTenantMapping(tenantMapping.getTenantId(), savedUser.getId(), savedOrg.getOrgId());
         UserProfileRoleModel userProfileRoleModel = createUserProfileAdminRole(savedUser.getId(), tenantMapping.getTenantId());
         UserProfileRoleMapping userProfileRoleMapping = createUserprofileRoleMapping(savedUser.getId(), userProfileRoleModel.getRoleId(), tenantMapping.getTenantId());
-        return null;
+        log.info("Organization registration completed successfully");
+        return new OrgSignupResponseDTO(savedOrg, tenantMapping, savedUser, userProfileTenantMapping, userProfileRoleModel, userProfileRoleMapping);
     }
 
     private UserProfileRoleMapping createUserprofileRoleMapping(UUID userId, Long roleId, String tenantId) {
+
+        log.info("Mapping role ID: {} to user ID: {} in tenant ID: {}", roleId, userId, tenantId);
+
         UserProfileRoleMapping userProfileRoleMapping = new UserProfileRoleMapping();
         userProfileRoleMapping.setDefaultRole(true);
         userProfileRoleMapping.setTenantId(tenantId);
-        userProfileRoleMapping.setUserId(String.valueOf(userId));
+        userProfileRoleMapping.setUserId(userId);
+        userProfileRoleMapping.setRoleId(roleId);
 
-        return userProfileRoleMapping;
+        UserProfileRoleMapping savedUserProfileRoleMapping = userProfileRoleMappingRepository.save(userProfileRoleMapping);
+
+        log.info("User-role mapping saved successfully: {}", savedUserProfileRoleMapping.getId());
+
+        return savedUserProfileRoleMapping;
     }
 
-    private UserProfileRoleModel createUserProfileAdminRole(UUID userId, String tenantid) {
+    private UserProfileRoleModel createUserProfileAdminRole(UUID userId, String tenantId) {
+        log.info("Creating admin role for user ID: {} and tenant ID: {}", userId, tenantId);
+
         UserProfileRoleModel userProfileRoleModel = new UserProfileRoleModel();
+        long roleId = AuthUtility.generateRandomNumber(8);
+        userProfileRoleModel.setRoleId(roleId);
         userProfileRoleModel.setActive(true);
-        userProfileRoleModel.setTenantId(tenantid);
+        userProfileRoleModel.setTenantId(tenantId);
         userProfileRoleModel.setRoleName(ADMINISTRATOR);
         userProfileRoleModel.setAdminFlag(true);
         userProfileRoleModel.setDescription("Administrator role created during organization creation");
@@ -89,30 +108,43 @@ public class OrganizationServiceImpl implements OrganizationService {
         userProfileRoleModel.setUpdatedAt(Instant.now().toEpochMilli());
         userProfileRoleModel.setCreatedBy(String.valueOf(userId));
         userProfileRoleModel.setUpdatedBy(String.valueOf(userId));
-        return userProfileRoleInfoRepository.save(userProfileRoleModel);
+
+        UserProfileRoleModel savedRole = userProfileRoleInfoRepository.save(userProfileRoleModel);
+        log.info("Admin role saved successfully with ID: {}", savedRole.getRoleId());
+        return savedRole;
     }
 
     private UserProfileTenantMapping saveUserProfileTenantMapping(String tenantId, UUID userId, UUID orgId) {
+        log.info("Mapping user ID: {} to tenant ID: {}", userId, tenantId);
+
         UserProfileTenantMapping tenantMapping = new UserProfileTenantMapping();
         tenantMapping.setOrganizationId(orgId);
         tenantMapping.setUserId(userId);
         tenantMapping.setTenantId(tenantId);
-        return userProfileTenantRepository.save(tenantMapping);
+        UserProfileTenantMapping savedUserProfileTenantMapping =userProfileTenantRepository.save(tenantMapping);
+        log.info("User-tenant mapping saved successfully: {}", savedUserProfileTenantMapping.getId());
+        return savedUserProfileTenantMapping;
     }
 
-    private UserProfileModel createAdminUser(String tenantId, OrgSignupRequestDTO orgSignupRequestDTO) {
-        UserProfileModel userProfileModel = new UserProfileModel();
-        userProfileModel.setActive(true);
-        userProfileModel.setCreatedAt(Instant.now().toEpochMilli());
-        userProfileModel.setUpdatedAt(Instant.now().toEpochMilli());
-        userProfileModel.setName(orgSignupRequestDTO.getName());
-        userProfileModel.setEmail(orgSignupRequestDTO.getAdminEmail());
-        userProfileModel.setPassword(customBcryptEncoder.encode(orgSignupRequestDTO.getAdminPassword()));
+    private UserProfileResponseDTO createAdminUser(String tenantId, OrgSignupRequestDTO orgSignupRequestDTO) {
+        log.info("Creating admin user for tenant ID: {}", tenantId);
 
-        return userProfileModelRepository.save(userProfileModel);
+        UserProfileModel userProfileModel = new UserProfileModel();
+        UserProfileRequestDTO userProfileRequestDTO = new UserProfileRequestDTO();
+        userProfileRequestDTO.setIsActive(true);
+        userProfileRequestDTO.setName(orgSignupRequestDTO.getName());
+        userProfileRequestDTO.setEmail(orgSignupRequestDTO.getAdminEmail());
+        userProfileRequestDTO.setPassword(orgSignupRequestDTO.getAdminPassword());
+
+        UserProfileResponseDTO savedUser = userProfileService.createUser(userProfileRequestDTO);
+        log.info("Admin user created successfully with ID: {}", savedUser.getId());
+        return savedUser;
+
     }
 
     private OrganizationTenantMapping saveOrgTenant(UUID orgId, OrgSignupRequestDTO orgSignupRequestDTO) {
+        log.info("Creating tenant for organization ID: {}", orgId);
+
         OrganizationTenantMapping tenantMapping = new OrganizationTenantMapping();
         long tenantId = AuthUtility.generateRandomNumber(5);
         tenantMapping.setTenantId(String.valueOf(tenantId));
@@ -121,24 +153,31 @@ public class OrganizationServiceImpl implements OrganizationService {
         tenantMapping.setCreatedAt(Instant.now().toEpochMilli());
         tenantMapping.setUpdatedAt(Instant.now().toEpochMilli());
         tenantMapping.setTenantName(orgSignupRequestDTO.getTenantName());
-        return organizationTenantMappingRepository.save(tenantMapping);
+
+        OrganizationTenantMapping savedTenant = organizationTenantMappingRepository.save(tenantMapping);
+        log.info("Tenant saved successfully with ID: {}", savedTenant.getTenantId());
+        return savedTenant;
     }
 
-    private OrganizationModel saveOrganization(OrgSignupRequestDTO orgSignupRequestDTO) {
-        if(organizationRepository.existsByOrgEmail(orgSignupRequestDTO.getOrganizationEmail())) {
+    private OrganizationDTO saveOrganization(OrgSignupRequestDTO orgSignupRequestDTO) {
+        log.info("Saving organization with email: {}", orgSignupRequestDTO.getOrganizationEmail());
+
+        if (organizationRepository.existsByOrgEmail(orgSignupRequestDTO.getOrganizationEmail())) {
             throw new RuntimeException("Organization already exists with email: " + orgSignupRequestDTO.getOrganizationEmail());
         }
 
         OrganizationModel organizationModel = new OrganizationModel();
         organizationModel.setOrgContact(orgSignupRequestDTO.getOrganizationContact());
         organizationModel.setOrgName(orgSignupRequestDTO.getOrganizationName());
-        organizationModel.setOrgEmail(orgSignupRequestDTO.getOrganizationName());
+        organizationModel.setOrgEmail(orgSignupRequestDTO.getOrganizationEmail());
         organizationModel.setCreatedAt(Instant.now().toEpochMilli());
         organizationModel.setUpdatedAt(Instant.now().toEpochMilli());
         organizationModel.setCreatedBy(orgSignupRequestDTO.getAdminEmail());
         organizationModel.setUpdatedBy(orgSignupRequestDTO.getAdminEmail());
 
-        return organizationRepository.save(organizationModel);
+        OrganizationDTO savedOrg = modelMapper.map(organizationRepository.save(organizationModel), OrganizationDTO.class);
+        log.info("Organization saved successfully with ID: {}", savedOrg.getOrgId());
+        return savedOrg;
     }
 
     @Override

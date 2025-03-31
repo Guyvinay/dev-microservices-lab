@@ -49,7 +49,6 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-
         try {
             Authentication auth = jwtTokenProvider.getAuthentication(token);
             if (auth != null) {
@@ -58,7 +57,7 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         } catch (Exception e) {
             logger.error("Authentication failed:", e);
-            handleAuthenticationFailure(response);
+            handleAuthenticationFailure(response, e);
             resetAuthenticationAfterRequest();
         } finally {
             // Ensures security context is always cleared after request
@@ -70,10 +69,10 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
         SecurityContextHolder.clearContext();
     }
 
-    private void handleAuthenticationFailure(HttpServletResponse response) throws IOException {
+    private void handleAuthenticationFailure(HttpServletResponse response, Exception e) throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
-        response.getWriter().write("{\"error\": \"Unauthorized\", \"message\": \"Invalid or expired token\"}");
+        response.getWriter().write("{\"error\": \"Unauthorized\", \"message\": \"" + e.getMessage() + "\"}");
         response.getWriter().flush();
     }
 

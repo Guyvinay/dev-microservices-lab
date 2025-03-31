@@ -22,11 +22,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.dev.auth.security.SecurityConstants.JWT_REFRESH_TOKEN;
+import static com.dev.auth.security.SecurityConstants.JWT_TOKEN;
+
 @Service
 public class AuthServiceImpl implements AuthService {
 
-    public static final String JWT_TOKEN = "JWT_TOKEN";
-    public static final String JWT_REFRESH_TOKEN = "JWT_REFRESH_TOKEN";
+
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProviderManager jwtTokenProviderManager;
     private final UserProfileService userProfileService;
@@ -49,12 +51,12 @@ public class AuthServiceImpl implements AuthService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         String username = authentication.getPrincipal().toString();
-        int jwtExpiredIn = 2;
-        int refreshExpiredIn = 10;
+        int jwtExpiredIn = 200;
+        int refreshExpiredIn = 1000;
         Map<String, String> tokensMap = new HashMap<>();
 
         UserProfileResponseDTO userProfile = userProfileService.getUserByEmail(username);
-        JwtTokenDto jwtTokenDto = createJwtTokeDto(userProfile, 2);
+        JwtTokenDto jwtTokenDto = createJwtTokeDto(userProfile, jwtExpiredIn);
         JWTRefreshTokenDto jwtRefreshTokenDto = createRefreshJwtTokeDto(userProfile, refreshExpiredIn);
         tokensMap.put(JWT_TOKEN, jwtTokenProviderManager.createJwtToken( new ObjectMapper().writeValueAsString(jwtTokenDto), jwtExpiredIn));
         tokensMap.put(JWT_REFRESH_TOKEN, jwtTokenProviderManager.createJwtToken( new ObjectMapper().writeValueAsString(jwtRefreshTokenDto), refreshExpiredIn));

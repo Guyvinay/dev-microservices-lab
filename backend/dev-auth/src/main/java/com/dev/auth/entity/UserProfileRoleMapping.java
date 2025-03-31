@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 import java.util.UUID;
 
 @Entity
-@Table(name = "USER_ROLES")
+@Table(name = "USER_PROFILE_ROLE_MAPPING")
 @Audited
 @Getter
 @Setter
@@ -16,18 +16,18 @@ public class UserProfileRoleMapping {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "UUID", columnDefinition = "VARCHAR(36)", updatable = false, nullable = false)
+    @Column(name = "ID")
     private UUID id;
 
-    @Column(name = "USER_ID", columnDefinition = "NVARCHAR(150)", nullable = false)
-    private String userId;
+    @Column(name = "USER_ID")
+    private UUID userId;
 
     @Column(name = "ROLE_ID", nullable = false)
     private Long roleId;
 
-    @Column(name = "IS_DEFAULT", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    @Column(name = "IS_DEFAULT")
     private Boolean defaultRole = false;
 
-    @Column(name = "TENANT_ID", columnDefinition = "NVARCHAR(100)", nullable = false)
+    @Column(name = "TENANT_ID")
     private String tenantId;
 }
