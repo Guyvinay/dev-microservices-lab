@@ -49,7 +49,6 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-
         try {
             Authentication auth = jwtTokenProvider.getAuthentication(token);
             if (auth != null) {

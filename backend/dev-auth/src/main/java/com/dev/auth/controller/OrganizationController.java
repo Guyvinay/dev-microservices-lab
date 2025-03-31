@@ -1,5 +1,7 @@
 package com.dev.auth.controller;
 
+import com.dev.auth.dto.OrgSignupRequestDTO;
+import com.dev.auth.dto.OrgSignupResponseDTO;
 import com.dev.auth.dto.OrganizationDTO;
 import com.dev.auth.service.OrganizationService;
 import jakarta.validation.Valid;
@@ -21,6 +23,11 @@ public class OrganizationController {
     @PostMapping
     public ResponseEntity<OrganizationDTO> createOrganization(@Valid @RequestBody OrganizationDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(organizationService.createOrganization(dto));
+    }
+
+    @PostMapping(value = "/setup-org")
+    public ResponseEntity<OrgSignupResponseDTO> createOrganizationTenantWithAdminUser(@Valid @RequestBody OrgSignupRequestDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(organizationService.registerOrganizationWithDefaultTenant(dto));
     }
 
     @GetMapping("/{id}")

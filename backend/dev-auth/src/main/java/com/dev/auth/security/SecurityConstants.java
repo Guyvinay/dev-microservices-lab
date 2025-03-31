@@ -18,6 +18,9 @@ public class SecurityConstants {
 
     public static final String ORGANIZATION = "organization";
 
+    public static final String JWT_TOKEN = "JWT_TOKEN";
+    public static final String JWT_REFRESH_TOKEN = "JWT_REFRESH_TOKEN";
+
 
     public String getSigningSecretKey() {
         return signingSecretKey;

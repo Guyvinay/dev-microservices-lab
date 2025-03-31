@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -55,7 +56,9 @@ public class UserProfileServiceImpl implements UserProfileService {
         UserProfileModel profileModel = entityDtoMapper.toUserProfileModelEntity(request);
 
         if (Objects.isNull(profileModel)) throw new InvalidInputException("Unable to convert request to user model");
+
         profileModel.setPassword(customBcryptEncoder.encode(profileModel.getPassword()));
+
         UserProfileModel savedModel = userProfileModelRepository.save(profileModel);
         return entityDtoMapper.toUserProfileResponseDTO(savedModel);
     }

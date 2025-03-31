@@ -5,6 +5,7 @@ import com.dev.auth.dto.UserProfileResponseDTO;
 import com.dev.auth.entity.UserProfileModel;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.Objects;
 
 @Component
@@ -16,7 +17,8 @@ public class EntityDtoMapper {
                 .email(requestDTO.getEmail())
                 .name(requestDTO.getName())
                 .isActive(Objects.nonNull(requestDTO.getIsActive()) ? requestDTO.getIsActive() : false)
-                .updatedAt(System.currentTimeMillis())
+                .createdAt(Instant.now().toEpochMilli())
+                .updatedAt(Instant.now().toEpochMilli())
                 .build();
     }
 

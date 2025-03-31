@@ -7,11 +7,9 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -58,12 +56,27 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
             Authentication authentication = authenticationManager.authenticate(authToken);
             SecurityContextHolder.getContext().setAuthentication(authentication);
             log.info("Authentication successful for: {}", authentication.getPrincipal());
+            filterChain.doFilter(request, response);
         } catch (Exception e) {
-            SecurityContextHolder.clearContext();
             log.error("Authentication failed: ", e);
+            handleAuthenticationFailure(response);
+            resetAuthenticationAfterRequest();
             response.getWriter().write(e.getLocalizedMessage());
+        } finally {
+            // Ensures security context is always cleared after request
+            resetAuthenticationAfterRequest();
         }
-        filterChain.doFilter(request, response);
+    }
+
+    private void resetAuthenticationAfterRequest() {
+        SecurityContextHolder.clearContext();
+    }
+
+    private void handleAuthenticationFailure(HttpServletResponse response) throws IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.getWriter().write("{\"error\": \"Unauthorized\", \"message\": \"Invalid or expired token\"}");
+        response.getWriter().flush();
     }
 
     private CustomAuthToken getAuthTokenFromBasicAuth(HttpServletRequest request) {
