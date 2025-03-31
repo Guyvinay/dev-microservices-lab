@@ -2,6 +2,7 @@ package com.dev.auth.security.filter;
 
 import com.dev.auth.exception.AuthenticationException;
 import com.dev.auth.security.details.CustomAuthToken;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,6 +16,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Base64;
+import java.util.Map;
 import java.util.Objects;
 
 import static com.dev.auth.security.SecurityConstants.*;
@@ -59,9 +61,9 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         } catch (Exception e) {
             log.error("Authentication failed: ", e);
-            handleAuthenticationFailure(response);
             resetAuthenticationAfterRequest();
-            response.getWriter().write(e.getLocalizedMessage());
+            handleAuthenticationFailure(response, e);
+//            response.getWriter().write(e.getLocalizedMessage());
         } finally {
             // Ensures security context is always cleared after request
             resetAuthenticationAfterRequest();
@@ -72,10 +74,14 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
         SecurityContextHolder.clearContext();
     }
 
-    private void handleAuthenticationFailure(HttpServletResponse response) throws IOException {
+    private void handleAuthenticationFailure(HttpServletResponse response, Exception e) throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
-        response.getWriter().write("{\"error\": \"Unauthorized\", \"message\": \"Invalid or expired token\"}");
+//        String json = new ObjectMapper().writeValueAsString(Map.of(
+//                "error", "Unauthorized",
+//                "message", e.getMessage()
+//        ));
+        response.getWriter().write("{\"error\": \"Unauthorized\", \"message\": \"" + e.getMessage() + "\"}");
         response.getWriter().flush();
     }
 
