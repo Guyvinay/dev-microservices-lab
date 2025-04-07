@@ -96,7 +96,13 @@
         <dependency>
             <groupId>com.dev</groupId>
             <artifactId>dev-starter</artifactId>
-            <version>1.0.9</version>
+            <version>1.1.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.dev.utility</groupId>
+            <artifactId>dev-utility</artifactId>
+            <version>1.0.0</version>
         </dependency>
 
         <dependency>
@@ -146,16 +152,6 @@
             <groupId>net.devh</groupId>
             <artifactId>grpc-spring-boot-starter</artifactId>
             <version>3.1.0.RELEASE</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.code.gson</groupId>
-                    <artifactId>gson</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.grpc</groupId>
-                    <artifactId>grpc-netty-shaded</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!--        <dependency>

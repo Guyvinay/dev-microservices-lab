@@ -48,10 +48,10 @@ public class AuthStaterSecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .addFilterBefore(requestLoggingFilter, UsernamePasswordAuthenticationFilter.class)  // Log before authentication
                 .addFilterAfter(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-//                .httpBasic(AbstractHttpConfigurer::disable)
-                .formLogin(Customizer.withDefaults())
-//                .formLogin(AbstractHttpConfigurer::disable)
-                .httpBasic(Customizer.withDefaults());
+                .httpBasic(AbstractHttpConfigurer::disable)
+//                .formLogin(Customizer.withDefaults())
+                .formLogin(AbstractHttpConfigurer::disable);
+//                .httpBasic(Customizer.withDefaults());
 
         return httpSecurity.build();
     }

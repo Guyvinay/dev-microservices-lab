@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.dev.auth</groupId>
 	<artifactId>dev-auth</artifactId>
-	<version>1.0.7</version>
+	<version>1.0.9</version>
 	<name>dev-auth</name>
 	<description>SB Project for authentication</description>
 	<properties>
@@ -163,6 +163,18 @@
 <!--			<groupId>io.micrometer</groupId>-->
 <!--			<artifactId>micrometer-registry-prometheus</artifactId>-->
 <!--		</dependency>-->
+
+		<dependency>
+			<groupId>net.devh</groupId>
+			<artifactId>grpc-spring-boot-starter</artifactId>
+			<version>3.1.0.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.dev.utility</groupId>
+			<artifactId>dev-utility</artifactId>
+			<version>1.0.0</version>
+		</dependency>
 
 
 	</dependencies>

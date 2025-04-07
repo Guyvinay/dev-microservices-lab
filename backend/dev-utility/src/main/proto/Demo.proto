@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+
+package com.dev.utility.grpc;
+
+service RequiresAuthorization {
+  rpc ValidateRequires (RequiresRequest) returns (RequiresResponse);
+}
+
+message RequiresRequest {
+  string orgId = 1;
+  string tenantId = 2;
+  string user_id = 3;
+  string privilege = 4;
+  repeated string actions = 5;
+}
+
+message RequiresResponse {
+  bool allowed = 1;
+}
