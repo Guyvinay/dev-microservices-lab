@@ -18,7 +18,11 @@ public class SchemaMultiTenantConnectionProvider extends AbstractDataSourceBased
     private final DataSource ds;
     private final SchemaInitializer initializer;
 
-
+    /**
+     *
+     * @param source
+     * @param initializer
+     */
     public SchemaMultiTenantConnectionProvider(DataSource source, SchemaInitializer initializer) {
         this.ds = source;
         this.initializer = initializer;

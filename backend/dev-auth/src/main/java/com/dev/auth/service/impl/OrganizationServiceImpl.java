@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static com.dev.auth.utility.StringLiterals.ADMINISTRATOR;
@@ -36,6 +37,8 @@ public class OrganizationServiceImpl implements OrganizationService {
     private final UserProfileTenantRepository userProfileTenantRepository;
     private final UserProfileRoleInfoRepository userProfileRoleInfoRepository;
     private final UserProfileRoleMappingRepository userProfileRoleMappingRepository;
+
+    private final AtomicReference<UUID> uuidAtomicReference = new AtomicReference<>();
 
 
     @Override
@@ -67,6 +70,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     public OrgSignupResponseDTO registerOrganizationWithDefaultTenant(OrgSignupRequestDTO orgSignupRequestDTO) {
         log.info("Starting organization registration process");
         OrganizationDTO savedOrg = saveOrganization(orgSignupRequestDTO);
+//        uuidAtomicReference.set(savedOrg.getOrgId());
         OrganizationTenantMapping tenantMapping = saveOrgTenant(savedOrg.getOrgId(), orgSignupRequestDTO);
         UserProfileResponseDTO savedUser = createAdminUser(tenantMapping.getTenantId(), orgSignupRequestDTO);
         UserProfileTenantMapping userProfileTenantMapping =  saveUserProfileTenantMapping(tenantMapping.getTenantId(), savedUser.getId(), savedOrg.getOrgId());
@@ -139,12 +143,12 @@ public class OrganizationServiceImpl implements OrganizationService {
         UserProfileResponseDTO savedUser = userProfileService.createUser(userProfileRequestDTO);
         log.info("Admin user created successfully with ID: {}", savedUser.getId());
         return savedUser;
-
     }
 
     private OrganizationTenantMapping saveOrgTenant(UUID orgId, OrgSignupRequestDTO orgSignupRequestDTO) {
         log.info("Creating tenant for organization ID: {}", orgId);
 
+//        uuidAtomicReference.get()
         OrganizationTenantMapping tenantMapping = new OrganizationTenantMapping();
         long tenantId = AuthUtility.generateRandomNumber(5);
         tenantMapping.setTenantId(String.valueOf(tenantId));
@@ -218,6 +222,10 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     public void deleteOrganization(UUID orgId) {
+        int a = 3;
+        int b = 4;
+
+
         OrganizationModel organization = organizationRepository.findById(orgId)
                 .orElseThrow(() -> new ResourceNotFoundException("Organization not found."));
         organizationRepository.delete(organization);

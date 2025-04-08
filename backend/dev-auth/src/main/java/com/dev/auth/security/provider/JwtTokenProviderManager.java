@@ -63,7 +63,7 @@ public class JwtTokenProviderManager {
                 "org",
                 userProfile.getName(),
                 userProfile.getEmail(),
-                "tenantId",
+                "123456",
                 createdDate,
                 expiaryDate,
                 List.of("123456", "234567", "345678", "56789", "67890")

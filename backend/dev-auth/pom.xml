@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.dev.auth</groupId>
 	<artifactId>dev-auth</artifactId>
-	<version>1.0.7</version>
+	<version>1.0.9</version>
 	<name>dev-auth</name>
 	<description>SB Project for authentication</description>
 	<properties>
@@ -163,7 +163,23 @@
 <!--			<groupId>io.micrometer</groupId>-->
 <!--			<artifactId>micrometer-registry-prometheus</artifactId>-->
 <!--		</dependency>-->
+<!--		<dependency>-->
+<!--			<groupId>net.devh</groupId>-->
+<!--			<artifactId>grpc-spring-boot-starter</artifactId>-->
+<!--			<version>3.0.0.RELEASE</version>-->
+<!--			<exclusions>-->
+<!--				<exclusion>-->
+<!--					<groupId>io.grpc</groupId>-->
+<!--					<artifactId>grpc-netty-shaded</artifactId>-->
+<!--				</exclusion>-->
+<!--			</exclusions>-->
+<!--		</dependency>-->
 
+		<dependency>
+			<groupId>com.dev.utility</groupId>
+			<artifactId>dev-utility</artifactId>
+			<version>1.0.2</version>
+		</dependency>
 
 	</dependencies>
 
@@ -194,6 +210,37 @@
 <!--					</to>-->
 <!--				</configuration>-->
 <!--			</plugin>-->
+			<plugin>
+				<groupId>kr.motd.maven</groupId>
+				<artifactId>os-maven-plugin</artifactId>
+				<version>1.7.0</version>
+				<executions>
+					<execution>
+						<phase>initialize</phase>
+						<goals>
+							<goal>detect</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.xolstice.maven.plugins</groupId>
+				<artifactId>protobuf-maven-plugin</artifactId>
+				<version>0.6.1</version>
+				<configuration>
+					<protocArtifact>com.google.protobuf:protoc:3.12.0:exe:${os.detected.classifier}</protocArtifact>
+					<pluginId>grpc-java</pluginId>
+					<pluginArtifact>io.grpc:protoc-gen-grpc-java:1.32.1:exe:${os.detected.classifier}</pluginArtifact>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>compile</goal>
+							<goal>compile-custom</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 <!--		<extensions>-->
 <!--			<extension>-->

@@ -96,7 +96,7 @@
         <dependency>
             <groupId>com.dev</groupId>
             <artifactId>dev-starter</artifactId>
-            <version>1.0.9</version>
+            <version>1.1.5</version>
         </dependency>
 
         <dependency>
@@ -142,21 +142,11 @@
                 </dependency>-->
 
         <!-- https://mvnrepository.com/artifact/net.devh/grpc-spring-boot-starter -->
-        <dependency>
-            <groupId>net.devh</groupId>
-            <artifactId>grpc-spring-boot-starter</artifactId>
-            <version>3.1.0.RELEASE</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.code.gson</groupId>
-                    <artifactId>gson</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.grpc</groupId>
-                    <artifactId>grpc-netty-shaded</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>net.devh</groupId>-->
+<!--            <artifactId>grpc-spring-boot-starter</artifactId>-->
+<!--            <version>3.1.0.RELEASE</version>-->
+<!--        </dependency>-->
 
         <!--        <dependency>
                     <groupId>net.devh</groupId>
@@ -169,11 +159,11 @@
                         </exclusion>
                     </exclusions>
                 </dependency>-->
-        <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java-util</artifactId>
-            <version>3.25.3</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.google.protobuf</groupId>-->
+<!--            <artifactId>protobuf-java-util</artifactId>-->
+<!--            <version>3.25.3</version>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
