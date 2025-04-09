@@ -15,7 +15,7 @@ public class RequiresAuthorizationGrpcClient {
     @GrpcClient(GRPC_AUTH)
     private RequiresAuthorizationGrpc.RequiresAuthorizationBlockingStub authorizationBlockingStub;
 
-    private RequiresResponseDTO requiresAuthorizationGrpcClient(String actions, String privileges) {
+    public RequiresResponseDTO requiresAuthorizationGrpcClient(String actions, String privileges) {
 
         RequiresRequest authorizationReq = RequiresRequest.newBuilder().addActions(actions).setPrivilege(privileges).build();
         RequiresResponse requiresResponse = authorizationBlockingStub.validateRequires(authorizationReq);

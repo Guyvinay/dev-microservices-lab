@@ -6,14 +6,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.grpc.*;
 import lombok.extern.slf4j.Slf4j;
 
-import static com.dev.auth.grpc.constants.GrpcConstants.PVT_JWT_TOKEN;
-import static com.dev.auth.grpc.constants.GrpcConstants.PVT_JWT_TOKEN_CTX;
+import static com.dev.auth.grpc.constants.GrpcConstants.JWT_TOKEN;
+import static com.dev.auth.grpc.constants.GrpcConstants.JWT_TOKEN_CTX;
 
 @Slf4j
 public class GrpcServerInterceptor implements ServerInterceptor {
 
     private final JwtTokenProviderManager jwtTokenHelper;
-    private ObjectMapper OM = new ObjectMapper();
 
     public GrpcServerInterceptor(JwtTokenProviderManager jwtTokenHelper) {
         this.jwtTokenHelper = jwtTokenHelper;
@@ -22,18 +21,15 @@ public class GrpcServerInterceptor implements ServerInterceptor {
     @Override
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(final ServerCall<ReqT, RespT> call, Metadata requestHeaders, ServerCallHandler<ReqT, RespT> next) {
 
-        log.debug("Private JWT Token {}", requestHeaders.get(PVT_JWT_TOKEN));
-        log.debug("ccreateTokenall {}", call.getMethodDescriptor().getRequestMarshaller());
+        log.info("Private JWT Token {}", requestHeaders.get(JWT_TOKEN));
+        log.info("ccreateTokenall {}", call.getMethodDescriptor().getRequestMarshaller());
         try {
             call.setCompression("gzip");
             // Get payload from token
-            String payload = jwtTokenHelper.getSubjectPayload(requestHeaders.get(PVT_JWT_TOKEN));
-
-            // Validate payload is a Private JWT Token
-            JwtTokenDto pvtToken = OM.readValue(payload, JwtTokenDto.class);
+            String payload = jwtTokenHelper.getSubjectPayload(requestHeaders.get(JWT_TOKEN));
 
             // Set the Private JWT Token into GRPC context
-            Context grpcCtx = Context.current().withValue(PVT_JWT_TOKEN_CTX, payload);
+            Context grpcCtx = Context.current().withValue(JWT_TOKEN_CTX, payload);
 
             // Chain
             return Contexts.interceptCall(grpcCtx, call, requestHeaders, next);
