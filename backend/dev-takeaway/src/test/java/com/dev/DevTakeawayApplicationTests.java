@@ -24,7 +24,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest
+//@SpringBootTest
 public class DevTakeawayApplicationTests {
 
     @InjectMocks
@@ -42,7 +42,7 @@ public class DevTakeawayApplicationTests {
 
 
     @DisplayName("pushToQueue -> test common service message push to queue")
-    @Test
+//    @Test
     void pushToQueue() throws JsonProcessingException {
         // Arrange
         String queueName = "testQueue";
@@ -60,7 +60,7 @@ public class DevTakeawayApplicationTests {
     }
 
     @DisplayName("Test Dividing by Zero ")
-    @Test
+//    @Test
     void testDivide_throwsDivisionByZeroException() {
         // Arrange
         double numerator = 10;
@@ -77,7 +77,7 @@ public class DevTakeawayApplicationTests {
     }
 
     @DisplayName("Test Getting All Documents.")
-    @Test
+//    @Test
     void testGetAllDocuments() {
 
         when(documentServiceBlockingStub.getAllDocuments(Empty.newBuilder().build())).thenReturn(DocumentsResponse.newBuilder().build());

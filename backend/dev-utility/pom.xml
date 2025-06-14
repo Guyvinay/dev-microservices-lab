@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.dev.utility</groupId>
 	<artifactId>dev-utility</artifactId>
-	<version>1.0.2</version>
+	<version>1.0.1</version>
 	<name>dev-utility</name>
 	<description>utility project for grpc and DTO</description>
 	<properties>
@@ -48,6 +48,13 @@
 			<version>1.3.2</version>
 		</dependency>
 	</dependencies>
+
+	<distributionManagement>
+		<repository>
+			<id>nexus</id> <!-- Match this ID with your server entry in settings.xml -->
+			<url>http://localhost:8081/repository/maven-starters-release/</url>
+		</repository>
+	</distributionManagement>
 
 
 	<build>

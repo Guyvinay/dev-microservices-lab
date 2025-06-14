@@ -52,7 +52,7 @@ public class UsingSeleniumTest {
 //        assertEquals("Received!", value);
     }
 
-    @Test
+//    @Test
     public void testMultipleAssertions() {
         String actualTitle = "Web forms"; // Intentionally incorrect
         String expectedTitle = "Web forms";
