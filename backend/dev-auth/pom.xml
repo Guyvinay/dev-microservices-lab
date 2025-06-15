@@ -8,7 +8,7 @@
 		<version>3.3.1</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.dev.auth</groupId>
+	<groupId>com.dev</groupId>
 	<artifactId>dev-auth</artifactId>
 	<version>1.0.9</version>
 	<name>dev-auth</name>

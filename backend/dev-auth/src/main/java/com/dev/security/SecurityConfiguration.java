@@ -76,7 +76,9 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth -> { auth
                         .requestMatchers("/swagger-ui*/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/oauth2/authorize/github", "/oauth2/authorize/google").permitAll()
-//                        .requestMatchers("/api/v1.0/users*/**").permitAll()
+                        .requestMatchers("/api/v1.0/users*/**").permitAll()
+                        .requestMatchers("api/v1.0/organization/setup-org").permitAll()
+
 //                        .requestMatchers("/actuator/prometheus").permitAll()
 //                        .requestMatchers("/api/auth/login").permitAll() // Allow login API
                         .requestMatchers("/graphiql*/**").permitAll()

@@ -65,7 +65,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         UserProfileModel profileModel = oAuth2UserProfileService.processOAuthPostLogin(provider, providerId,  userProfileModel);
         log.info("User profile processed: {}", profileModel.getId());
 
-        JwtTokenDto jwtTokenDto = securityUtils.createJwtTokeDtoFromModel(profileModel, 2);
+        JwtTokenDto jwtTokenDto = securityUtils.createJwtTokeDtoFromModel(profileModel, 2000000000);
 
         CustomOAuth2User customOAuth2User = new CustomOAuth2User(jwtTokenDto, attributes, oauth2User.getAuthorities());
 

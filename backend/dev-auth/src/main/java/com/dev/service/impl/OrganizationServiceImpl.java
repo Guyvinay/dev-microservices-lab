@@ -1,11 +1,9 @@
 package com.dev.service.impl;
 
-import com.dev.auth.dto.*;
 import com.dev.dto.*;
 import com.dev.entity.*;
 import com.dev.exception.DuplicateResourceException;
 import com.dev.exception.ResourceNotFoundException;
-import com.dev.auth.repository.*;
 import com.dev.repository.*;
 import com.dev.security.provider.CustomBcryptEncoder;
 import com.dev.service.OrganizationService;
