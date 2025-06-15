@@ -1,24 +1,22 @@
 package com.dev.auth.kafka.producer;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
-//@Service
+@Service
+@Slf4j
 public class KafkaProducerService {
 
-
-    private final KafkaTemplate<String, String> kafkaTemplate;  //Spring Kafka's helper class for sending messages.
-
-    // Constructor-based dependency injection for KafkaTemplate
-    public KafkaProducerService(KafkaTemplate<String, String> kafkaTemplate) {
-        this.kafkaTemplate = kafkaTemplate;
-    }
+    @Autowired
+    private KafkaTemplate<String, Object> kafkaTemplate;  //Spring Kafka's helper class for sending messages.
 
     // Method to send messages to a Kafka topic
     public void sendMessage(String topic, String message) {
         kafkaTemplate.send(topic, message);  // Sends message to Kafka topic
-        System.out.println("Sent message: " + message); // Log the sent message
+        log.info("Sent message: {}", message); // Log the sent message
     }
 
 

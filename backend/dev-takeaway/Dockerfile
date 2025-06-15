@@ -5,7 +5,7 @@ FROM openjdk:17-jdk-slim
 WORKDIR /app
 
 # Copy the jar file (replace 'your-application.jar' with your jar file's name)
-COPY target/dev-takeaway-0.0.1-SNAPSHOT.jar dev-takeaway.jar
+COPY target/dev-takeaway-1.0.1.jar dev-takeaway.jar
 
 # Expose the port your Spring Boot app runs on (default is 8080)
 EXPOSE 8888
