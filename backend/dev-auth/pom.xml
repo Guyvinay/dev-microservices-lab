@@ -159,21 +159,10 @@
 			<artifactId>spring-boot-starter-oauth2-client</artifactId>
 		</dependency>
 
-<!--		<dependency>-->
-<!--			<groupId>io.micrometer</groupId>-->
-<!--			<artifactId>micrometer-registry-prometheus</artifactId>-->
-<!--		</dependency>-->
-<!--		<dependency>-->
-<!--			<groupId>net.devh</groupId>-->
-<!--			<artifactId>grpc-spring-boot-starter</artifactId>-->
-<!--			<version>3.0.0.RELEASE</version>-->
-<!--			<exclusions>-->
-<!--				<exclusion>-->
-<!--					<groupId>io.grpc</groupId>-->
-<!--					<artifactId>grpc-netty-shaded</artifactId>-->
-<!--				</exclusion>-->
-<!--			</exclusions>-->
-<!--		</dependency>-->
+		<dependency>
+			<groupId>org.springframework.kafka</groupId>
+			<artifactId>spring-kafka</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>com.dev.utility</groupId>
@@ -186,7 +175,7 @@
 	<distributionManagement>
 		<repository>
 			<id>nexus</id> <!-- Match this ID with your server entry in settings.xml -->
-			<url>http://localhost:8081/repository/maven-releases/</url>
+			<url>http://localhost:8081/repository/maven-project-release/</url>
 		</repository>
 	</distributionManagement>
 

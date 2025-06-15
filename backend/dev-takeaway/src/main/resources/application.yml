@@ -91,3 +91,6 @@ database:
   default:
     schema:
       name: vinay
+
+kafka:
+  bootstrap-servers: localhost:9092
