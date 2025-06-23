@@ -33,15 +33,15 @@ spring:
       client:
         registration:
           github:
-            client-id: Ov23li30OfNzzSRFzDHs
-            client-secret: e709014c4f6eed9ad55b97ce32182fb61dc9ed0d
+            client-id: ${GITHUB_CLIENT_ID}
+            client-secret: ${GITHUB_CLIENT_SECRET}
             scope: read:user, user:email
             redirect-uri: "{baseUrl}/login/oauth2/code/github"
             authorization-grant-type: authorization_code
             client-name: GitHub
           google:
-            client-id: 190624024371-5rnr5nhn766nk7okgev8vp126oqpd96d.apps.googleusercontent.com
-            client-secret: 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
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
             scope: profile, email
             redirect-uri: "{baseUrl}/login/oauth2/code/google"
             authorization-grant-type: authorization_code
