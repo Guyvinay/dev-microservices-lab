@@ -85,7 +85,7 @@ liquibase:
     file:
       path: classpath:db/changelog/db.changelog-master.xml
 server:
-  port: 8888
+  port: 8001
   servlet.context-path: /takeaways
 database:
   default:

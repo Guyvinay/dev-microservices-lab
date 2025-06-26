@@ -10,7 +10,7 @@ WORKDIR /app
 COPY target/dev-auth*.jar /app/dev-auth.jar
 
 # Step 4: Expose the application port (Spring Boot default port is 8080)
-EXPOSE 8080
+EXPOSE 8000
 
 # Step 5: Define the command to run the Spring Boot application
 # Runs the JAR file using Java
