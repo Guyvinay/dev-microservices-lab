@@ -57,7 +57,7 @@ spring:
             user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
 
 server:
-  port: 8080
+  port: 8000
   address: 0.0.0.0
 #  canonical.url: http://localhost:8080/dev-auths
 #  servlet.context-path: /dev-auths
