@@ -7,7 +7,7 @@ import com.dev.security.details.CustomUserDetailsService;
 import com.dev.security.filter.JWTAuthenticationFilter;
 import com.dev.security.filter.JWTAuthorizationFilter;
 import com.dev.security.filter.RequestLoggingFilter;
-import com.dev.security.provider.CustomAccessTokenEndpointHandler;
+import com.dev.oauth2.handler.CustomAccessTokenEndpointHandler;
 import com.dev.security.provider.CustomAuthenticationEntryPoint;
 import com.dev.security.provider.CustomAuthenticationProvider;
 import com.dev.security.provider.CustomBcryptEncoder;
