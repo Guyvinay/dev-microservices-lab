@@ -7,6 +7,7 @@ import com.dev.security.details.CustomUserDetailsService;
 import com.dev.security.filter.JWTAuthenticationFilter;
 import com.dev.security.filter.JWTAuthorizationFilter;
 import com.dev.security.filter.RequestLoggingFilter;
+import com.dev.security.provider.CustomAccessTokenEndpointHandler;
 import com.dev.security.provider.CustomAuthenticationEntryPoint;
 import com.dev.security.provider.CustomAuthenticationProvider;
 import com.dev.security.provider.CustomBcryptEncoder;
@@ -26,8 +27,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import java.util.List;
 
 @Configuration
-@EnableWebSecurity(debug = true)
-//@EnableWebSecurity
+//@EnableWebSecurity(debug = true)
+@EnableWebSecurity
 //@RequiredArgsConstructor
 public class SecurityConfiguration {
 
@@ -41,6 +42,7 @@ public class SecurityConfiguration {
     private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final CustomAccessTokenEndpointHandler customAccessTokenEndpointHandler;
 
     public SecurityConfiguration(
             CustomOAuth2UserService customOAuth2UserService,
@@ -52,7 +54,8 @@ public class SecurityConfiguration {
             RequestLoggingFilter requestLoggingFilter,
             OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
             CustomAuthenticationFailureHandler customAuthenticationFailureHandler,
-            CustomAuthenticationEntryPoint customAuthenticationEntryPoint) {
+            CustomAuthenticationEntryPoint customAuthenticationEntryPoint,
+            CustomAccessTokenEndpointHandler customAccessTokenEndpointHandler) {
         this.customOAuth2UserService = customOAuth2UserService;
         this.customBcryptEncoder = customBcryptEncoder;
         this.customAuthenticationProvider = customAuthenticationProvider;
@@ -63,6 +66,7 @@ public class SecurityConfiguration {
         this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
         this.customAuthenticationFailureHandler = customAuthenticationFailureHandler;
         this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
+        this.customAccessTokenEndpointHandler = customAccessTokenEndpointHandler;
     }
 
     @Bean
@@ -89,18 +93,22 @@ public class SecurityConfiguration {
                 .addFilterAfter(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class) // Process JWT after username/password authentication
                 .addFilterBefore(requestLoggingFilter, UsernamePasswordAuthenticationFilter.class)  // Log before authentication
                 .oauth2Login(oauth2 -> oauth2 // Enables OAuth2 login
+                        .tokenEndpoint(token-> token
+                                .accessTokenResponseClient(customAccessTokenEndpointHandler)
+                        )
                         .authorizationEndpoint(authz -> authz
-                                .baseUri("/oauth2/authorize")
+                                .baseUri("/oauth2/authorize") // http://localhost:8000/oauth2/authorize/github
                         ) // Custom login URL
                         .redirectionEndpoint(redir -> redir
                                 .baseUri("/login/oauth2/code/*")
-                        ) // Ensures GitHub redirects correctly
+                        )
+                        // Ensures GitHub redirects correctly
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(customOAuth2UserService)
                         )
                         .successHandler(oAuth2LoginSuccessHandler) // Custom JWT handler
                         .failureHandler(customAuthenticationFailureHandler)
-                ) // http://localhost:8080/oauth2/authorize/github
+                )
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
                 )
