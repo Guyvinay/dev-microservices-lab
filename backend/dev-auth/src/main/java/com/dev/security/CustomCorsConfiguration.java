@@ -34,10 +34,11 @@ public class CustomCorsConfiguration {
         CorsConfiguration cfg = new CorsConfiguration();
 
         // Allow all origins (use "*" to allow any origin, but be careful with this in production)
-        cfg.setAllowedOrigins(List.of("*"));
+//        cfg.setAllowedOrigins(List.of("*"));
 
         // Allow all origin patterns (to allow cross-origin requests from any domain)
-        cfg.setAllowedOriginPatterns(List.of("*"));
+        cfg.setAllowedOriginPatterns(List.of("*")); // Safe with allowCredentials=true
+
 
         // Allow all HTTP methods (GET, POST, PUT, DELETE, OPTIONS, etc.)
         cfg.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));

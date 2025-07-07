@@ -6,6 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -47,7 +48,9 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
 
         if (token == null) {
             filterChain.doFilter(request, response);
-            return;
+            // Let Spring Security handle it (might trigger SAML login)
+            SecurityContextHolder.clearContext();  // optional
+            throw new InsufficientAuthenticationException("No JWT found");
         }
         try {
             Authentication auth = jwtTokenProvider.getAuthentication(token);
@@ -82,6 +85,8 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
-        return path.equals("/api/auth/login");  // Skip JWT processing for login endpoint
+        return path.startsWith("/api/auth/login")// Skip JWT processing for login endpoint
+                || path.startsWith("/login/saml2")   // skip JWT filter for SAML endpoints
+                || path.startsWith("/saml2/");
     }
 }
