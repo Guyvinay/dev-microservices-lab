@@ -44,15 +44,16 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
 
         log.info("JWTAuthenticationFilter invoked for: {}", request.getRequestURI());
 
-        String token = jwtTokenProvider.resolveToken(request);
-
-        if (token == null) {
-            filterChain.doFilter(request, response);
-            // Let Spring Security handle it (might trigger SAML login)
-            SecurityContextHolder.clearContext();  // optional
-            throw new InsufficientAuthenticationException("No JWT found");
-        }
         try {
+            String token = jwtTokenProvider.resolveToken(request);
+            if (token == null) {
+                filterChain.doFilter(request, response);
+                // Let Spring Security handle it (might trigger SAML login)
+                resetAuthenticationAfterRequest();
+//                SecurityContextHolder.clearContext();  // optional
+                throw new InsufficientAuthenticationException("No JWT found");
+            }
+
             Authentication auth = jwtTokenProvider.getAuthentication(token);
             if (auth != null) {
                 SecurityContextHolder.getContext().setAuthentication(auth);
@@ -60,7 +61,7 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         } catch (Exception e) {
             logger.error("Authentication failed:", e);
-            handleAuthenticationFailure(response, e);
+//            handleAuthenticationFailure(response, e);
             resetAuthenticationAfterRequest();
         } finally {
             // Ensures security context is always cleared after request
