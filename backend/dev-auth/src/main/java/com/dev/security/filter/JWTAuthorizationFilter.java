@@ -51,7 +51,8 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
                 // Let Spring Security handle it (might trigger SAML login)
                 resetAuthenticationAfterRequest();
 //                SecurityContextHolder.clearContext();  // optional
-                throw new InsufficientAuthenticationException("No JWT found");
+//                throw new InsufficientAuthenticationException("No JWT found");
+                return;
             }
 
             Authentication auth = jwtTokenProvider.getAuthentication(token);

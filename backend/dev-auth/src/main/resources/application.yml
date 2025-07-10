@@ -60,10 +60,13 @@ spring:
       relyingparty:
         registration:
           okta:
+            entity-id: http://localhost:8000/saml2/service-provider-metadata/okta
             identityprovider:
               metadata-uri: https://dev-48844425.okta.com/app/exkpgl3e67Uc7IuhR5d7/sso/saml/metadata
             assertingparty:
               entity-id: http://www.okta.com/exkpgl3e67Uc7IuhR5d7
+              metadata-uri: https://dev-48844425.okta.com/app/exkpgl3e67Uc7IuhR5d7/sso/saml/metadata
+
 server:
   port: 8000
   address: 0.0.0.0

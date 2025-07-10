@@ -6,7 +6,6 @@ import org.springframework.security.saml2.core.Saml2X509Credential;
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistration;
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistrationRepository;
 import org.springframework.security.saml2.provider.service.registration.Saml2MessageBinding;
-import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
 import java.security.cert.CertificateFactory;
@@ -14,16 +13,16 @@ import java.security.cert.X509Certificate;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Component
+//@Component
 public class CustomRelyingPartyRegistrationRepository implements RelyingPartyRegistrationRepository {
 
     private final Map<String, RelyingPartyRegistration> registrationMap = new ConcurrentHashMap<>();
 
     @PostConstruct
     public void init() {
-        RelyingPartyRegistration oktaRegistration = relyingPartyRegistrationFromMetadata();
-        registrationMap.put(oktaRegistration.getRegistrationId(), oktaRegistration);
-        System.out.println("Cached RelyingPartyRegistration for: " + oktaRegistration.getRegistrationId());
+//        RelyingPartyRegistration oktaRegistration = relyingPartyRegistrationFromMetadata();
+//        registrationMap.put(oktaRegistration.getRegistrationId(), oktaRegistration);
+//        System.out.println("Cached RelyingPartyRegistration for: " + oktaRegistration.getRegistrationId());
     }
 
     private RelyingPartyRegistration relyingPartyRegistrationFromMetadata() {
@@ -48,7 +47,7 @@ public class CustomRelyingPartyRegistrationRepository implements RelyingPartyReg
     }
 
     private X509Certificate idpCertificate() {
-        try (InputStream is = new ClassPathResource("idp-certificate.pem").getInputStream()) {
+        try (InputStream is = new ClassPathResource("saml/idp-certificate.pem").getInputStream()) {
             CertificateFactory factory = CertificateFactory.getInstance("X.509");
             return (X509Certificate) factory.generateCertificate(is);
         } catch (Exception ex) {

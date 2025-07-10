@@ -16,7 +16,7 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 
-@Component
+//@Component
 @Slf4j
 public class Saml2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
