@@ -3,6 +3,9 @@ package com.dev.security;
 import com.dev.oauth2.handler.CustomAuthenticationFailureHandler;
 import com.dev.oauth2.handler.OAuth2LoginSuccessHandler;
 import com.dev.oauth2.service.CustomOAuth2UserService;
+import com.dev.saml.handler.Saml2LoginSuccessHandler;
+import com.dev.saml.repository.CustomRelyingPartyRegistrationRepository;
+import com.dev.saml.resolver.CustomSaml2AuthenticationRequestResolver;
 import com.dev.security.details.CustomUserDetailsService;
 import com.dev.security.filter.JWTAuthenticationFilter;
 import com.dev.security.filter.JWTAuthorizationFilter;
@@ -27,8 +30,12 @@ import org.springframework.security.saml2.provider.service.authentication.Abstra
 import org.springframework.security.saml2.provider.service.registration.InMemoryRelyingPartyRegistrationRepository;
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistration;
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistrationRepository;
+import org.springframework.security.saml2.provider.service.web.DefaultRelyingPartyRegistrationResolver;
 import org.springframework.security.saml2.provider.service.web.HttpSessionSaml2AuthenticationRequestRepository;
+import org.springframework.security.saml2.provider.service.web.RelyingPartyRegistrationResolver;
 import org.springframework.security.saml2.provider.service.web.Saml2AuthenticationRequestRepository;
+import org.springframework.security.saml2.provider.service.web.authentication.OpenSaml4AuthenticationRequestResolver;
+import org.springframework.security.saml2.provider.service.web.authentication.Saml2AuthenticationRequestResolver;
 import org.springframework.security.saml2.provider.service.web.authentication.Saml2WebSsoAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -60,8 +67,9 @@ public class SecurityConfiguration {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessTokenEndpointHandler customAccessTokenEndpointHandler;
-//    private final CustomRelyingPartyRegistrationRepository relyingPartyRegistrationRepository;
-//    private final Saml2LoginSuccessHandler saml2LoginSuccessHandler;
+    private final CustomRelyingPartyRegistrationRepository relyingPartyRegistrationRepository;
+    private final Saml2LoginSuccessHandler saml2LoginSuccessHandler;
+//    private final CustomSaml2AuthenticationRequestResolver customSaml2AuthenticationRequestResolver;
 
     public SecurityConfiguration(
             CustomOAuth2UserService customOAuth2UserService,
@@ -74,9 +82,10 @@ public class SecurityConfiguration {
             OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
             CustomAuthenticationFailureHandler customAuthenticationFailureHandler,
             CustomAuthenticationEntryPoint customAuthenticationEntryPoint,
-            CustomAccessTokenEndpointHandler customAccessTokenEndpointHandler
-//            CustomRelyingPartyRegistrationRepository relyingPartyRegistrationRepository,
-//            Saml2LoginSuccessHandler saml2LoginSuccessHandler
+            CustomAccessTokenEndpointHandler customAccessTokenEndpointHandler,
+//            CustomSaml2AuthenticationRequestResolver customSaml2AuthenticationRequestResolver,
+            CustomRelyingPartyRegistrationRepository relyingPartyRegistrationRepository,
+            Saml2LoginSuccessHandler saml2LoginSuccessHandler
     ) {
         this.customOAuth2UserService = customOAuth2UserService;
         this.customBcryptEncoder = customBcryptEncoder;
@@ -89,8 +98,9 @@ public class SecurityConfiguration {
         this.customAuthenticationFailureHandler = customAuthenticationFailureHandler;
         this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
         this.customAccessTokenEndpointHandler = customAccessTokenEndpointHandler;
-//        this.relyingPartyRegistrationRepository = relyingPartyRegistrationRepository;
-//        this.saml2LoginSuccessHandler = saml2LoginSuccessHandler;
+        this.relyingPartyRegistrationRepository = relyingPartyRegistrationRepository;
+        this.saml2LoginSuccessHandler = saml2LoginSuccessHandler;
+//        this.customSaml2AuthenticationRequestResolver = customSaml2AuthenticationRequestResolver;
     }
 
     @Bean
@@ -101,8 +111,6 @@ public class SecurityConfiguration {
         );
 
         samlFilter.setAuthenticationRequestRepository(authenticationRequestRepository());
-
-
 
         httpSecurity.sessionManagement(session -> session
 //                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -146,11 +154,9 @@ public class SecurityConfiguration {
                         .failureHandler(customAuthenticationFailureHandler)
                 )
                 .saml2Login(saml2 -> saml2
-                                .relyingPartyRegistrationRepository(samlRegistrationRepository())
-                                .successHandler((request, response,   authentication) -> {
-                                    Object principle = authentication.getPrincipal();
-                                    System.out.println("Authentication succeed: " + principle);
-                                })
+                                .relyingPartyRegistrationRepository(relyingPartyRegistrationRepository)
+                                .authenticationRequestResolver(authenticationRequestResolver(relyingPartyRegistrationRepository))
+                                .successHandler(saml2LoginSuccessHandler)
                                 .failureHandler((request, response, exception) -> {
                                     System.out.println("SAML Login failed: " + exception.getMessage());
 //                                    response.sendRedirect("/error");
@@ -170,6 +176,16 @@ public class SecurityConfiguration {
                 .httpBasic(AbstractHttpConfigurer::disable); // Disable basic auth
 
         return httpSecurity.build();
+    }
+
+
+    @Bean
+    public Saml2AuthenticationRequestResolver authenticationRequestResolver(RelyingPartyRegistrationRepository registrations) {
+        RelyingPartyRegistrationResolver registrationResolver = new DefaultRelyingPartyRegistrationResolver(registrations);
+        OpenSaml4AuthenticationRequestResolver authenticationRequestResolver = new OpenSaml4AuthenticationRequestResolver(registrationResolver);
+        authenticationRequestResolver.setAuthnRequestCustomizer((context) -> context
+                .getAuthnRequest().setForceAuthn(true));
+        return authenticationRequestResolver;
     }
 
     @Bean
