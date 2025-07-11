@@ -71,8 +71,6 @@ public class CustomRelyingPartyRegistrationRepository implements RelyingPartyReg
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
-
     }
 
     public static X509Certificate loadCertificate(String path) throws Exception {

@@ -107,7 +107,7 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 
         Saml2WebSsoAuthenticationFilter samlFilter = new Saml2WebSsoAuthenticationFilter(
-                samlRegistrationRepository()
+                relyingPartyRegistrationRepository
         );
 
         samlFilter.setAuthenticationRequestRepository(authenticationRequestRepository());
@@ -135,7 +135,7 @@ public class SecurityConfiguration {
                 .addFilterBefore(new JWTAuthenticationFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class) // Process JWT after username/password authentication
                 .addFilterBefore(requestLoggingFilter, UsernamePasswordAuthenticationFilter.class)  // Log before authentication
-                .addFilterBefore(samlFilter, UsernamePasswordAuthenticationFilter.class)
+//                .addFilterBefore(samlFilter, UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth2 -> oauth2 // Enables OAuth2 login
                         .tokenEndpoint(token -> token
                                 .accessTokenResponseClient(customAccessTokenEndpointHandler)
@@ -155,7 +155,7 @@ public class SecurityConfiguration {
                 )
                 .saml2Login(saml2 -> saml2
                                 .relyingPartyRegistrationRepository(relyingPartyRegistrationRepository)
-                                .authenticationRequestResolver(authenticationRequestResolver(relyingPartyRegistrationRepository))
+//                                .authenticationRequestResolver(authenticationRequestResolver(relyingPartyRegistrationRepository))
                                 .successHandler(saml2LoginSuccessHandler)
                                 .failureHandler((request, response, exception) -> {
                                     System.out.println("SAML Login failed: " + exception.getMessage());
@@ -188,7 +188,7 @@ public class SecurityConfiguration {
         return authenticationRequestResolver;
     }
 
-    @Bean
+//    @Bean
     public RelyingPartyRegistrationRepository samlRegistrationRepository() {
         String keystorePassword = "changeit";
         String keyAlias = "saml-key";
