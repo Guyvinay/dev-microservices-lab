@@ -77,23 +77,22 @@ public class SecurityConfiguration {
                 .cors(cors -> cors
                         .configurationSource(corsConfiguration::corsConfiguration)
                 )
-                .authorizeHttpRequests(auth -> { auth
-                        .requestMatchers("/swagger-ui*/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/oauth2/authorize/github", "/oauth2/authorize/google").permitAll()
-                        .requestMatchers("/api/v1.0/users*/**").permitAll()
-                        .requestMatchers("api/v1.0/organization/setup-org").permitAll()
-
-//                        .requestMatchers("/actuator/prometheus").permitAll()
-//                        .requestMatchers("/api/auth/login").permitAll() // Allow login API
-                        .requestMatchers("/graphiql*/**").permitAll()
-                        .anyRequest().authenticated();
+                .authorizeHttpRequests(auth -> {
+                    auth
+                            .requestMatchers(
+                                    "/swagger-ui*/**", "/v3/api-docs*/**",
+                                    "/oauth2/authorize/github", "/oauth2/authorize/google",
+                                    "api/v1.0/organization/setup-org",
+                                    "/graphiql*/**", "/actuator*/**"
+                            ).permitAll()
+                            .anyRequest().authenticated();
                 })
                 .csrf(AbstractHttpConfigurer::disable)
                 .addFilterBefore(new JWTAuthenticationFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class) // Process JWT after username/password authentication
                 .addFilterBefore(requestLoggingFilter, UsernamePasswordAuthenticationFilter.class)  // Log before authentication
                 .oauth2Login(oauth2 -> oauth2 // Enables OAuth2 login
-                        .tokenEndpoint(token-> token
+                        .tokenEndpoint(token -> token
                                 .accessTokenResponseClient(customAccessTokenEndpointHandler)
                         )
                         .authorizationEndpoint(authz -> authz

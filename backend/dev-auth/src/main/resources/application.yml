@@ -68,7 +68,6 @@ security:
     secret: mySecretKeyForJwtToken
     expiration: 3600000 # 1 hour in milliseconds
 
-
 elastic:
   index:
     private: es_private_message_index
@@ -76,3 +75,9 @@ elastic:
 
 kafka:
   bootstrap-servers: localhost:9092
+
+#logging:
+#  level:
+#    org.springframework.security.saml2: TRACE
+#    org.springframework.security: TRACE
+#    org.opensaml: DEBUG
