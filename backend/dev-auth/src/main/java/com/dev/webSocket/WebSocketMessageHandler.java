@@ -73,7 +73,7 @@ public class WebSocketMessageHandler extends TextWebSocketHandler {
         }
 
         // Determine if the connection is for private or group chat and add the user to the session
-        if (uriPath.startsWith("/dev-auth/ws/chat/private")) {
+        if (uriPath.startsWith("/ws/chat/private")) {
             webSocketSessionManager.addUserToPrivateChat(username, session);
             System.out.println("WebSocket connection established for user: " + username);
             Queue<ChatMessage> pendingMessages = offlineMessageService.getOfflineMessages(username);
@@ -81,7 +81,7 @@ public class WebSocketMessageHandler extends TextWebSocketHandler {
 //                privateChatMessageService.sendPrivateMessage(pendingMessages.poll());
             }
             offlineMessageService.removeOfflineMessages(username);
-        } else if (uriPath.startsWith("/dev-auth/ws/chat/group")) {
+        } else if (uriPath.startsWith("/ws/chat/group")) {
             String roomId = extractRoomId(uriPath);
             System.out.println("WebSocket connection established for user: " + username);
             webSocketSessionManager.addUserSession(roomId, username, session);
@@ -112,11 +112,11 @@ public class WebSocketMessageHandler extends TextWebSocketHandler {
         }
 
         // Route the message based on chat type (private or group)
-        if (uriPath.startsWith("/dev-auth/ws/chat/private")) {
+        if (uriPath.startsWith("/ws/chat/private")) {
             chatMessage.setType(MessageType.PRIVATE);
             messagePayload.setChatType(MessageType.PRIVATE);
             privateChatMessageService.sendPrivateMessage(messagePayload);
-        } else if (uriPath.startsWith("/dev-auth/ws/chat/group")) {
+        } else if (uriPath.startsWith("/ws/chat/group")) {
             String roomId = extractRoomId(uriPath);
             chatMessage.setType(MessageType.GROUP);
             chatMessage.setRoomId(roomId);

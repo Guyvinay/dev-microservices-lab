@@ -36,17 +36,29 @@ public class ElasticSearchConfiguration {
 
         // prepare credential provider
         final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-        if (configurationProperties.getCredentials() != null && StringUtils.isNotBlank(configurationProperties.getCredentials().getUsername()) && StringUtils.isNotBlank(configurationProperties.getCredentials().getPassword())) {
+        if (
+                configurationProperties.getCredentials() != null &&
+                StringUtils.isNotBlank(configurationProperties.getCredentials().getUsername()) &&
+                StringUtils.isNotBlank(configurationProperties.getCredentials().getPassword())
+        ) {
             credentialsProvider.setCredentials(AuthScope.ANY,
-                    new UsernamePasswordCredentials(configurationProperties.getCredentials().getUsername(), configurationProperties.getCredentials().getPassword()));
+                    new UsernamePasswordCredentials(
+                            configurationProperties.getCredentials().getUsername(),
+                            configurationProperties.getCredentials().getPassword()
+                    )
+            );
         }
 
         List<HttpHost> httpHosts = new ArrayList<>();
-        for (ElasticConfigurationProperties.Elastic elastic : configurationProperties.getProperties()) {
-            httpHosts.add(new HttpHost(elastic.getHost(), elastic.getPort(), elastic.getScheme()));
-            log.info("Connecting to elasticsearch at ({}://{}:{})", elastic.getScheme(), elastic.getHost(), elastic.getPort());
-        }
-        log.info("Total hosts in main elastic [{}] ", httpHosts.size());
+//        for (ElasticConfigurationProperties.Elastic elastic : configurationProperties.getProperties()) {
+//            httpHosts.add(new HttpHost(elastic.getHost(), elastic.getPort(), elastic.getScheme()));
+//            log.info("Connecting to elasticsearch at ({}://{}:{})", elastic.getScheme(), elastic.getHost(), elastic.getPort());
+//        }
+//        log.info("Total hosts in main elastic [{}] ", httpHosts.size());
+
+        ElasticConfigurationProperties.Elastic elastic = configurationProperties.getProperty();
+        httpHosts.add(new HttpHost(elastic.getHost(), elastic.getPort(), elastic.getScheme()));
+
 
         RestClientBuilder restClientBuilder = RestClient.builder(httpHosts.toArray(new HttpHost[httpHosts.size()]));
 
