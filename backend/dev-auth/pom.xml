@@ -160,6 +160,11 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-saml2-service-provider</artifactId>
+		</dependency>
+
+		<dependency>
 			<groupId>com.dev.utility</groupId>
 			<artifactId>dev-utility</artifactId>
 			<version>1.0.1</version>

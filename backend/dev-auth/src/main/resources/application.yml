@@ -56,6 +56,17 @@ spring:
             token-uri: https://oauth2.googleapis.com/token
             user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
 
+    saml2:
+      relyingparty:
+        registration:
+          okta:
+            entity-id: http://localhost:8000/saml2/service-provider-metadata/okta
+            identityprovider:
+              metadata-uri: https://dev-48844425.okta.com/app/exkpgl3e67Uc7IuhR5d7/sso/saml/metadata
+            assertingparty:
+              entity-id: http://www.okta.com/exkpgl3e67Uc7IuhR5d7
+              metadata-uri: https://dev-48844425.okta.com/app/exkpgl3e67Uc7IuhR5d7/sso/saml/metadata
+
 server:
   port: 8000
   address: 0.0.0.0
@@ -76,3 +87,9 @@ elastic:
 
 kafka:
   bootstrap-servers: localhost:9092
+
+logging:
+  level:
+    org.springframework.security.saml2: TRACE
+    org.springframework.security: TRACE
+    org.opensaml: DEBUG

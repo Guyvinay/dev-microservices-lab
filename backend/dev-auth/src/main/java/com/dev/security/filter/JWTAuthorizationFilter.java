@@ -6,6 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -43,13 +44,17 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
 
         log.info("JWTAuthenticationFilter invoked for: {}", request.getRequestURI());
 
-        String token = jwtTokenProvider.resolveToken(request);
-
-        if (token == null) {
-            filterChain.doFilter(request, response);
-            return;
-        }
         try {
+            String token = jwtTokenProvider.resolveToken(request);
+            if (token == null) {
+                filterChain.doFilter(request, response);
+                // Let Spring Security handle it (might trigger SAML login)
+                resetAuthenticationAfterRequest();
+//                SecurityContextHolder.clearContext();  // optional
+//                throw new InsufficientAuthenticationException("No JWT found");
+                return;
+            }
+
             Authentication auth = jwtTokenProvider.getAuthentication(token);
             if (auth != null) {
                 SecurityContextHolder.getContext().setAuthentication(auth);
@@ -57,7 +62,7 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         } catch (Exception e) {
             logger.error("Authentication failed:", e);
-            handleAuthenticationFailure(response, e);
+//            handleAuthenticationFailure(response, e);
             resetAuthenticationAfterRequest();
         } finally {
             // Ensures security context is always cleared after request
@@ -82,6 +87,8 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
-        return path.equals("/api/auth/login");  // Skip JWT processing for login endpoint
+        return path.startsWith("/api/auth/login")// Skip JWT processing for login endpoint
+                || path.startsWith("/login/saml2")   // skip JWT filter for SAML endpoints
+                || path.startsWith("/saml2/");
     }
 }
