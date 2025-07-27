@@ -59,8 +59,8 @@ spring:
 server:
   port: 8000
   address: 0.0.0.0
-#  canonical.url: http://localhost:8080/dev-auths
-#  servlet.context-path: /dev-auths
+  canonical.url: http://localhost:8000/dev-auth
+  servlet.context-path: /dev-auth
   name: localhost
 
 security:
