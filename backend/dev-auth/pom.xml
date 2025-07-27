@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.dev</groupId>
 	<artifactId>dev-auth</artifactId>
-	<version>1.0.9</version>
+	<version>1.0.0</version>
 	<name>dev-auth</name>
 	<description>SB Project for authentication</description>
 	<properties>

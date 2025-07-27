@@ -59,15 +59,14 @@ spring:
 server:
   port: 8000
   address: 0.0.0.0
-#  canonical.url: http://localhost:8080/dev-auths
-#  servlet.context-path: /dev-auths
+  canonical.url: http://localhost:8000/dev-auth
+  servlet.context-path: /dev-auth
   name: localhost
 
 security:
   jwt:
     secret: mySecretKeyForJwtToken
     expiration: 3600000 # 1 hour in milliseconds
-
 
 elastic:
   index:
@@ -76,3 +75,9 @@ elastic:
 
 kafka:
   bootstrap-servers: localhost:9092
+
+#logging:
+#  level:
+#    org.springframework.security.saml2: TRACE
+#    org.springframework.security: TRACE
+#    org.opensaml: DEBUG
