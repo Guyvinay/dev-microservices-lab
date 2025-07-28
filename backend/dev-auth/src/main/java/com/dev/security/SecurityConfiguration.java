@@ -96,10 +96,10 @@ public class SecurityConfiguration {
                                 .accessTokenResponseClient(customAccessTokenEndpointHandler)
                         )
                         .authorizationEndpoint(authz -> authz
-                                .baseUri("/oauth2/authorize") // http://localhost:8000/oauth2/authorize/github
+                                .baseUri("/dev-auth/oauth2/authorize") // http://localhost:8000/oauth2/authorize/github
                         ) // Custom login URL
                         .redirectionEndpoint(redir -> redir
-                                .baseUri("/login/oauth2/code/*")
+                                .baseUri("/dev-auth/login/oauth2/code/*")
                         )
                         // Ensures GitHub redirects correctly
                         .userInfoEndpoint(userInfo -> userInfo
@@ -123,7 +123,7 @@ public class SecurityConfiguration {
     }
 
     /**
-     * ✅ Explicitly defining DaoAuthenticationProvider as a Bean
+     * Explicitly defining DaoAuthenticationProvider as a Bean
      */
 //    @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider() {
@@ -135,7 +135,7 @@ public class SecurityConfiguration {
 
 
     /**
-     * ✅ AuthenticationManager with both Custom and Dao Authentication Providers
+     * AuthenticationManager with both Custom and Dao Authentication Providers
      */
     @Bean
     public AuthenticationManager authenticationManager() {
