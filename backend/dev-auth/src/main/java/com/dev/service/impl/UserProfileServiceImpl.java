@@ -11,6 +11,7 @@ import com.dev.service.UserProfileService;
 import com.dev.utility.EntityDtoMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -65,12 +66,46 @@ public class UserProfileServiceImpl implements UserProfileService {
     /**
      * Fetches the user profile by its ID.
      *
+     * @param userId The unique identifier of the user.
+     * @return The user profile response DTO.
+     * @throws InvalidInputException if the ID is null.
+     * @throws UserNotFoundException if no user is found with the given ID.
+     */
+
+//    @Override
+////    @Cacheable(value = "user", key = "#userId")
+//    public UserProfileResponseDTO getUserById(UUID userId) {
+//        log.info("Getting user info by id: {}", userId);
+//        if (Objects.isNull(userId)) throw new InvalidInputException("User ID cannot be null");
+//
+//
+//        UserProfileResponseDTO cachedUserProfile = cacheInspectorService.getValue(String.valueOf(userId), UserProfileResponseDTO.class);
+//        if(cachedUserProfile!=null) {
+//            return cachedUserProfile;
+//        }
+//
+//        Optional<UserProfileModel> userProfile = userProfileModelRepository.findById(userId);
+//
+//        if (userProfile.isEmpty()) {
+//            throw new UserNotFoundException("User not found with ID: " + userId);
+//        }
+//
+//        log.info("User info retrieved successfully and returned");
+//        UserProfileResponseDTO responseDTO = entityDtoMapper.toUserProfileResponseDTO(userProfile.get());
+//        cacheInspectorService.setValue(String.valueOf(userId), responseDTO);
+//        return responseDTO;
+//    }
+
+    /**
+     * Fetches the user profile by its ID.
+     *
      * @param id The unique identifier of the user.
      * @return The user profile response DTO.
      * @throws InvalidInputException if the ID is null.
      * @throws UserNotFoundException if no user is found with the given ID.
      */
     @Override
+    @Cacheable(cacheNames = "user", keyGenerator = "tenantAwareKeyGenerator")
     public UserProfileResponseDTO getUserById(UUID id) {
         if (Objects.isNull(id)) throw new InvalidInputException("User ID cannot be null");
 
@@ -82,7 +117,6 @@ public class UserProfileServiceImpl implements UserProfileService {
 
         return entityDtoMapper.toUserProfileResponseDTO(userProfile.get());
     }
-
     /**
      * Retrieves the user profile by its unique ID.
      *
