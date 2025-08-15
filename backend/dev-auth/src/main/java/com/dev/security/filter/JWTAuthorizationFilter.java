@@ -87,7 +87,7 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
-        return path.startsWith("/api/auth/login")// Skip JWT processing for login endpoint
+        return path.startsWith("/dev-auth/api/auth/login")// Skip JWT processing for login endpoint
                 || path.startsWith("/login/saml2")   // skip JWT filter for SAML endpoints
                 || path.startsWith("/saml2/");
     }

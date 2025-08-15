@@ -67,18 +67,37 @@ spring:
               entity-id: http://www.okta.com/exkpgl3e67Uc7IuhR5d7
               metadata-uri: https://dev-48844425.okta.com/app/exkpgl3e67Uc7IuhR5d7/sso/saml/metadata
 
+  redis:
+    host: localhost
+    port: 6379
+    #    password: ${REDIS_PASSWORD:}    # use secrets manager / env var
+    database: 100
+    lettuce:
+      pool:
+        max-active: 20
+        max-idle: 10
+        min-idle: 2
+  cache:
+    type: redis
+
+app:
+  redis:
+    key-prefix: dev-auth # isolates keys across services
+    cache:
+      default-ttl-minutes: 15   # default TTL if not overridden
+
+
 server:
   port: 8000
   address: 0.0.0.0
-#  canonical.url: http://localhost:8080/dev-auths
-#  servlet.context-path: /dev-auths
+  canonical.url: http://localhost:8000/dev-auth
+  servlet.context-path: /dev-auth
   name: localhost
 
 security:
   jwt:
     secret: mySecretKeyForJwtToken
     expiration: 3600000 # 1 hour in milliseconds
-
 
 elastic:
   index:
@@ -88,8 +107,8 @@ elastic:
 kafka:
   bootstrap-servers: localhost:9092
 
-logging:
-  level:
-    org.springframework.security.saml2: TRACE
-    org.springframework.security: TRACE
-    org.opensaml: DEBUG
+#logging:
+#  level:
+#    org.springframework.security.saml2: TRACE
+#    org.springframework.security: TRACE
+#    org.opensaml: DEBUG

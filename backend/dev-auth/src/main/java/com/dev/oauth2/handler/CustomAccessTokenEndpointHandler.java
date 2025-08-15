@@ -1,4 +1,4 @@
-package com.dev.security.provider;
+package com.dev.oauth2.handler;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;

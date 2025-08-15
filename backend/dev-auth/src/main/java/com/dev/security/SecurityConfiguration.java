@@ -10,7 +10,7 @@ import com.dev.security.details.CustomUserDetailsService;
 import com.dev.security.filter.JWTAuthenticationFilter;
 import com.dev.security.filter.JWTAuthorizationFilter;
 import com.dev.security.filter.RequestLoggingFilter;
-import com.dev.security.provider.CustomAccessTokenEndpointHandler;
+import com.dev.oauth2.handler.CustomAccessTokenEndpointHandler;
 import com.dev.security.provider.CustomAuthenticationEntryPoint;
 import com.dev.security.provider.CustomAuthenticationProvider;
 import com.dev.security.provider.CustomBcryptEncoder;
@@ -141,10 +141,10 @@ public class SecurityConfiguration {
                                 .accessTokenResponseClient(customAccessTokenEndpointHandler)
                         )
                         .authorizationEndpoint(authz -> authz
-                                .baseUri("/oauth2/authorize") // http://localhost:8000/oauth2/authorize/github
+                                .baseUri("/dev-auth/oauth2/authorize") // http://localhost:8000/oauth2/authorize/github
                         ) // Custom login URL
                         .redirectionEndpoint(redir -> redir
-                                .baseUri("/login/oauth2/code/*")
+                                .baseUri("/dev-auth/login/oauth2/code/*")
                         )
                         // Ensures GitHub redirects correctly
                         .userInfoEndpoint(userInfo -> userInfo
