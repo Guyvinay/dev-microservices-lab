@@ -203,5 +203,58 @@
         </createTable>
     </changeSet>
 
+    <!-- ==========================================================
+        Create table for storing SAML relying party (SP + IdP data)
+        ========================================================== -->
+    <changeSet id="2025.08.17-08.26" author="vinay.singh" labels="changeset for the idenitity provider, initially used to store keycloak client.">
+
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="SAML_RELYING_PARTY"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="SAML_RELYING_PARTY">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <!-- Logical identifier -->
+            <column name="REGISTRATION_ID" type="VARCHAR(100)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+
+            <!-- Service Provider (your app) -->
+            <column name="ENTITY_ID" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="ASSERTION_CONSUMER_SERVICE_URL" type="VARCHAR(512)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="SIGNING_CERTIFICATE" type="CLOB"/>
+            <column name="SIGNING_PRIVATE_KEY" type="CLOB"/>
+
+            <!-- Identity Provider (IdP) -->
+            <column name="IDP_ENTITY_ID" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="SSO_SERVICE_URL" type="VARCHAR(512)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="IDP_CERTIFICATE" type="CLOB"/>
+        </createTable>
+
+        <!-- Index for faster lookups -->
+<!--        <createIndex indexName="idx_saml_relying_party_registration"-->
+<!--                     tableName="saml_relying_party"-->
+<!--                     unique="true">-->
+<!--            <column name="registration_id"/>-->
+<!--        </createIndex>-->
+
+    </changeSet>
 
 </databaseChangeLog>

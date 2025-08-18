@@ -19,12 +19,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static org.springframework.security.saml2.core.Saml2X509Credential.Saml2X509CredentialType.SIGNING;
 
-@Component
+//@Component
 public class CustomRelyingPartyRegistrationRepository implements RelyingPartyRegistrationRepository {
 
     private final Map<String, RelyingPartyRegistration> registrationMap = new ConcurrentHashMap<>();
 
-    @PostConstruct
+//    @PostConstruct
     public void init() {
         RelyingPartyRegistration oktaRegistration = samlRegistrationRepository();
         registrationMap.put(oktaRegistration.getRegistrationId(), oktaRegistration);
@@ -47,14 +47,15 @@ public class CustomRelyingPartyRegistrationRepository implements RelyingPartyReg
             Saml2X509Credential signingCredential = new Saml2X509Credential(privateKey, certificate, SIGNING);
 
             RelyingPartyRegistration registration = RelyingPartyRegistration
-                    .withRegistrationId("okta")
-                    .entityId("http://localhost:8000/saml2/service-provider-metadata/okta")
-                    .assertionConsumerServiceLocation("http://localhost:8000/login/saml2/sso/okta")
+                    .withRegistrationId("myapp")
+                    .entityId("myapp")
+                    .assertionConsumerServiceLocation("http://localhost:8000/dev-auth/login/saml2/sso/myapp")
                     .signingX509Credentials(c -> c.add(signingCredential))
                     .assertingPartyDetails(party -> party
-                            .entityId("http://www.okta.com/exkpgl3e67Uc7IuhR5d7")
-                            .singleSignOnServiceLocation("https://dev-48844425.okta.com/app/dev-48844425_devauth_1/exkpgl3e67Uc7IuhR5d7/sso/saml")
-                            .wantAuthnRequestsSigned(true)
+                            .entityId("http://localhost:8080/realms/<your-realm>") // Keycloak realm Entity ID
+                            .singleSignOnServiceLocation("http://localhost:8080/realms/<your-realm>/protocol/saml")
+                            .singleSignOnServiceBinding(Saml2MessageBinding.POST) // Keycloak prefers POST
+                            .wantAuthnRequestsSigned(false)
                             .verificationX509Credentials(c -> {
                                 // you must also add the IdP's cert here
                                 X509Certificate idpCert = null; // path in classpath
@@ -83,8 +84,7 @@ public class CustomRelyingPartyRegistrationRepository implements RelyingPartyReg
     @Override
     public RelyingPartyRegistration findByRegistrationId(String registrationId) {
         RelyingPartyRegistration registration = registrationMap.get(registrationId);
-        System.out.println("Returning cached registration for: " + registrationId +
-                " [hashCode=" + registration.hashCode() + "]");
+        System.out.println("Returning cached registration for: " + registrationId);
         return registration;
     }
 

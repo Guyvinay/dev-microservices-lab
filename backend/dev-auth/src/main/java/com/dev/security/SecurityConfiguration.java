@@ -67,7 +67,7 @@ public class SecurityConfiguration {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessTokenEndpointHandler customAccessTokenEndpointHandler;
-    private final CustomRelyingPartyRegistrationRepository relyingPartyRegistrationRepository;
+//    private final CustomRelyingPartyRegistrationRepository relyingPartyRegistrationRepository;
     private final Saml2LoginSuccessHandler saml2LoginSuccessHandler;
 //    private final CustomSaml2AuthenticationRequestResolver customSaml2AuthenticationRequestResolver;
 
@@ -84,7 +84,7 @@ public class SecurityConfiguration {
             CustomAuthenticationEntryPoint customAuthenticationEntryPoint,
             CustomAccessTokenEndpointHandler customAccessTokenEndpointHandler,
 //            CustomSaml2AuthenticationRequestResolver customSaml2AuthenticationRequestResolver,
-            CustomRelyingPartyRegistrationRepository relyingPartyRegistrationRepository,
+//            CustomRelyingPartyRegistrationRepository relyingPartyRegistrationRepository,
             Saml2LoginSuccessHandler saml2LoginSuccessHandler
     ) {
         this.customOAuth2UserService = customOAuth2UserService;
@@ -98,7 +98,7 @@ public class SecurityConfiguration {
         this.customAuthenticationFailureHandler = customAuthenticationFailureHandler;
         this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
         this.customAccessTokenEndpointHandler = customAccessTokenEndpointHandler;
-        this.relyingPartyRegistrationRepository = relyingPartyRegistrationRepository;
+//        this.relyingPartyRegistrationRepository = relyingPartyRegistrationRepository;
         this.saml2LoginSuccessHandler = saml2LoginSuccessHandler;
 //        this.customSaml2AuthenticationRequestResolver = customSaml2AuthenticationRequestResolver;
     }
@@ -106,11 +106,11 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 
-        Saml2WebSsoAuthenticationFilter samlFilter = new Saml2WebSsoAuthenticationFilter(
-                relyingPartyRegistrationRepository
-        );
+//        Saml2WebSsoAuthenticationFilter samlFilter = new Saml2WebSsoAuthenticationFilter(
+//                relyingPartyRegistrationRepository
+//        );
 
-        samlFilter.setAuthenticationRequestRepository(authenticationRequestRepository());
+//        samlFilter.setAuthenticationRequestRepository(authenticationRequestRepository());
 
         httpSecurity.sessionManagement(session -> session
 //                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -154,7 +154,7 @@ public class SecurityConfiguration {
                         .failureHandler(customAuthenticationFailureHandler)
                 )
                 .saml2Login(saml2 -> saml2
-                                .relyingPartyRegistrationRepository(relyingPartyRegistrationRepository)
+//                                .relyingPartyRegistrationRepository(relyingPartyRegistrationRepository)
 //                                .authenticationRequestResolver(authenticationRequestResolver(relyingPartyRegistrationRepository))
                                 .successHandler(saml2LoginSuccessHandler)
                                 .failureHandler((request, response, exception) -> {
@@ -179,66 +179,66 @@ public class SecurityConfiguration {
     }
 
 
-    @Bean
-    public Saml2AuthenticationRequestResolver authenticationRequestResolver(RelyingPartyRegistrationRepository registrations) {
-        RelyingPartyRegistrationResolver registrationResolver = new DefaultRelyingPartyRegistrationResolver(registrations);
-        OpenSaml4AuthenticationRequestResolver authenticationRequestResolver = new OpenSaml4AuthenticationRequestResolver(registrationResolver);
-        authenticationRequestResolver.setAuthnRequestCustomizer((context) -> context
-                .getAuthnRequest().setForceAuthn(true));
-        return authenticationRequestResolver;
-    }
+//    @Bean
+//    public Saml2AuthenticationRequestResolver authenticationRequestResolver(RelyingPartyRegistrationRepository registrations) {
+//        RelyingPartyRegistrationResolver registrationResolver = new DefaultRelyingPartyRegistrationResolver(registrations);
+//        OpenSaml4AuthenticationRequestResolver authenticationRequestResolver = new OpenSaml4AuthenticationRequestResolver(registrationResolver);
+//        authenticationRequestResolver.setAuthnRequestCustomizer((context) -> context
+//                .getAuthnRequest().setForceAuthn(true));
+//        return authenticationRequestResolver;
+//    }
 
 //    @Bean
-    public RelyingPartyRegistrationRepository samlRegistrationRepository() {
-        String keystorePassword = "changeit";
-        String keyAlias = "saml-key";
+//    public RelyingPartyRegistrationRepository samlRegistrationRepository() {
+//        String keystorePassword = "changeit";
+//        String keyAlias = "saml-key";
+//
+//        try {
+//            KeyStore keyStore = KeyStore.getInstance("JKS");
+//            try (InputStream is = new ClassPathResource("saml/saml-keystore.jks").getInputStream()) {
+//                keyStore.load(is, keystorePassword.toCharArray());
+//            }
+//
+//            X509Certificate certificate = (X509Certificate) keyStore.getCertificate(keyAlias);
+//            RSAPrivateKey privateKey = (RSAPrivateKey) keyStore.getKey(keyAlias, keystorePassword.toCharArray());
+//
+//            Saml2X509Credential signingCredential = new Saml2X509Credential(privateKey, certificate, SIGNING);
+//
+//            RelyingPartyRegistration registration = RelyingPartyRegistration
+//                    .withRegistrationId("okta")
+//                    .entityId("http://localhost:8000/saml2/service-provider-metadata/okta")
+//                    .assertionConsumerServiceLocation("http://localhost:8000/login/saml2/sso/okta")
+//                    .signingX509Credentials(c -> c.add(signingCredential))
+//                    .assertingPartyDetails(party -> party
+//                            .entityId("http://www.okta.com/exkpgl3e67Uc7IuhR5d7")
+//                            .singleSignOnServiceLocation("https://dev-48844425.okta.com/app/dev-48844425_devauth_1/exkpgl3e67Uc7IuhR5d7/sso/saml")
+//                            .wantAuthnRequestsSigned(true)
+//                            .verificationX509Credentials(c -> {
+//                                // you must also add the IdP's cert here
+//                                X509Certificate idpCert = null; // path in classpath
+//                                try {
+//                                    idpCert = loadCertificate("saml/okta-certificate.cert");
+//                                } catch (Exception e) {
+//                                    throw new RuntimeException(e);
+//                                }
+//                                c.add(new Saml2X509Credential(idpCert, Saml2X509Credential.Saml2X509CredentialType.VERIFICATION));
+//                            })
+//                    )
+//                    .build();
+//            return new InMemoryRelyingPartyRegistrationRepository(registration);
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//
+//    }
 
-        try {
-            KeyStore keyStore = KeyStore.getInstance("JKS");
-            try (InputStream is = new ClassPathResource("saml/saml-keystore.jks").getInputStream()) {
-                keyStore.load(is, keystorePassword.toCharArray());
-            }
-
-            X509Certificate certificate = (X509Certificate) keyStore.getCertificate(keyAlias);
-            RSAPrivateKey privateKey = (RSAPrivateKey) keyStore.getKey(keyAlias, keystorePassword.toCharArray());
-
-            Saml2X509Credential signingCredential = new Saml2X509Credential(privateKey, certificate, SIGNING);
-
-            RelyingPartyRegistration registration = RelyingPartyRegistration
-                    .withRegistrationId("okta")
-                    .entityId("http://localhost:8000/saml2/service-provider-metadata/okta")
-                    .assertionConsumerServiceLocation("http://localhost:8000/login/saml2/sso/okta")
-                    .signingX509Credentials(c -> c.add(signingCredential))
-                    .assertingPartyDetails(party -> party
-                            .entityId("http://www.okta.com/exkpgl3e67Uc7IuhR5d7")
-                            .singleSignOnServiceLocation("https://dev-48844425.okta.com/app/dev-48844425_devauth_1/exkpgl3e67Uc7IuhR5d7/sso/saml")
-                            .wantAuthnRequestsSigned(true)
-                            .verificationX509Credentials(c -> {
-                                // you must also add the IdP's cert here
-                                X509Certificate idpCert = null; // path in classpath
-                                try {
-                                    idpCert = loadCertificate("saml/okta-certificate.cert");
-                                } catch (Exception e) {
-                                    throw new RuntimeException(e);
-                                }
-                                c.add(new Saml2X509Credential(idpCert, Saml2X509Credential.Saml2X509CredentialType.VERIFICATION));
-                            })
-                    )
-                    .build();
-            return new InMemoryRelyingPartyRegistrationRepository(registration);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-
-    }
-
-    public static X509Certificate loadCertificate(String path) throws Exception {
-        CertificateFactory factory = CertificateFactory.getInstance("X.509");
-        try (InputStream is = new ClassPathResource(path).getInputStream()) {
-            return (X509Certificate) factory.generateCertificate(is);
-        }
-    }
+//    public static X509Certificate loadCertificate(String path) throws Exception {
+//        CertificateFactory factory = CertificateFactory.getInstance("X.509");
+//        try (InputStream is = new ClassPathResource(path).getInputStream()) {
+//            return (X509Certificate) factory.generateCertificate(is);
+//        }
+//    }
 
     /**
      * Explicitly defining DaoAuthenticationProvider as a Bean
@@ -263,9 +263,9 @@ public class SecurityConfiguration {
         return new ProviderManager(List.of(customAuthenticationProvider, daoAuthenticationProvider));
     }
 
-    @Bean
-    public Saml2AuthenticationRequestRepository<AbstractSaml2AuthenticationRequest> authenticationRequestRepository() {
-        return new HttpSessionSaml2AuthenticationRequestRepository(); // default; needs sticky sessions
-    }
+//    @Bean
+//    public Saml2AuthenticationRequestRepository<AbstractSaml2AuthenticationRequest> authenticationRequestRepository() {
+//        return new HttpSessionSaml2AuthenticationRequestRepository(); // default; needs sticky sessions
+//    }
 
 }
