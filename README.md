@@ -21,107 +21,112 @@ The ultimate aim is to **simulate real-world production architecture** for futur
 
 ### 1. Microservices
 
-#### **dev-auth**
+#### **dev-auth-server**
 - Central authentication & identity service.
 - Handles:
     - User login
     - Tenant/org management
-    - Token generation (JWT or opaque)
+    - Roles & permissions
+    - Token signing & validation (JWT or opaque)
 - Provides:
     - Token introspection API
     - User info API
 - Manages multi-tenant claims in tokens.
 
-#### **dev-takeaway**
-- Business microservice (domain-driven service).
-- Secured using **dev-auth-starter**.
-- Depends on **dev-utility** for shared DTOs and gRPC stubs.
-- Publishes/consumes events via RabbitMQ/Kafka.
-- Uses **dev-starter** for infra configs.
+#### **dev-sandbox**
+- Experimental service for learning **communication patterns**:
+    - RabbitMQ
+    - Kafka
+    - gRPC
+    - HTTP APIs
+- Secured using `dev-auth-starter` (delegates auth/role checks to `dev-auth-server`).
+- Uses annotations/AOP for authorization enforcement.
+- Depends on `dev-shared-utility` for shared DTOs and gRPC stubs.
 
-#### **dev-revised**
-- Sandbox microservice for integration & communication testing.
-- Connects with **dev-takeaway** via RabbitMQ/gRPC.
-- Used to validate:
-    - Cross-service security
-    - Messaging
-    - Multi-tenant context
+#### **dev-integration**
+- Sandbox service for **integration and end-to-end testing**.
+- Connects with `dev-sandbox` via RabbitMQ/gRPC.
+- Validates:
+    - Cross-service authentication
+    - Multi-tenant context propagation
+    - Messaging patterns
 
 ---
 
-### 2. Starters (Reusable Libraries)
+### 2. Starters & Shared Libraries
 
 #### **dev-auth-starter**
-- Provides request filters for JWT validation.
-- Populates `SecurityContext` + `TenantContext`.
+- Provides filters/interceptors for JWT validation.
+- Populates `SecurityContext` and `TenantContext`.
 - Handles authentication exceptions globally.
-- Enables plug-and-play security across services.
+- Plug-and-play security across services.
 
-#### **dev-utility**
-- Shared DTOs, gRPC stubs, and serialization utilities.
-- Provides gRPC interceptors for tenant/auth context propagation.
-- Central place for **common contracts**.
+#### **dev-infra-starter**
+- Provides reusable **infrastructure configurations**:
+    - RabbitMQ
+    - Kafka
+    - Liquibase migrations
+    - Multi-tenant context handling
+- Bundles `dev-auth-starter` and `dev-shared-utility`.
 
-#### **dev-starter**
-- Infra starter including:
-    - Elasticsearch configuration
-    - RabbitMQ configuration
-    - Kafka producer/consumer configuration
-    - Liquibase configuration (DB migrations)
-- Bundles:
-    - **dev-auth-starter** (security)
-    - **dev-utility** (DTOs, gRPC stubs)
-- Provides **context propagation interceptors** (HTTP, gRPC, Rabbit, Kafka).
+#### **dev-shared-utility**
+- Contains shared resources used across all services:
+    - DTOs
+    - gRPC messages & stubs
+    - Serialization utilities
+    - Context propagation interceptors (HTTP, gRPC, RabbitMQ, Kafka)
 
 ---
 
 ## Communication Workflow
 
 ### Authentication Flow
-1. Client logs in via **dev-auth** → receives JWT with tenant/org claims.
-2. Client calls **dev-takeaway** (or any service) with:
+1. Client logs in via **dev-auth-server** → receives JWT with tenant/org claims.
+2. Client calls **dev-sandbox** (or any other service) with:
     - `Authorization: Bearer <token>`
-    - `X-Tenant-Id: <tenant-id>` (optional if tenant claim in token)
-3. **dev-auth-starter** filter validates token & sets:
+    - `X-Tenant-Id: <tenant-id>` (optional if tenant claim is inside token)
+3. **dev-auth-starter** validates token & sets:
     - `SecurityContext` (user, roles)
     - `TenantContext` (current tenant)
 4. Request flows through service logic with **tenant scoping enforced**.
+
+---
 
 ### Inter-service Communication
 
 #### HTTP
 - Headers:  
   `Authorization`, `X-Tenant-Id`, `X-Request-Id`
-- Contexts (auth, tenant, tracing) propagated automatically by **starter interceptors**.
+- Contexts (auth, tenant, tracing) propagated automatically by `dev-infra-starter` interceptors.
 
 #### gRPC
 - Metadata carries:  
   `authorization`, `x-tenant-id`, `x-request-id`
-- **dev-utility** provides `GrpcAuthTenantInterceptor` to extract & validate.
+- `dev-shared-utility` provides `GrpcAuthTenantInterceptor` for context propagation.
 
 #### RabbitMQ
 - Messages published with headers:  
   `x-tenant-id`, `x-request-id`, `x-principal`
 - Consumers validate headers and set contexts before processing.
-- Exchange/queue strategies:
-    - Shared (headers control tenant)
-    - Per-tenant (higher isolation)
+- Queue strategies:
+    - Shared queues (headers control tenant access)
+    - Per-tenant queues (stronger isolation)
 
 #### Kafka
-- Topics: `orders.events`, `payments.events` (domain-driven naming).
+- Topics: `orders.events`, `payments.events` (domain-driven style naming).
 - Headers: `tenant-id`, `request-id`, `principal`.
-- Partitioning may use **tenant-id** for ordering guarantees.
+- Partitioning may use `tenant-id` for ordering guarantees.
 
 ---
 
-## 🗄️ Data & Multi-Tenancy
+## Data & Multi-Tenancy
 
 ### Database
-- Learning both approaches:
-    - **Shared-schema** with `tenant_id` column
+- Exploring both approaches:
+    - **Shared schema** with `tenant_id` column
     - **Schema-per-tenant**
-- **Liquibase** integrated for migrations.
-- Tenant-aware migrations possible.
+- Managed with **Liquibase** migrations.
+- Tenant-aware migrations supported.
 
 ### Elasticsearch
 - Option A: **Single index** with `tenantId` field (simpler).
@@ -133,7 +138,7 @@ The ultimate aim is to **simulate real-world production architecture** for futur
 
 ### Context Management
 - **TenantContext**: ThreadLocal holder for tenant.
-- **SecurityContext**: Spring’s `SecurityContextHolder` for auth.
+- **SecurityContext**: Spring’s `SecurityContextHolder` for authentication.
 
 #### Example Filter (from `dev-auth-starter`)
 ```java
