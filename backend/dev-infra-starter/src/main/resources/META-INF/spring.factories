@@ -1,0 +1,13 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+    com.dev.DevStarterApplication,\
+	com.dev.rmq.configuration.RabbitConfig,\
+	com.dev.rmq.configuration.RabbitBeans,\
+	com.dev.rmq.event.ApplicationStartEventListener,\
+	com.dev.elastic.configuration.ElasticConfiguration,\
+	com.dev.hibernate.service.DatasourceService,\
+	com.dev.hibernate.service.LiquibaseService,\
+	com.dev.hibernate.SpringLiquibaseConfig,\
+    com.dev.hibernate.MultiTenantDSAutoConfiguration,\
+    com.dev.hibernate.multiTenant.SchemaMultiTenantConnectionProvider,\
+    com.dev.hibernate.multiTenant.TenantIdentifierResolver,\
+    com.dev.grpc.config.GrpcConfiguration
