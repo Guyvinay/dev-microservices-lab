@@ -165,9 +165,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.dev.utility</groupId>
-			<artifactId>dev-utility</artifactId>
-			<version>1.0.1</version>
+			<groupId>com.dev</groupId>
+			<artifactId>dev-shared-utility</artifactId>
+			<version>1.1.2</version>
 		</dependency>
 
 	</dependencies>

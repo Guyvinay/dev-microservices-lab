@@ -1,8 +1,8 @@
 spring:
   application:
-    name: dev-takeaway
+    name: dev-sandbox
   datasource:
-    url: jdbc:postgresql://localhost:5432/dev_takeaway
+    url: jdbc:postgresql://localhost:5432/dev_sandbox
     username: postgres
     password: root
     driver-class-name: org.postgresql.Driver
@@ -86,11 +86,11 @@ liquibase:
       path: classpath:db/changelog/db.changelog-master.xml
 server:
   port: 8001
-  servlet.context-path: /takeaways
-database:
-  default:
-    schema:
-      name: vinay
+  servlet.context-path: /dev-sandbox
+#database:
+#  default:
+#    schema:
+#      name: vinay
 
-kafka:
-  bootstrap-servers: localhost:9092
+#kafka:
+#  bootstrap-servers: localhost:9092

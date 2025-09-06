@@ -1,5 +1,6 @@
 package com.dev.kafka;
 
+/*
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -15,12 +16,13 @@ import org.springframework.kafka.support.serializer.JsonSerializer;
 
 import java.util.HashMap;
 import java.util.Map;
+*/
 
 
 //@Configuration
 //@EnableKafka
 public class KafkaConfig {
-
+/*
 //    @Value("${kafka.bootstrap-servers}")
     private String bootstrapServers;
 
@@ -54,6 +56,6 @@ public class KafkaConfig {
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         return factory;
-    }
+    }*/
 
 }

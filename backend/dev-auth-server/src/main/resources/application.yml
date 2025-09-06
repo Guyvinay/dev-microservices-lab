@@ -79,8 +79,8 @@ app:
 server:
   port: 8000
   address: 0.0.0.0
-  canonical.url: http://localhost:8000/dev-auth
-  servlet.context-path: /dev-auth
+  canonical.url: http://localhost:8000/dev-auth-server
+  servlet.context-path: /dev-auth-server
   name: localhost
 
 security:

@@ -1,4 +1,4 @@
-package com.dev.utility;
+package com.dev;
 
 public class DevSharedUtilityApplication {
 
