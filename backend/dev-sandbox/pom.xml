@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.dev</groupId>
-    <artifactId>dev-takeaway</artifactId>
+    <artifactId>dev-sandbox</artifactId>
     <version>1.0.1</version>
-    <name>dev-takeaway</name>
+    <name>dev-sandbox</name>
     <description>Demo project for Spring Boot</description>
 
     <properties>
