@@ -29,8 +29,7 @@ spring:
     port: 15672
     username: guest
     password: guest
-
-# Uncomment the following line if Elasticsearch is enabled
+    addresses: localhost:15672
 #  elasticsearch:
 #    rest:
 #      uris: http://localhost:9200

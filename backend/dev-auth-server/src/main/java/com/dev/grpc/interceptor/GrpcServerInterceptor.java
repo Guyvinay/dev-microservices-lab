@@ -19,8 +19,8 @@ public class GrpcServerInterceptor implements ServerInterceptor {
     @Override
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(final ServerCall<ReqT, RespT> call, Metadata requestHeaders, ServerCallHandler<ReqT, RespT> next) {
 
-        log.info("Private JWT Token {}", requestHeaders.get(JWT_TOKEN));
-        log.info("ccreateTokenall {}", call.getMethodDescriptor().getRequestMarshaller());
+        log.info("JWT Token {}", requestHeaders.get(JWT_TOKEN));
+
         try {
             call.setCompression("gzip");
             // Get payload from token

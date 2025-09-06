@@ -29,7 +29,6 @@ public class RabbitVirtualHosts {
     private String hostUrl;
     private String username;
     private String password;
-    private Integer port;
 
     private final RabbitProperties rabbitProperties;
     private final RabbitTemplate rabbitTemplate;
@@ -50,9 +49,8 @@ public class RabbitVirtualHosts {
     public void postConstruct() {
         username = rabbitProperties.getUsername();
         password = rabbitProperties.getPassword();
-        port = rabbitProperties.getPort();
 
-        hostUrl = "http://" + rabbitProperties.getHost() + ":" + port + "/api/vhosts/";
+        hostUrl = "http://" + rabbitProperties.getAddresses() + "/api/vhosts/";
         log.info("username: {}, password: {}, hostUrl: {}", username, password, hostUrl);
         Set<String> tenants = rabbitTenantProvider.getAllTenants();
         tenants.forEach(this::createVirtualHostAndQueues);

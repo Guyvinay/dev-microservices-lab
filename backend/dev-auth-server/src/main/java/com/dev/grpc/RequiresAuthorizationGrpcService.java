@@ -13,8 +13,7 @@ public class RequiresAuthorizationGrpcService extends RequiresAuthorizationGrpc.
 
     @Override
     public void validateRequires(RequiresRequest request, StreamObserver<RequiresResponse> responseObserver) {
-        RequiresResponse response = RequiresResponse.newBuilder().setAllowed(false).build();
-
+        RequiresResponse response = RequiresResponse.newBuilder().setAllowed(true).build();
 
         log.info("************************* :Called Grpc service: *************************");
         responseObserver.onNext(response);
