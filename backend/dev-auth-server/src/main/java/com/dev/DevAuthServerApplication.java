@@ -24,10 +24,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 		@SecurityScheme(name = "basicAuth", type = SecuritySchemeType.HTTP, scheme = "basic"),
 		@SecurityScheme(name = "bearerToken", type = SecuritySchemeType.HTTP, scheme = "bearer", bearerFormat = "JWT")
 })
-public class DevAuthApplication {
+public class DevAuthServerApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(DevAuthApplication.class, args);
+		SpringApplication.run(DevAuthServerApplication.class, args);
 	}
 
 }
