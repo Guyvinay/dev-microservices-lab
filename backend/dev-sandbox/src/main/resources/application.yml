@@ -1,0 +1,96 @@
+spring:
+  application:
+    name: dev-sandbox
+  datasource:
+    url: jdbc:postgresql://localhost:5432/dev_sandbox
+    username: postgres
+    password: root
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties.org.hibernate.envers.store_data_at_delete: true
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+#        format_sql: true
+#        use_sql_comments: true
+#        multiTenancy: SCHEMA
+#        tenant_identifier_resolver: com.dev.multitenant.impl.TenantIdentifierResolver
+#        multi_tenant_connection_provider: com.dev.multitenant.impl.SchemaBasedMultiTenantConnectionProvider
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+#    logging:
+#      level:
+#        liquibase: DEBUG
+  rabbitmq:
+    host: localhost
+    port: 15672
+    username: guest
+    password: guest
+
+# Uncomment the following line if Elasticsearch is enabled
+#  elasticsearch:
+#    rest:
+#      uris: http://localhost:9200
+
+logging:
+  pattern:
+    console: "%clr(%d{HH:mm:ss}){blue} - %clr(%5level){cyan} --> %clr(%msg){green} -- %clr(%logger){yellow}%n"
+  level:
+    org:
+      hibernate:
+#        SQL: DEBUG
+#        type:
+#          descriptor:
+#            sql:
+#              BasicBinder: TRACE
+#        cache: DEBUG
+
+# Hazelcast Configuration
+#spring:
+#  jpa:
+#    properties:
+#      hibernate:
+#        generate_statistics: true
+#        cache:
+#          use_second_level_cache: true
+#          region:
+#            factory_class: com.hazelcast.hibernate.HazelcastCacheRegionFactory
+
+management:
+  endpoints:
+    health:
+      show-details: true
+    web:
+      exposure:
+        include: "*"
+
+#grpc:
+#  client:
+#    __dev-auth__:
+#      address: static://localhost:10018
+#      negotiationType: PLAINTEXT
+#  server:
+#   port: 10002
+
+# Override bean definitions if duplicated
+#spring:
+#  main:
+#    allow-bean-definition-overriding: true
+
+liquibase:
+  master:
+    file:
+      path: classpath:db/changelog/db.changelog-master.xml
+server:
+  port: 8001
+  servlet.context-path: /dev-sandbox
+#database:
+#  default:
+#    schema:
+#      name: vinay
+
+#kafka:
+#  bootstrap-servers: localhost:9092
