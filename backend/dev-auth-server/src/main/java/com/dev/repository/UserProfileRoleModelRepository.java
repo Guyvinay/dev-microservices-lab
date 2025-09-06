@@ -10,7 +10,7 @@ import java.util.List;
  */
 
 @Repository
-public interface UserProfileRoleInfoRepository extends JpaRepository<UserProfileRoleModel, Long> {
+public interface UserProfileRoleModelRepository extends JpaRepository<UserProfileRoleModel, Long> {
 
     /**
      * Finds a list of UserProfileRoleInfoModel by the role ID.
@@ -18,4 +18,10 @@ public interface UserProfileRoleInfoRepository extends JpaRepository<UserProfile
      * @return List of UserProfileRoleInfoModel.
      */
     List<UserProfileRoleModel> findByRoleId(Long roleId);
+
+    // Find roles by tenant
+    List<UserProfileRoleModel> findByTenantId(String tenantId);
+
+    // Check if role exists by name and tenant
+    boolean existsByRoleNameAndTenantId(String roleName, String tenantId);
 }

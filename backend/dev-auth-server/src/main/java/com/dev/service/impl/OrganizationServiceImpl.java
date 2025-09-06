@@ -35,7 +35,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     private final UserProfileModelRepository userProfileModelRepository;
     private final UserProfileService userProfileService;
     private final UserProfileTenantRepository userProfileTenantRepository;
-    private final UserProfileRoleInfoRepository userProfileRoleInfoRepository;
+    private final UserProfileRoleModelRepository userProfileRoleModelRepository;
     private final UserProfileRoleMappingRepository userProfileRoleMappingRepository;
 
     private final AtomicReference<UUID> uuidAtomicReference = new AtomicReference<>();
@@ -113,7 +113,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         userProfileRoleModel.setCreatedBy(String.valueOf(userId));
         userProfileRoleModel.setUpdatedBy(String.valueOf(userId));
 
-        UserProfileRoleModel savedRole = userProfileRoleInfoRepository.save(userProfileRoleModel);
+        UserProfileRoleModel savedRole = userProfileRoleModelRepository.save(userProfileRoleModel);
         log.info("Admin role saved successfully with ID: {}", savedRole.getRoleId());
         return savedRole;
     }

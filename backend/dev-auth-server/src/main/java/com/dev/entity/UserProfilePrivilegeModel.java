@@ -1,5 +1,6 @@
 package com.dev.entity;
 
+import com.dev.entity.enums.Action;
 import com.dev.entity.enums.Area;
 import com.dev.entity.enums.Privilege;
 import io.swagger.annotations.ApiModel;
@@ -19,7 +20,7 @@ import java.util.UUID;
 public class UserProfilePrivilegeModel {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "ID", updatable = false, nullable = false)
     @ApiModelProperty(name = "id", value = "Unique identifier of the user privilege record", example = "550e8400-e29b-41d4-a716-446655440000")
     private UUID id;
@@ -33,9 +34,10 @@ public class UserProfilePrivilegeModel {
     @ApiModelProperty(name = "privilege", value = "Specific privilege assigned", example = "Manage_Users")
     private Privilege privilege;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "ACTION", nullable = false, length = 50)
     @ApiModelProperty(name = "action", value = "Type of action allowed with this privilege", example = "MaintainSchema_Create")
-    private String action;
+    private Action action;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "AREA", nullable = false)
