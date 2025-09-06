@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.dev</groupId>
-	<artifactId>dev-auth</artifactId>
+	<artifactId>dev-auth-server</artifactId>
 	<version>1.0.0</version>
 	<name>dev-auth</name>
 	<description>SB Project for authentication</description>
