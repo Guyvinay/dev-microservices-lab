@@ -19,8 +19,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/roles")
-@Tag(name = "Roles", description = "Endpoints for user roles")
 @RequiredArgsConstructor
+@Tag(name = "User Profile Role Management", description = "Endpoints for managing user profile roles")
 public class UserProfileRoleController {
 
     private final UserProfileRoleService roleService;

@@ -4,6 +4,7 @@ import com.dev.dto.OrgSignupRequestDTO;
 import com.dev.dto.OrgSignupResponseDTO;
 import com.dev.dto.OrganizationDTO;
 import com.dev.service.OrganizationService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping(value = "/api/v1.0/organization")
 @RequiredArgsConstructor
+@Tag(name = "Organization Management", description = "Endpoints for managing organization")
 public class OrganizationController {
 
     private final OrganizationService organizationService;

@@ -20,6 +20,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/role-mappings")
 @RequiredArgsConstructor
+@Tag(name = "User Profile Privilege Role Mapping Management", description = "Endpoints for managing user profiles role mappings")
 public class UserProfileRoleMappingController {
 
     private final UserProfileRoleMappingService mappingService;

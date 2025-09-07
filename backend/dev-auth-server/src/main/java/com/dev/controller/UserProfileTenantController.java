@@ -2,6 +2,7 @@ package com.dev.controller;
 
 import com.dev.dto.UserProfileTenantDTO;
 import com.dev.service.UserProfileTenantService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1.0/user-tenant-mappings")
 @RequiredArgsConstructor
+@Tag(name = "User Profile Tenant Management", description = "Endpoints for managing user tenant mappings")
 public class UserProfileTenantController {
 
     private final UserProfileTenantService service;

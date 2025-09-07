@@ -6,6 +6,7 @@ import com.dev.dto.PrivilegeDTO;
 import com.dev.entity.UserProfilePrivilegeModel;
 import com.dev.entity.enums.Privilege;
 import com.dev.service.UserProfilePrivilegeService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/privileges")
 @RequiredArgsConstructor
+@Tag(name = "User Profile Privilege Management", description = "Endpoints for managing user profiles privileges")
 public class UserProfilePrivilegeController {
 
     private final UserProfilePrivilegeService privilegeService;

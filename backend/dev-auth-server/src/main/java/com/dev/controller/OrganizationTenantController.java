@@ -2,6 +2,7 @@ package com.dev.controller;
 
 import com.dev.dto.OrganizationTenantDTO;
 import com.dev.service.OrganizationTenantService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1.0/tenants")
 @RequiredArgsConstructor
+@Tag(name = "Organization Tenant Management", description = "Endpoints for managing Organization Tenants")
 public class OrganizationTenantController {
 
     private final OrganizationTenantService tenantService;
