@@ -91,36 +91,81 @@ public class RabbitQueueListenerBinding {
     private void bindBeanWithTenant(String beanName, AnnotatedBeanDefinition beanDefinition, String tenantId) {
         log.info("Binding start for bean {}", beanName);
         MessageListener messageListener = (MessageListener) RMQ_BEANS.get(beanName);
+
         if (messageListener == null) {
-            log.info("Listener for bean: {} not found", beanName);
+            log.warn("Listener for bean: {} not found", beanName);
+            return;
         }
 
         LISTENERS.computeIfAbsent(tenantId, k -> new ConcurrentHashMap<>());
 
-//        final GenericApplicationContext genericApplicationContext = (GenericApplicationContext) applicationContext;
-        String queueName = beanDefinition.getMetadata().getAnnotationAttributes(RabbitListener.class.getCanonicalName()).get("queue").toString();
-        log.info("starting queue {} declarations ...", queueName);
+        Map<String, Object> attrs = beanDefinition.getMetadata()
+                .getAnnotationAttributes(RabbitListener.class.getCanonicalName());
+
+        String queueName   = (String) attrs.get("queue");
+        String exchange    = (String) attrs.getOrDefault("exchange", "");
+        String routingKey  = (String) attrs.getOrDefault("routingKey", "");
+        String type        = (String) attrs.getOrDefault("type", "direct");
+
+        log.info("Declaring queue={}, exchange={}, routingKey={}, type={} for tenant={}",
+                queueName, exchange, routingKey, type, tenantId);
+
         Queue queue = QueueBuilder.durable(queueName).quorum().build();
+
         try {
             SimpleResourceHolder.bind(rabbitAdmin.getRabbitTemplate().getConnectionFactory(), tenantId);
+
             rabbitAdmin.declareQueue(queue);
-            rabbitAdmin.declareBinding(new Binding(queueName, Binding.DestinationType.QUEUE, "", queueName, null));
+
+            if (exchange != null && !exchange.isBlank()) {
+                Exchange exch;
+                switch (type.toLowerCase()) {
+                    case "topic":
+                        exch = ExchangeBuilder.topicExchange(exchange).durable(true).build();
+                        break;
+                    case "fanout":
+                        exch = ExchangeBuilder.fanoutExchange(exchange).durable(true).build();
+                        break;
+                    case "direct":
+                    default:
+                        exch = ExchangeBuilder.directExchange(exchange).durable(true).build();
+                        break;
+                }
+                rabbitAdmin.declareExchange(exch);
+
+                if ("fanout".equalsIgnoreCase(type)) {
+                    rabbitAdmin.declareBinding(BindingBuilder.bind(queue).to((FanoutExchange) exch));
+                } else {
+                    rabbitAdmin.declareBinding(
+                            BindingBuilder.bind(queue).to((Exchange) exch).with(routingKey).noargs()
+                    );
+                }
+            } else {
+                // fallback: bind to default direct exchange
+                rabbitAdmin.declareBinding(new Binding(
+                        queueName,
+                        Binding.DestinationType.QUEUE,
+                        "",   // default exchange
+                        queueName,
+                        null
+                ));
+            }
         } finally {
             SimpleResourceHolder.unbind(rabbitAdmin.getRabbitTemplate().getConnectionFactory());
         }
-        log.info("queue {} declaration finished", queueName);
+        log.info("Queue/exchange declaration finished for {}", queueName);
 
         final GenericApplicationContext genericApplicationContext = (GenericApplicationContext) applicationContext;
 
-        log.info("Consumer starting...");
         String wrappedBeanName = beanName + "_" + tenantId;
-        log.info("starting consumer ... {}", wrappedBeanName);
+        log.info("Starting consumer {} on tenant {}", wrappedBeanName, tenantId);
 
         genericApplicationContext.registerBean(
                 wrappedBeanName,
                 SimpleMessageListenerContainer.class,
                 () -> {
-                    SimpleMessageListenerContainer container = new SimpleMessageListenerContainer((ConnectionFactory) RabbitConfig.TENANT_CONNECTION_MAP.get(tenantId));
+                    SimpleMessageListenerContainer container = new SimpleMessageListenerContainer(
+                            (ConnectionFactory) RabbitConfig.TENANT_CONNECTION_MAP.get(tenantId));
                     container.setLookupKeyQualifier(tenantId);
                     container.setMaxConcurrentConsumers(10);
                     container.setStartConsumerMinInterval(5000L);
@@ -133,7 +178,9 @@ public class RabbitQueueListenerBinding {
                     return container;
                 });
 
-        LISTENERS.get(tenantId).put(beanName, (SimpleMessageListenerContainer) genericApplicationContext.getBean(wrappedBeanName));
+        LISTENERS.get(tenantId)
+                .put(beanName, (SimpleMessageListenerContainer) genericApplicationContext.getBean(wrappedBeanName));
+
         log.info("Listeners {}", LISTENERS);
     }
 

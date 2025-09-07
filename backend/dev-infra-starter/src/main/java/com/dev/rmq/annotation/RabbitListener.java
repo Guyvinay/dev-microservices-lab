@@ -11,6 +11,9 @@ import java.lang.annotation.Target;
 @Component()
 @Target({ElementType.TYPE})
 public @interface RabbitListener {
-    String queue();
-    String value();
+    String value();                // Bean name
+    String queue() default "";     // queue name (optional)
+    String exchange() default "";  // exchange name (optional)
+    String routingKey() default ""; // routing key for topic (optional)
+    String type() default "direct"; // exchange type: direct, topic, fanout
 }

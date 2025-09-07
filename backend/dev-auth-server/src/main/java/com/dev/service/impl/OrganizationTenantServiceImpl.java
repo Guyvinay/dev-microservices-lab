@@ -5,6 +5,7 @@ import com.dev.entity.OrganizationTenantMapping;
 import com.dev.exception.DuplicateResourceException;
 import com.dev.exception.ResourceNotFoundException;
 import com.dev.repository.OrganizationTenantMappingRepository;
+import com.dev.rmq.TenantEventPublisher;
 import com.dev.service.OrganizationTenantService;
 import com.dev.utility.AuthUtility;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class OrganizationTenantServiceImpl implements OrganizationTenantService 
 
     private final OrganizationTenantMappingRepository tenantRepository;
     private final ModelMapper modelMapper;
+    private final TenantEventPublisher tenantEventPublisher;
 
     @Override
     public OrganizationTenantDTO createTenant(OrganizationTenantDTO dto) {
@@ -42,7 +44,9 @@ public class OrganizationTenantServiceImpl implements OrganizationTenantService 
         tenantMapping.setUpdatedAt(Instant.now().toEpochMilli());
         tenantMapping.setTenantName(dto.getTenantName());
 
-        tenantMapping = tenantRepository.save(tenantMapping);
+        tenantEventPublisher.publishTenantCreated(String.valueOf(123456));
+
+//        tenantMapping = tenantRepository.save(tenantMapping);
 
         log.info("Tenant created successfully: tenantId={} tenantName={} orgId={}",
                 tenantMapping.getTenantId(), tenantMapping.getTenantName(), tenantMapping.getOrgId());
