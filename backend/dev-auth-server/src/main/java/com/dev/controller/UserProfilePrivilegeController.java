@@ -1,8 +1,9 @@
 package com.dev.controller;
 
+import com.dev.dto.ActionDTO;
+import com.dev.dto.PrivilegeAssignmentRequest;
+import com.dev.dto.PrivilegeDTO;
 import com.dev.entity.UserProfilePrivilegeModel;
-import com.dev.entity.enums.Action;
-import com.dev.entity.enums.Area;
 import com.dev.entity.enums.Privilege;
 import com.dev.service.UserProfilePrivilegeService;
 import lombok.RequiredArgsConstructor;
@@ -11,39 +12,54 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/roles/{roleId}/privileges")
+@RequestMapping("/api/privileges")
 @RequiredArgsConstructor
 public class UserProfilePrivilegeController {
 
     private final UserProfilePrivilegeService privilegeService;
 
-    @PostMapping
+    @GetMapping()
+    public ResponseEntity<List<PrivilegeDTO>> getPrivilegeCatalog() {
+        List<PrivilegeDTO> catalog = Arrays.stream(Privilege.values())
+                .map(privilege -> {
+                    List<ActionDTO> actions = privilege.getActions().stream()
+                            .map(act -> new ActionDTO(act.name(), act.getDescription()))
+                            .collect(Collectors.toList());
+
+                    return new PrivilegeDTO(
+                            privilege.name(),
+                            privilege.getDescription(),
+                            privilege.getArea().name(),
+                            actions
+                    );
+                })
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(catalog);
+    }
+
+    @PostMapping("/assign")
     public ResponseEntity<UserProfilePrivilegeModel> assignPrivilege(
-            @PathVariable Long roleId,
-            @RequestParam Privilege privilege,
-            @RequestParam Action action,
-            @RequestParam Area area,
-            @RequestParam Long assignedBy
+            @RequestBody PrivilegeAssignmentRequest request
     ) {
-        UserProfilePrivilegeModel assigned = privilegeService.assignPrivilegeToRole(roleId, privilege, action, area, assignedBy);
+        UserProfilePrivilegeModel assigned = privilegeService.assignPrivilegeToRole(request);
         return ResponseEntity.ok(assigned);
     }
 
     @DeleteMapping
     public ResponseEntity<Void> revokePrivilege(
-            @PathVariable Long roleId,
-            @RequestParam Privilege privilege,
-            @RequestParam Action action,
-            @RequestParam Area area
+            @RequestBody PrivilegeAssignmentRequest request
     ) {
-        privilegeService.revokePrivilegeFromRole(roleId, privilege, action, area);
+        privilegeService.revokePrivilegeFromRole(request);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping
+    @GetMapping(value = "/role/{roleId}")
     public ResponseEntity<List<UserProfilePrivilegeModel>> getPrivileges(
             @PathVariable Long roleId
     ) {

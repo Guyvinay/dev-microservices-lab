@@ -1,5 +1,7 @@
 package com.dev.service;
 
+import com.dev.dto.PrivilegeAssignmentRequest;
+import com.dev.dto.PrivilegeDTO;
 import com.dev.entity.UserProfilePrivilegeModel;
 import com.dev.entity.enums.Action;
 import com.dev.entity.enums.Area;
@@ -9,9 +11,10 @@ import java.util.List;
 
 public interface UserProfilePrivilegeService {
 
-    UserProfilePrivilegeModel assignPrivilegeToRole(Long roleId, Privilege privilege, Action action, Area area, Long assignedBy);
+    UserProfilePrivilegeModel assignPrivilegeToRole(PrivilegeAssignmentRequest request);
 
-    void revokePrivilegeFromRole(Long roleId, Privilege privilege, Action action, Area area);
+    void revokePrivilegeFromRole(PrivilegeAssignmentRequest request);
 
     List<UserProfilePrivilegeModel> getPrivilegesByRole(Long roleId);
+    List<PrivilegeDTO> getPrivilegeCatalog(Long roleId);
 }
