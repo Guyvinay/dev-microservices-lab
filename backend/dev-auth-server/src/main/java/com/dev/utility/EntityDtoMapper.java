@@ -2,6 +2,7 @@ package com.dev.utility;
 
 import com.dev.dto.UserProfileRequestDTO;
 import com.dev.dto.UserProfileResponseDTO;
+import com.dev.dto.UserProfileTenantDTO;
 import com.dev.entity.UserProfileModel;
 import org.springframework.stereotype.Component;
 

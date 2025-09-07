@@ -6,13 +6,17 @@ import com.dev.exception.DuplicateResourceException;
 import com.dev.exception.ResourceNotFoundException;
 import com.dev.repository.OrganizationTenantMappingRepository;
 import com.dev.service.OrganizationTenantService;
+import com.dev.utility.AuthUtility;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrganizationTenantServiceImpl implements OrganizationTenantService {
@@ -23,15 +27,27 @@ public class OrganizationTenantServiceImpl implements OrganizationTenantService 
     @Override
     public OrganizationTenantDTO createTenant(OrganizationTenantDTO dto) {
         if (tenantRepository.existsByTenantName(dto.getTenantName())) {
+            log.warn("Attempt to create duplicate tenant with name={}", dto.getTenantName());
             throw new DuplicateResourceException("Tenant name already exists.");
         }
 
-        OrganizationTenantMapping tenant = modelMapper.map(dto, OrganizationTenantMapping.class);
-        tenant.setCreatedAt(System.currentTimeMillis());
-        tenant.setUpdatedAt(System.currentTimeMillis());
+        log.info("Creating new tenant with name={} for orgId={}", dto.getTenantName(), dto.getOrgId());
 
-        tenant = tenantRepository.save(tenant);
-        return modelMapper.map(tenant, OrganizationTenantDTO.class);
+        OrganizationTenantMapping tenantMapping = new OrganizationTenantMapping();
+        long tenantId = AuthUtility.generateRandomNumber(5);
+        tenantMapping.setTenantId(String.valueOf(tenantId));
+        tenantMapping.setOrgId(dto.getOrgId());
+        tenantMapping.setTenantActive(true);
+        tenantMapping.setCreatedAt(Instant.now().toEpochMilli());
+        tenantMapping.setUpdatedAt(Instant.now().toEpochMilli());
+        tenantMapping.setTenantName(dto.getTenantName());
+
+        tenantMapping = tenantRepository.save(tenantMapping);
+
+        log.info("Tenant created successfully: tenantId={} tenantName={} orgId={}",
+                tenantMapping.getTenantId(), tenantMapping.getTenantName(), tenantMapping.getOrgId());
+
+        return modelMapper.map(tenantMapping, OrganizationTenantDTO.class);
     }
 
     @Override

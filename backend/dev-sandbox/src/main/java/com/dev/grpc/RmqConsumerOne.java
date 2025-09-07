@@ -13,7 +13,7 @@ import org.springframework.amqp.core.MessageProperties;
 import java.io.IOException;
 import java.util.Map;
 
-@RabbitListener(value = "RmqConsumerOne", queue = Queues.QUEUE3)
+@RabbitListener(value = "RmqConsumerOne", queue = Queues.QUEUE1)
 public class RmqConsumerOne implements MessageListener {
 
     @Override

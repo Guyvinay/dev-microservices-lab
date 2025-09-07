@@ -2,17 +2,20 @@ package com.dev.service.impl;
 
 import com.dev.dto.UserProfileRequestDTO;
 import com.dev.dto.UserProfileResponseDTO;
+import com.dev.dto.UserProfileTenantDTO;
 import com.dev.entity.UserProfileModel;
 import com.dev.exception.InvalidInputException;
 import com.dev.exception.UserNotFoundException;
 import com.dev.repository.UserProfileModelRepository;
 import com.dev.security.provider.CustomBcryptEncoder;
 import com.dev.service.UserProfileService;
+import com.dev.service.UserProfileTenantService;
 import com.dev.utility.EntityDtoMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -41,6 +44,9 @@ public class UserProfileServiceImpl implements UserProfileService {
     private final UserProfileModelRepository userProfileModelRepository;
     private final EntityDtoMapper entityDtoMapper;
     private final CustomBcryptEncoder customBcryptEncoder;
+    private final UserProfileTenantService userProfileTenantService;
+
+
 
     /**
      * Creates a new user profile.
@@ -50,17 +56,38 @@ public class UserProfileServiceImpl implements UserProfileService {
      * @throws InvalidInputException if the request is null or cannot be mapped.
      */
     @Override
+    @Transactional
     public UserProfileResponseDTO createUser(UserProfileRequestDTO request) {
         if (Objects.isNull(request)) throw new InvalidInputException("Request cannot be null");
 
         UserProfileModel profileModel = entityDtoMapper.toUserProfileModelEntity(request);
 
-        if (Objects.isNull(profileModel)) throw new InvalidInputException("Unable to convert request to user model");
+        if (Objects.isNull(profileModel)) {
+            log.error("Entity mapping failed for request: {}", request);
+            throw new InvalidInputException("Unable to convert request to user model");
+        }
 
         profileModel.setPassword(customBcryptEncoder.encode(profileModel.getPassword()));
 
+        log.info("Saving user profile for name: {}", profileModel.getName());
         UserProfileModel savedModel = userProfileModelRepository.save(profileModel);
-        return entityDtoMapper.toUserProfileResponseDTO(savedModel);
+        UserProfileResponseDTO savedProfileDto = entityDtoMapper.toUserProfileResponseDTO(savedModel);
+
+        UserProfileTenantDTO profileTenantDTO = UserProfileTenantDTO.builder()
+                .userId(savedModel.getId())
+                .tenantId(request.getTenantId())
+                .organizationId(request.getOrgId())
+                .build();
+
+        log.info("Creating tenant mapping for userId={} tenantId={} orgId={}",
+                savedModel.getId(), request.getTenantId(), request.getOrgId());
+
+        UserProfileTenantDTO savedProfileTenantMapping = userProfileTenantService.createMapping(profileTenantDTO);
+
+        log.info("Tenant mapping created successfully: {}", savedProfileTenantMapping);
+        log.info("User creation completed successfully for userId={}", savedModel.getId());
+
+        return savedProfileDto;
     }
 
     /**

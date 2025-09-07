@@ -7,7 +7,9 @@ import com.dev.exception.ResourceNotFoundException;
 import com.dev.repository.*;
 import com.dev.security.provider.CustomBcryptEncoder;
 import com.dev.service.OrganizationService;
+import com.dev.service.OrganizationTenantService;
 import com.dev.service.UserProfileService;
+import com.dev.service.UserProfileTenantService;
 import com.dev.utility.AuthUtility;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +32,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     private final OrganizationModelRepository organizationRepository;
     private final OrganizationTenantMappingRepository organizationTenantMappingRepository;
+    private final OrganizationTenantService organizationTenantService;
     private final ModelMapper modelMapper;
     private final CustomBcryptEncoder customBcryptEncoder;
     private final UserProfileModelRepository userProfileModelRepository;
@@ -37,6 +40,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     private final UserProfileTenantRepository userProfileTenantRepository;
     private final UserProfileRoleModelRepository userProfileRoleModelRepository;
     private final UserProfileRoleMappingRepository userProfileRoleMappingRepository;
+    private final UserProfileTenantService userProfileTenantService;
 
     private final AtomicReference<UUID> uuidAtomicReference = new AtomicReference<>();
 
@@ -71,9 +75,9 @@ public class OrganizationServiceImpl implements OrganizationService {
         log.info("Starting organization registration process");
         OrganizationDTO savedOrg = saveOrganization(orgSignupRequestDTO);
 //        uuidAtomicReference.set(savedOrg.getOrgId());
-        OrganizationTenantMapping tenantMapping = saveOrgTenant(savedOrg.getOrgId(), orgSignupRequestDTO);
+        OrganizationTenantDTO tenantMapping = saveOrgTenant(savedOrg.getOrgId(), orgSignupRequestDTO);
         UserProfileResponseDTO savedUser = createAdminUser(tenantMapping.getTenantId(), orgSignupRequestDTO);
-        UserProfileTenantMapping userProfileTenantMapping =  saveUserProfileTenantMapping(tenantMapping.getTenantId(), savedUser.getId(), savedOrg.getOrgId());
+        UserProfileTenantDTO userProfileTenantMapping =  saveUserProfileTenantMapping(tenantMapping.getTenantId(), savedUser.getId(), savedOrg.getOrgId());
         UserProfileRoleModel userProfileRoleModel = createUserProfileAdminRole(savedUser.getId(), tenantMapping.getTenantId());
         UserProfileRoleMapping userProfileRoleMapping = createUserprofileRoleMapping(savedUser.getId(), userProfileRoleModel.getRoleId(), tenantMapping.getTenantId());
         log.info("Organization registration completed successfully");
@@ -118,14 +122,16 @@ public class OrganizationServiceImpl implements OrganizationService {
         return savedRole;
     }
 
-    private UserProfileTenantMapping saveUserProfileTenantMapping(String tenantId, UUID userId, UUID orgId) {
+    private UserProfileTenantDTO saveUserProfileTenantMapping(String tenantId, UUID userId, UUID orgId) {
         log.info("Mapping user ID: {} to tenant ID: {}", userId, tenantId);
 
-        UserProfileTenantMapping tenantMapping = new UserProfileTenantMapping();
-        tenantMapping.setOrganizationId(orgId);
-        tenantMapping.setUserId(userId);
-        tenantMapping.setTenantId(tenantId);
-        UserProfileTenantMapping savedUserProfileTenantMapping =userProfileTenantRepository.save(tenantMapping);
+        UserProfileTenantDTO profileTenantDTO = UserProfileTenantDTO.builder()
+                .userId(userId)
+                .tenantId(tenantId)
+                .organizationId(orgId)
+                .build();
+
+        UserProfileTenantDTO savedUserProfileTenantMapping = userProfileTenantService.createMapping(profileTenantDTO);
         log.info("User-tenant mapping saved successfully: {}", savedUserProfileTenantMapping.getId());
         return savedUserProfileTenantMapping;
     }
@@ -133,7 +139,6 @@ public class OrganizationServiceImpl implements OrganizationService {
     private UserProfileResponseDTO createAdminUser(String tenantId, OrgSignupRequestDTO orgSignupRequestDTO) {
         log.info("Creating admin user for tenant ID: {}", tenantId);
 
-        UserProfileModel userProfileModel = new UserProfileModel();
         UserProfileRequestDTO userProfileRequestDTO = new UserProfileRequestDTO();
         userProfileRequestDTO.setIsActive(true);
         userProfileRequestDTO.setName(orgSignupRequestDTO.getName());
@@ -145,20 +150,18 @@ public class OrganizationServiceImpl implements OrganizationService {
         return savedUser;
     }
 
-    private OrganizationTenantMapping saveOrgTenant(UUID orgId, OrgSignupRequestDTO orgSignupRequestDTO) {
+    private OrganizationTenantDTO saveOrgTenant(UUID orgId, OrgSignupRequestDTO orgSignupRequestDTO) {
         log.info("Creating tenant for organization ID: {}", orgId);
 
-//        uuidAtomicReference.get()
-        OrganizationTenantMapping tenantMapping = new OrganizationTenantMapping();
         long tenantId = AuthUtility.generateRandomNumber(5);
-        tenantMapping.setTenantId(String.valueOf(tenantId));
-        tenantMapping.setOrgId(orgId);
-        tenantMapping.setTenantActive(true);
-        tenantMapping.setCreatedAt(Instant.now().toEpochMilli());
-        tenantMapping.setUpdatedAt(Instant.now().toEpochMilli());
-        tenantMapping.setTenantName(orgSignupRequestDTO.getTenantName());
 
-        OrganizationTenantMapping savedTenant = organizationTenantMappingRepository.save(tenantMapping);
+        OrganizationTenantDTO organizationTenantDTO = new OrganizationTenantDTO();
+        organizationTenantDTO.setTenantId(String.valueOf(tenantId));
+        organizationTenantDTO.setOrgId(orgId);
+        organizationTenantDTO.setTenantActive(true);
+        organizationTenantDTO.setTenantName(orgSignupRequestDTO.getTenantName());
+
+        OrganizationTenantDTO savedTenant = organizationTenantService.createTenant(organizationTenantDTO);
         log.info("Tenant saved successfully with ID: {}", savedTenant.getTenantId());
         return savedTenant;
     }

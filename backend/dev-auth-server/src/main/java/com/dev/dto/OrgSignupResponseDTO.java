@@ -15,9 +15,9 @@ import lombok.Setter;
 @NoArgsConstructor
 public class OrgSignupResponseDTO {
     private OrganizationDTO organizationDTO;
-    private OrganizationTenantMapping organizationTenantMapping;
+    private OrganizationTenantDTO organizationTenantMapping;
     private UserProfileResponseDTO userProfileModel;
-    private UserProfileTenantMapping userProfileTenantMapping;
+    private UserProfileTenantDTO userProfileTenantMapping;
     private UserProfileRoleModel userProfileRoleModel;
     private UserProfileRoleMapping userProfileRoleMapping;
 }
