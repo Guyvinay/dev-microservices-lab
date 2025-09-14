@@ -20,10 +20,10 @@ import java.util.UUID;
 @RequestMapping(value = "rabbit")
 @Slf4j
 public class RabbitController {
-    @Autowired
+//    @Autowired
     private RabbitTemplateWrapper rmqWrapper;
 
-    @Autowired
+//    @Autowired
     private RabbitVirtualHosts rmqService;
 
     @GetMapping

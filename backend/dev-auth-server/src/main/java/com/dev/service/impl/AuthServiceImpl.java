@@ -51,8 +51,8 @@ public class AuthServiceImpl implements AuthService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         String username = authentication.getPrincipal().toString();
-        int jwtExpiredIn = 200;
-        int refreshExpiredIn = 1000;
+        int jwtExpiredIn = 2000000000;
+        int refreshExpiredIn = 2000000000;
         Map<String, String> tokensMap = new HashMap<>();
 
         UserProfileResponseDTO userProfile = userProfileService.getUserByEmail(username);

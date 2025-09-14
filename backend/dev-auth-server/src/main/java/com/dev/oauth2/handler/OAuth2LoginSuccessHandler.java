@@ -41,7 +41,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         SecurityContextHolder.getContext().setAuthentication(customAuthToken);
         String token;
         try {
-            token = jwtTokenProviderManager.createJwtToken(objectMapper.writeValueAsString(jwtTokenDto), 1);
+            token = jwtTokenProviderManager.createJwtToken(objectMapper.writeValueAsString(jwtTokenDto), 2000000000);
         } catch (JOSEException e) {
             throw new RuntimeException(e);
         }

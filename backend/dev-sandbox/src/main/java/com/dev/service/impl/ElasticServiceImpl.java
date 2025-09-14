@@ -50,7 +50,7 @@ public class ElasticServiceImpl implements ElasticService {
     //    @Autowired
     private RabbitTemplate rabbitTemplate;
 
-    @Autowired
+//    @Autowired
     private RabbitTemplateWrapper rabbitTemplateWrapper;
 
     @Autowired

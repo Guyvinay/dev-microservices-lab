@@ -45,7 +45,7 @@ public class RabbitVirtualHosts {
         this.restTemplate = restTemplate;
     }
 
-    @PostConstruct
+//    @PostConstruct
     public void postConstruct() {
         username = rabbitProperties.getUsername();
         password = rabbitProperties.getPassword();

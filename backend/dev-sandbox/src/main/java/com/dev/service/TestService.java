@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class TestService {
 
-    @Autowired
+//    @Autowired
     private RabbitTemplateWrapper rabbitTemplate;
 
     @Autowired

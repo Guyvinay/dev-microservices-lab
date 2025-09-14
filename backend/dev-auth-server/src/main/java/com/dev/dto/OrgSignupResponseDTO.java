@@ -16,8 +16,8 @@ import lombok.Setter;
 public class OrgSignupResponseDTO {
     private OrganizationDTO organizationDTO;
     private OrganizationTenantDTO organizationTenantMapping;
-    private UserProfileResponseDTO userProfileModel;
-    private UserProfileTenantDTO userProfileTenantMapping;
+    private UserProfileTenantWrapper userProfileModel;
     private UserProfileRoleModel userProfileRoleModel;
     private UserProfileRoleMapping userProfileRoleMapping;
+
 }

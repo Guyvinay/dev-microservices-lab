@@ -3,6 +3,7 @@ package com.dev.service.impl;
 import com.dev.dto.UserProfileRequestDTO;
 import com.dev.dto.UserProfileResponseDTO;
 import com.dev.dto.UserProfileTenantDTO;
+import com.dev.dto.UserProfileTenantWrapper;
 import com.dev.entity.UserProfileModel;
 import com.dev.exception.InvalidInputException;
 import com.dev.exception.UserNotFoundException;
@@ -57,7 +58,7 @@ public class UserProfileServiceImpl implements UserProfileService {
      */
     @Override
     @Transactional
-    public UserProfileResponseDTO createUser(UserProfileRequestDTO request) {
+    public UserProfileTenantWrapper createUser(UserProfileRequestDTO request) {
         if (Objects.isNull(request)) throw new InvalidInputException("Request cannot be null");
 
         UserProfileModel profileModel = entityDtoMapper.toUserProfileModelEntity(request);
@@ -87,7 +88,7 @@ public class UserProfileServiceImpl implements UserProfileService {
         log.info("Tenant mapping created successfully: {}", savedProfileTenantMapping);
         log.info("User creation completed successfully for userId={}", savedModel.getId());
 
-        return savedProfileDto;
+        return new UserProfileTenantWrapper(savedProfileDto, savedProfileTenantMapping);
     }
 
     /**

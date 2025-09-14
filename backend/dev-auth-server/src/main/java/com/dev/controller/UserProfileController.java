@@ -2,6 +2,7 @@ package com.dev.controller;
 
 import com.dev.dto.UserProfileRequestDTO;
 import com.dev.dto.UserProfileResponseDTO;
+import com.dev.dto.UserProfileTenantWrapper;
 import com.dev.service.UserProfileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -42,10 +43,10 @@ public class UserProfileController {
                     content = @Content(mediaType = "application/json"))
     })
     @PostMapping
-    public ResponseEntity<UserProfileResponseDTO> createUser(
+    public ResponseEntity<UserProfileTenantWrapper> createUser(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "User details to create a new user", required = true)
             @Valid @RequestBody UserProfileRequestDTO request) {
-        UserProfileResponseDTO response = userProfileService.createUser(request);
+        UserProfileTenantWrapper response = userProfileService.createUser(request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 

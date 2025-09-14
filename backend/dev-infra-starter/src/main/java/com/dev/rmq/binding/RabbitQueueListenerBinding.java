@@ -51,7 +51,7 @@ public class RabbitQueueListenerBinding {
 
     private static final String PACKAGE_TO_SCAN = "com.dev";
 
-    @PostConstruct
+//    @PostConstruct
     public void findListenerBeans() {
         if (connectionFactory instanceof SimpleRoutingConnectionFactory) {
             log.info("RabbitMq connection factory initialized");

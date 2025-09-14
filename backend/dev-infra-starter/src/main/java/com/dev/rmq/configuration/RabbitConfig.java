@@ -18,7 +18,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-@Configuration
+//@Configuration
 @Slf4j
 public class RabbitConfig {
 

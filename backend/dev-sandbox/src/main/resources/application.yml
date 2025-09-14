@@ -33,6 +33,12 @@ spring:
 #  elasticsearch:
 #    rest:
 #      uris: http://localhost:9200
+rmq:
+  host: localhost
+  port: 5672
+  username: guest
+  password: guest
+  addresses: localhost:15672
 
 logging:
   pattern:
