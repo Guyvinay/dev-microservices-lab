@@ -41,9 +41,10 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
         String username = request.getParameter(USERNAME);
         String password = request.getParameter(PASSWORD);
         String organization = request.getHeader(ORGANIZATION);
+        String tenant = request.getHeader(TENANT);
         CustomAuthToken authToken = null;
         if(StringUtils.hasText(username) && StringUtils.hasText(password) && StringUtils.hasText(organization)) {
-            authToken = new CustomAuthToken(organization, username, password);
+            authToken = new CustomAuthToken(organization, tenant, username, password);
         }
 
         if(authToken == null) {
@@ -102,8 +103,9 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
         String username = credentials[0];
         String password = credentials[1];
         String organization = request.getHeader(ORGANIZATION);
+        String tenant = request.getHeader(TENANT);
 
-        return new CustomAuthToken(organization, username, password);
+        return new CustomAuthToken(organization,tenant, username, password);
     }
 
     @Override

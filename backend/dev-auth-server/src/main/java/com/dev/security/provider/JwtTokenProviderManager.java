@@ -155,7 +155,7 @@ public class JwtTokenProviderManager {
 
     public Authentication getAuthentication(String token) throws JsonProcessingException {
         JwtTokenDto jwtToken = OM.readValue(getSubjectPayload(token), JwtTokenDto.class);
-        CustomAuthToken customAuthToken = new CustomAuthToken(jwtToken.getOrg(), jwtToken.getEmail(), "", null);
+        CustomAuthToken customAuthToken = new CustomAuthToken(jwtToken.getOrg(), jwtToken.getTenantId(), jwtToken.getEmail(), null);
         customAuthToken.setDetails(jwtToken); // set jwtToken payload as user details ...
         return customAuthToken;
     }

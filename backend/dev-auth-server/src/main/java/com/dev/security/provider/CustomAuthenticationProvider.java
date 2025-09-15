@@ -47,12 +47,14 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         log.info("CustomAuthenticationProvider invoked for: {}", authentication.getPrincipal());
 
         String orgId = ((CustomAuthToken) authentication).getOrgId();
+        String tenantId = ((CustomAuthToken) authentication).getTenantId();
         String username = authentication.getPrincipal().toString();
         String password = authentication.getCredentials().toString();
 
         log.info("Authenticating user: {} with Org ID: {}", username, orgId);
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+//        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        UserDetails userDetails = userDetailsService.loadUserByUsernameTenantAndOrg(username, tenantId, orgId);
 
         if (!customBcryptEncoder.matches(password, userDetails.getPassword())) {
             throw new BadCredentialsException("Invalid credentials");
@@ -60,6 +62,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
         return new CustomAuthToken(
                 orgId,
+                tenantId,
                 username,
                 password,
                 userDetails.getAuthorities()
