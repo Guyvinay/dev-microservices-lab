@@ -1,6 +1,5 @@
 package com.dev.rabbitmq.utility;
 
-import com.dev.dto.JWTToken;
 import com.dev.dto.JwtTokenDto;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;

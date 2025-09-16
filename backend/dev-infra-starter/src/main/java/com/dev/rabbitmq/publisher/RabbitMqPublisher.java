@@ -1,7 +1,6 @@
 package com.dev.rabbitmq.publisher;
 
 import com.dev.rabbitmq.utility.CurrentTenantIdentifier;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.amqp.core.Message;

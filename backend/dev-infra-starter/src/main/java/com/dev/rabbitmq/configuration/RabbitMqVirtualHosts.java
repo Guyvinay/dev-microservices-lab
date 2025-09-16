@@ -2,8 +2,6 @@ package com.dev.rabbitmq.configuration;
 
 import com.dev.rabbitmq.utility.RabbitMqProperties;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.core.RabbitAdmin;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;

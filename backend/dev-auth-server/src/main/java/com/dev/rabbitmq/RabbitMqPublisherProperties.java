@@ -13,7 +13,7 @@ public class RabbitMqPublisherProperties {
     private int port = 5672;
     private String username = "guest";
     private String password = "guest";
-    private String virtualHost = "/";    // public vhost where lifecycle exchange lives
+    private String virtualHost = "public";    // public vhost where lifecycle exchange lives
     private String tenantUserPrefix = "tenant-"; // naming scheme for per-tenant user (optional)
     private boolean publisherConfirms = true;
     private boolean publisherReturns = true;

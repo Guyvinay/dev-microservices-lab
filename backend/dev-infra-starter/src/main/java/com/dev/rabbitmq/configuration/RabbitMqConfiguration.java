@@ -2,7 +2,7 @@ package com.dev.rabbitmq.configuration;
 
 import com.dev.rabbitmq.publisher.RabbitMqPublisher;
 import com.dev.rabbitmq.utility.RabbitMqProperties;
-import com.dev.rmq.utility.RabbitTenantProvider;
+import com.dev.utility.RabbitTenantProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;

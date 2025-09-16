@@ -2,8 +2,6 @@ package com.dev.rest;
 
 import com.dev.common.dto.document.Document;
 import com.dev.grpc.GrpcServerImpl;
-import com.dev.rmq.utility.Queues;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;

@@ -1,58 +1,55 @@
 package com.dev.rabbitmq.config;
 
 import com.dev.rabbitmq.RabbitMqPublisherProperties;
+import com.dev.rabbitmq.handler.ConfirmCallbackHandler;
+import com.dev.rabbitmq.handler.ReturnsCallbackHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.core.ExchangeBuilder;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
-import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
+@Configuration
 @EnableConfigurationProperties(RabbitMqPublisherProperties.class)
 public class RabbitMqConfiguration {
     public static final String TENANT_EVENTS_EXCHANGE = "dev.tenant.events";
 
     @Bean
-    public CachingConnectionFactory publisherConnectionFactory(RabbitMqPublisherProperties props) {
-        CachingConnectionFactory ccf = new CachingConnectionFactory(props.getHost(), props.getPort());
-        ccf.setUsername(props.getUsername());
-        ccf.setPassword(props.getPassword());
-        ccf.setVirtualHost(props.getVirtualHost());
-        // production tuning
-        ccf.setChannelCacheSize(25);
-        ccf.setConnectionTimeout(10_000);
-        // if TLS: configure ccf.getRabbitConnectionFactory()...
-        return ccf;
+    @ConditionalOnMissingBean
+    public CachingConnectionFactory cachingConnectionFactory(RabbitMqPublisherProperties props) {
+        CachingConnectionFactory cf = new CachingConnectionFactory(props.getHost(), props.getPort());
+        cf.setUsername(props.getUsername());
+        cf.setPassword(props.getPassword());
+        cf.setVirtualHost("public");
+
+        cf.setConnectionTimeout(5000);
+        cf.setChannelCheckoutTimeout(30000); // wait for channel from pool
+        cf.setCacheMode(CachingConnectionFactory.CacheMode.CHANNEL);
+        cf.setChannelCacheSize(25); // number of channels cached per connection (tune)
+
+        return cf;
     }
+
     @Bean
-    public RabbitTemplate rabbitTemplate(CachingConnectionFactory connectionFactory, RabbitMqPublisherProperties props,
-                                         ObjectMapper objectMapper) {
+    public RabbitTemplate rabbitTemplate(CachingConnectionFactory connectionFactory,
+                                         Jackson2JsonMessageConverter messageConverter,
+                                         ConfirmCallbackHandler confirmHandler,
+                                         ReturnsCallbackHandler returnsHandler) {
         RabbitTemplate template = new RabbitTemplate(connectionFactory);
-        template.setMandatory(props.isPublisherReturns()); // triggers ReturnCallback when undeliverable
-        if (props.isPublisherConfirms()) {
-            // for modern Spring Boot / Spring AMQP, set publisher-confirms in properties if using caching CF.
-            // Also set a confirm callback here
-            template.setConfirmCallback((CorrelationData correlationData, boolean ack, String cause) -> {
-                if (!ack) {
-                    // log and take action (persist failed message, alert, retry...)
-                    // correlationData may be null if not provided
-                    // Example: log.error("Publish confirm failed: {}", cause);
-                }
-            });
-        }
+        template.setMessageConverter(messageConverter);
+        template.setExchange(TENANT_EVENTS_EXCHANGE); // sensible default but callers may specify
+        template.setMandatory(true); // ensure returned messages are handled
 
-        if (props.isPublisherReturns()) {
-            template.setReturnsCallback(returnedMessage -> {
-                // handle returned messages
-                // Example: log.warn("Returned message: {}", returnedMessage);
-            });
-        }
+        template.setConfirmCallback(confirmHandler);
+        template.setReturnsCallback(returnsHandler);
 
-        // optional: use Jackson to convert payloads to JSON automatically
-        template.setMessageConverter(new org.springframework.amqp.support.converter.Jackson2JsonMessageConverter(objectMapper));
+        template.setMessageConverter(messageConverter);
         return template;
     }
     @Bean
@@ -63,10 +60,21 @@ public class RabbitMqConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean
+    public Jackson2JsonMessageConverter jackson2JsonMessageConverter(ObjectMapper objectMapper) {
+        return new Jackson2JsonMessageConverter(objectMapper);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
     public TopicExchange tenantEventsExchange(RabbitAdmin admin) {
-        // declare durable topic exchange for tenant lifecycle events
         TopicExchange exchange = ExchangeBuilder.topicExchange(TENANT_EVENTS_EXCHANGE).durable(true).build();
-        // ensure declaration (RabbitAdmin will pick up at context startup)
         admin.declareExchange(exchange);
         return exchange;
     }

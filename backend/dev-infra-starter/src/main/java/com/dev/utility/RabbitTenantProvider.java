@@ -1,4 +1,4 @@
-package com.dev.rmq.utility;
+package com.dev.utility;
 
 import java.util.Set;
 
