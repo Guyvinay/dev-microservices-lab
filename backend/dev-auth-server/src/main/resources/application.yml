@@ -96,6 +96,21 @@ elastic:
 kafka:
   bootstrap-servers: localhost:9092
 
+
+auth:
+  rabbit:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+    management-base-url: http://localhost:15672/api
+    management-user: guest
+    management-password: guest
+    publisher-confirms: true
+    publisher-returns: true
+
+
 #logging:
 #  level:
 #    org.springframework.security.saml2: TRACE

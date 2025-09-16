@@ -5,8 +5,7 @@ import com.dev.dto.ProfilingDocumentDTO;
 import com.dev.dto.ProfilingDocumentResponse;
 import com.dev.exception.ProfilingFailedException;
 import com.dev.exception.ProfilingNotFoundException;
-import com.dev.rmq.utility.Queues;
-import com.dev.rmq.wrapper.RabbitTemplateWrapper;
+import com.dev.rabbitmq.publisher.RabbitMqPublisher;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,8 +49,8 @@ public class ElasticServiceImpl implements ElasticService {
     //    @Autowired
     private RabbitTemplate rabbitTemplate;
 
-    @Autowired
-    private RabbitTemplateWrapper rabbitTemplateWrapper;
+//    @Autowired
+    private RabbitMqPublisher rabbitTemplateWrapper;
 
     @Autowired
     private RestHighLevelClient restHighLevelClient;
@@ -109,7 +108,7 @@ public class ElasticServiceImpl implements ElasticService {
             throw new RuntimeException(e);
         }
         try {
-            rabbitTemplateWrapper.convertAndSend(Queues.QUEUE3, new ObjectMapper().writeValueAsString(searchResponse.getHits().getHits()[0].getSourceAsMap()));
+            rabbitTemplateWrapper.sendToQueue("QUEUE3", new ObjectMapper().writeValueAsString(searchResponse.getHits().getHits()[0].getSourceAsMap()));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

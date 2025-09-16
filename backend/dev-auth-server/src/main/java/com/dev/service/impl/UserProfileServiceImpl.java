@@ -3,9 +3,11 @@ package com.dev.service.impl;
 import com.dev.dto.UserProfileRequestDTO;
 import com.dev.dto.UserProfileResponseDTO;
 import com.dev.dto.UserProfileTenantDTO;
+import com.dev.dto.UserProfileTenantWrapper;
 import com.dev.entity.UserProfileModel;
 import com.dev.exception.InvalidInputException;
 import com.dev.exception.UserNotFoundException;
+import com.dev.rabbitmq.publisher.ReliableTenantPublisher;
 import com.dev.repository.UserProfileModelRepository;
 import com.dev.security.provider.CustomBcryptEncoder;
 import com.dev.service.UserProfileService;
@@ -45,7 +47,7 @@ public class UserProfileServiceImpl implements UserProfileService {
     private final EntityDtoMapper entityDtoMapper;
     private final CustomBcryptEncoder customBcryptEncoder;
     private final UserProfileTenantService userProfileTenantService;
-
+    private final ReliableTenantPublisher tenantPublisher;
 
 
     /**
@@ -57,7 +59,7 @@ public class UserProfileServiceImpl implements UserProfileService {
      */
     @Override
     @Transactional
-    public UserProfileResponseDTO createUser(UserProfileRequestDTO request) {
+    public UserProfileTenantWrapper createUser(UserProfileRequestDTO request) {
         if (Objects.isNull(request)) throw new InvalidInputException("Request cannot be null");
 
         UserProfileModel profileModel = entityDtoMapper.toUserProfileModelEntity(request);
@@ -87,7 +89,7 @@ public class UserProfileServiceImpl implements UserProfileService {
         log.info("Tenant mapping created successfully: {}", savedProfileTenantMapping);
         log.info("User creation completed successfully for userId={}", savedModel.getId());
 
-        return savedProfileDto;
+        return new UserProfileTenantWrapper(savedProfileDto, savedProfileTenantMapping);
     }
 
     /**
@@ -220,6 +222,7 @@ public class UserProfileServiceImpl implements UserProfileService {
         log.info("Fetching all user profiles");
         List<UserProfileModel> profiles = userProfileModelRepository.findAll();
         log.info("user profiles: {}", profiles.size());
+        tenantPublisher.publishTenantCreated("123456");
         return profiles.stream().map(entityDtoMapper::toUserProfileResponseDTO).collect(Collectors.toList());
     }
 
