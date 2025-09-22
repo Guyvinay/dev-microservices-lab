@@ -1,6 +1,5 @@
 package com.dev.security.details;
 
-import com.dev.entity.UserProfileModel;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

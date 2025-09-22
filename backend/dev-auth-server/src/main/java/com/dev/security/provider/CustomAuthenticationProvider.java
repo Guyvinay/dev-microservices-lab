@@ -1,6 +1,8 @@
 package com.dev.security.provider;
 
+import com.dev.dto.JwtTokenDto;
 import com.dev.security.details.CustomAuthToken;
+import com.dev.security.details.CustomUserDetails;
 import com.dev.security.details.CustomUserDetailsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -9,8 +11,12 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -46,27 +52,32 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
         log.info("CustomAuthenticationProvider invoked for: {}", authentication.getPrincipal());
 
-        String orgId = ((CustomAuthToken) authentication).getOrgId();
-        String tenantId = ((CustomAuthToken) authentication).getTenantId();
         String username = authentication.getPrincipal().toString();
         String password = authentication.getCredentials().toString();
 
-        log.info("Authenticating user: {} with Org ID: {}", username, orgId);
+        log.info("Authenticating user: {}.", username);
 
 //        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-        UserDetails userDetails = userDetailsService.loadUserByUsernameTenantAndOrg(username, tenantId, orgId);
+        CustomUserDetails userDetails = (CustomUserDetails) userDetailsService.loadUserByUsernameTenantAndOrg(username);
 
         if (!customBcryptEncoder.matches(password, userDetails.getPassword())) {
             throw new BadCredentialsException("Invalid credentials");
         }
 
-        return new CustomAuthToken(
-                orgId,
-                tenantId,
-                username,
-                password,
+        UsernamePasswordAuthenticationToken authenticationToken = new CustomAuthToken(
+                userDetails.getUsername(),
+                userDetails.getPassword(),
                 userDetails.getAuthorities()
         );
+        List<String> roles = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+        JwtTokenDto jwtTokenDto = JwtTokenDto.builder()
+                .email(userDetails.getUsername())
+                .tenantId(userDetails.getTenantId())
+                .org(userDetails.getOrgId())
+                .roles(roles)
+                .build();
+        authenticationToken.setDetails(jwtTokenDto);
+        return authenticationToken;
     }
 
     /**

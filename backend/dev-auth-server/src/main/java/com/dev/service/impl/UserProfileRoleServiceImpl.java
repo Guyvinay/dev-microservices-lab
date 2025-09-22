@@ -1,12 +1,15 @@
 package com.dev.service.impl;
 
 import com.dev.dto.CreateRoleRequest;
+import com.dev.dto.JwtTokenDto;
 import com.dev.dto.RoleDTO;
 import com.dev.entity.UserProfileRoleModel;
 import com.dev.exception.ResourceNotFoundException;
 import com.dev.repository.UserProfileRoleModelRepository;
 import com.dev.service.UserProfileRoleService;
+import com.dev.utility.AuthUtility;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -24,14 +27,19 @@ public class UserProfileRoleServiceImpl implements UserProfileRoleService {
         if (roleRepository.existsByRoleNameAndTenantId(request.getRoleName(), request.getTenantId())) {
             throw new IllegalArgumentException("Role already exists for this tenant");
         }
+        JwtTokenDto jwtTokenDto = (JwtTokenDto) SecurityContextHolder.getContext().getAuthentication().getDetails();
         UserProfileRoleModel role = new UserProfileRoleModel();
+        long roleId = AuthUtility.generateRandomNumber(8);
+        role.setRoleId(roleId);
         role.setRoleName(request.getRoleName());
         role.setTenantId(request.getTenantId());
         role.setAdminFlag(request.isAdminFlag());
         role.setDescription(request.getDescription());
         role.setActive(true);
         role.setCreatedAt(Instant.now().toEpochMilli());
-        role.setCreatedBy(request.getCreatedBy());
+        role.setUpdatedAt(Instant.now().toEpochMilli());
+        role.setCreatedBy(jwtTokenDto.getEmail());
+        role.setUpdatedBy(jwtTokenDto.getEmail());
 
         UserProfileRoleModel saved = roleRepository.save(role);
         return mapToDTO(saved);

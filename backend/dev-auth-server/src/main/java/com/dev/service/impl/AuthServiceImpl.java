@@ -1,9 +1,7 @@
 package com.dev.service.impl;
 
 import com.dev.dto.JwtTokenDto;
-import com.dev.dto.UserProfileResponseDTO;
 import com.dev.security.details.CustomAuthToken;
-import com.dev.security.details.CustomUserDetails;
 import com.dev.security.dto.JWTRefreshTokenDto;
 import com.dev.security.provider.JwtTokenProviderManager;
 import com.dev.service.AuthService;
@@ -48,54 +46,51 @@ public class AuthServiceImpl implements AuthService {
     public Map<String, String> login() throws JsonProcessingException, JOSEException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        CustomUserDetails authToken = (CustomUserDetails) authentication.getPrincipal();
-        String username = authToken.getUsername();
-        String orgId = authToken.getOrgId();
-        String tenantId = authToken.getTenantId();
+        CustomAuthToken authToken = (CustomAuthToken) authentication;
+        JwtTokenDto tokenDto = (JwtTokenDto) authToken.getDetails();
 
         int jwtExpiredIn = 2000000000;
         int refreshExpiredIn = 2000000000;
         Map<String, String> tokensMap = new HashMap<>();
 
-        UserProfileResponseDTO userProfile = userProfileService.getUserByEmail(username);
-        JwtTokenDto jwtTokenDto = createJwtTokeDto(userProfile, orgId, tenantId, jwtExpiredIn);
-        JWTRefreshTokenDto jwtRefreshTokenDto = createRefreshJwtTokeDto(userProfile, orgId, tenantId, refreshExpiredIn);
+        JwtTokenDto jwtTokenDto = createJwtTokeDto(tokenDto, jwtExpiredIn);
+        JWTRefreshTokenDto jwtRefreshTokenDto = createRefreshJwtTokeDto(tokenDto, refreshExpiredIn);
         tokensMap.put(JWT_TOKEN, jwtTokenProviderManager.createJwtToken( new ObjectMapper().writeValueAsString(jwtTokenDto), jwtExpiredIn));
         tokensMap.put(JWT_REFRESH_TOKEN, jwtTokenProviderManager.createJwtToken( new ObjectMapper().writeValueAsString(jwtRefreshTokenDto), refreshExpiredIn));
 
         return tokensMap;
     }
 
-    private JwtTokenDto createJwtTokeDto(UserProfileResponseDTO userProfile, String orgId, String tenantId, int expiredIn) {
+    private JwtTokenDto createJwtTokeDto(JwtTokenDto userProfile, int expiredIn) {
         ZonedDateTime zdt = LocalDateTime.now().atZone(ZoneOffset.UTC);
         Date createdDate = Date.from(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
         Date expiaryDate = Date.from(zdt.plusMinutes(expiredIn).toInstant());
 
         return new JwtTokenDto(
-                userProfile.getId(),
-                orgId,
+                userProfile.getUserId(),
+                userProfile.getOrg(),
                 userProfile.getName(),
                 userProfile.getEmail(),
-                tenantId,
+                userProfile.getTenantId(),
                 createdDate,
                 expiaryDate,
-                List.of("123456", "234567", "345678", "56789", "67890")
+                userProfile.getRoles()
         );
     }
 
-    private JWTRefreshTokenDto createRefreshJwtTokeDto(UserProfileResponseDTO userProfile, String orgId, String tenantId, int expiredIn) {
+    private JWTRefreshTokenDto createRefreshJwtTokeDto(JwtTokenDto userProfile, int expiredIn) {
         ZonedDateTime zdt = LocalDateTime.now().atZone(ZoneOffset.UTC);
         Date createdDate = Date.from(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
         Date expiaryDate = Date.from(zdt.plusMinutes(expiredIn).toInstant());
         return new JWTRefreshTokenDto(
-                userProfile.getId(),
-                orgId,
+                userProfile.getUserId(),
+                userProfile.getOrg(),
                 userProfile.getName(),
                 userProfile.getEmail(),
-                tenantId,
+                userProfile.getTenantId(),
                 createdDate,
                 expiaryDate,
-                List.of("123456", "234567", "345678", "56789", "67890")
+                userProfile.getRoles()
         );
     }
 }
