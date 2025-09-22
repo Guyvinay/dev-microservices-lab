@@ -14,7 +14,6 @@ import java.util.UUID;
 public class UserProfileRoleModel {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ROLE_ID")
     private Long roleId;
 

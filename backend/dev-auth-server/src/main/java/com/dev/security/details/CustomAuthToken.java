@@ -7,8 +7,6 @@ import java.util.Collection;
 
 public class CustomAuthToken extends UsernamePasswordAuthenticationToken {
 
-    private final String orgId;
-    private final String tenantId;
 
     /**
      * This constructor can be safely used by any code that wishes to create a
@@ -18,10 +16,8 @@ public class CustomAuthToken extends UsernamePasswordAuthenticationToken {
      * @param principal
      * @param credentials
      */
-    public CustomAuthToken(String orgId, String tenantId, Object principal, Object credentials) {
+    public CustomAuthToken(Object principal, Object credentials) {
         super(principal, credentials);
-        this.orgId = orgId;
-        this.tenantId = tenantId;
     }
 
     /**
@@ -34,16 +30,8 @@ public class CustomAuthToken extends UsernamePasswordAuthenticationToken {
      * @param credentials
      * @param authorities
      */
-    public CustomAuthToken(String orgId, String tenantId, Object principal, Object credentials, Collection<? extends GrantedAuthority> authorities) {
+    public CustomAuthToken(Object principal, Object credentials, Collection<? extends GrantedAuthority> authorities) {
         super(principal, credentials, authorities);
-        this.orgId = orgId;
-        this.tenantId = tenantId;
     }
 
-    public String getOrgId() {
-        return orgId;
-    }
-    public String getTenantId() {
-        return tenantId;
-    }
 }

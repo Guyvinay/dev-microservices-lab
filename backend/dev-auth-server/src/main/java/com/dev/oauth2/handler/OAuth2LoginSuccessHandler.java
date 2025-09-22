@@ -36,7 +36,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         CustomOAuth2User customUser = (CustomOAuth2User) authentication.getPrincipal();
         JwtTokenDto jwtTokenDto = customUser.getJwtTokenDto();
-        CustomAuthToken customAuthToken = new CustomAuthToken(jwtTokenDto.getOrg(), jwtTokenDto.getEmail(), null, customUser.getAuthorities());
+        CustomAuthToken customAuthToken = new CustomAuthToken(jwtTokenDto.getEmail(), null, customUser.getAuthorities());
         customAuthToken.setDetails(jwtTokenDto);
         SecurityContextHolder.getContext().setAuthentication(customAuthToken);
         String token;

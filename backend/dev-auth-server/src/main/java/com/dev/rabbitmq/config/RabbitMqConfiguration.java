@@ -14,6 +14,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.web.client.RestTemplate;
 
 @Configuration
 @EnableConfigurationProperties(RabbitMqPublisherProperties.class)
@@ -53,6 +55,7 @@ public class RabbitMqConfiguration {
         return template;
     }
     @Bean
+    @DependsOn("rabbitMqVirtualHosts") // bean name of your vhost checker
     public RabbitAdmin rabbitAdmin(CachingConnectionFactory connectionFactory) {
         RabbitAdmin admin = new RabbitAdmin(connectionFactory);
         admin.setAutoStartup(true); // will declare exchange automatically
@@ -72,10 +75,17 @@ public class RabbitMqConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean
+//    @ConditionalOnMissingBean
+    @DependsOn("rabbitMqVirtualHosts")
     public TopicExchange tenantEventsExchange(RabbitAdmin admin) {
         TopicExchange exchange = ExchangeBuilder.topicExchange(TENANT_EVENTS_EXCHANGE).durable(true).build();
         admin.declareExchange(exchange);
         return exchange;
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
     }
 }
