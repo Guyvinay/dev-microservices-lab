@@ -220,6 +220,7 @@ public class UserProfileServiceImpl implements UserProfileService {
     }
 
     @Override
+    @RedisCacheAdapter()
     public List<UserProfileResponseDTO> getAllUsers() {
         log.info("Fetching all user profiles");
         List<UserProfileModel> profiles = userProfileModelRepository.findAll();
