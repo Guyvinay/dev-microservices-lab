@@ -90,7 +90,7 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .addFilterBefore(new JWTAuthenticationFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class) // Process JWT after username/password authentication
-                .addFilterBefore(requestLoggingFilter, UsernamePasswordAuthenticationFilter.class)  // Log before authentication
+//                .addFilterBefore(requestLoggingFilter, UsernamePasswordAuthenticationFilter.class)  // Log before authentication
                 .oauth2Login(oauth2 -> oauth2 // Enables OAuth2 login
                         .tokenEndpoint(token -> token
                                 .accessTokenResponseClient(customAccessTokenEndpointHandler)
