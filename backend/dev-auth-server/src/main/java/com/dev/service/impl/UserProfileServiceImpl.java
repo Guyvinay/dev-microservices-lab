@@ -8,6 +8,7 @@ import com.dev.entity.UserProfileModel;
 import com.dev.exception.InvalidInputException;
 import com.dev.exception.UserNotFoundException;
 import com.dev.rabbitmq.publisher.ReliableTenantPublisher;
+import com.dev.redis.annotation.RedisCacheAdapter;
 import com.dev.repository.UserProfileModelRepository;
 import com.dev.security.provider.CustomBcryptEncoder;
 import com.dev.service.UserProfileService;
@@ -134,7 +135,8 @@ public class UserProfileServiceImpl implements UserProfileService {
      * @throws UserNotFoundException if no user is found with the given ID.
      */
     @Override
-    @Cacheable(cacheNames = "user", keyGenerator = "tenantAwareKeyGenerator")
+//    @Cacheable(cacheNames = "user", keyGenerator = "tenantAwareKeyGenerator")
+    @RedisCacheAdapter()
     public UserProfileResponseDTO getUserById(UUID id) {
         if (Objects.isNull(id)) throw new InvalidInputException("User ID cannot be null");
 
