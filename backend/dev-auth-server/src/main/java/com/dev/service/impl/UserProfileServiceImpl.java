@@ -14,6 +14,7 @@ import com.dev.security.provider.CustomBcryptEncoder;
 import com.dev.service.UserProfileService;
 import com.dev.service.UserProfileTenantService;
 import com.dev.utility.EntityDtoMapper;
+import com.dev.utility.TenantContextUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
@@ -220,12 +221,12 @@ public class UserProfileServiceImpl implements UserProfileService {
     }
 
     @Override
-    @RedisCacheAdapter()
+//    @RedisCacheAdapter()
     public List<UserProfileResponseDTO> getAllUsers() {
         log.info("Fetching all user profiles");
         List<UserProfileModel> profiles = userProfileModelRepository.findAll();
         log.info("user profiles: {}", profiles.size());
-        tenantPublisher.publishTenantCreated("123456");
+        tenantPublisher.publishTenantCreated(TenantContextUtil.getTenantId());
         return profiles.stream().map(entityDtoMapper::toUserProfileResponseDTO).collect(Collectors.toList());
     }
 

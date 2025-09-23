@@ -3,8 +3,6 @@ package com.dev.controller;
 import com.dev.common.annotations.Requires;
 import com.dev.dto.ApiResponse;
 import com.dev.dto.UserDTO;
-import com.dev.modal.Student;
-import com.dev.repository.StudentRepository;
 import com.dev.service.UserAuditService;
 import com.dev.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
