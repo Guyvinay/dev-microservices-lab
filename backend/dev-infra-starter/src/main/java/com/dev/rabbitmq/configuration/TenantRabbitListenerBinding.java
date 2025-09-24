@@ -39,7 +39,7 @@ public class TenantRabbitListenerBinding {
 
     private final ApplicationContext applicationContext;
     private final RabbitAdmin rabbitAdmin;
-    private  final RabbitMqVirtualHosts rabbitMqVirtualHosts;
+    private  final RabbitMqManagement rabbitMqManagement;
 
     public final Map<String, Object> LISTENER_RMQ_BEANS = new ConcurrentHashMap<>();
     public final Map<String, AnnotatedBeanDefinition> ANNOTATED_BEAN_DEFINITIONS = new ConcurrentHashMap<>();
@@ -53,7 +53,7 @@ public class TenantRabbitListenerBinding {
     public void initMethod() {
         log.info("Starting initialization of TenantRabbitListeners...");
 
-        RabbitMqConfiguration.TENANT_IDS.forEach(rabbitMqVirtualHosts::checkAndCreateVirtualHosts);
+        RabbitMqConfiguration.TENANT_IDS.forEach(rabbitMqManagement::checkAndCreateVirtualHosts);
 
         Map<String, Object> beans = applicationContext.getBeansWithAnnotation(TenantRabbitListener.class);
         LISTENER_RMQ_BEANS.putAll(beans);
@@ -138,6 +138,8 @@ public class TenantRabbitListenerBinding {
                 };
                 rabbitAdmin.declareExchange(exchange);
                 log.info("Declared exchange={} [type={}] for tenant={}", exchangeName, type, tenantId);
+
+                rabbitMqManagement.checkExistingBindingForQueueAndDelete(tenantId, exchangeName, queueName, routingKey);
 
                 if("fanout".equalsIgnoreCase(type)) {
                     rabbitAdmin.declareBinding(BindingBuilder.bind(queue).to((FanoutExchange)exchange));
