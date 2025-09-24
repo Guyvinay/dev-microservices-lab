@@ -2,24 +2,32 @@ package com.dev.rabbitmq.configuration;
 
 import com.dev.rabbitmq.utility.RabbitMqProperties;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriUtils;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
-public class RabbitMqVirtualHosts {
+public class RabbitMqManagement {
 
     private final RabbitMqProperties rabbitMqProperties;
     private final String hostUrl;
     private final RestTemplate restTemplate;
 
-    public RabbitMqVirtualHosts(RabbitMqProperties rabbitMqProperties,
-                                RestTemplate restTemplate) {
+    public RabbitMqManagement(RabbitMqProperties rabbitMqProperties,
+                              RestTemplate restTemplate) {
         this.rabbitMqProperties = rabbitMqProperties;
         this.restTemplate = restTemplate;
 
@@ -35,6 +43,82 @@ public class RabbitMqVirtualHosts {
         tenants.forEach(this::checkAndCreateVirtualHosts);
     }
 */
+
+    public void checkExistingBindingForQueueAndDelete(
+            String vHost, String exchange, String queue, String expectedRoutingKey) {
+
+        List<Map<String, Object>> bindings = getAllBindingsForQueueInExchange(vHost, exchange, queue);
+
+        if (bindings.isEmpty()) {
+            log.info("No existing bindings found for queue {} in exchange {}", queue, exchange);
+            return;
+        }
+
+        String encodedVhost = UriUtils.encodePathSegment(vHost, StandardCharsets.UTF_8);
+        String encodedQueue = UriUtils.encodePathSegment(queue, StandardCharsets.UTF_8);
+
+        for (Map<String, Object> binding : bindings) {
+            String sourceExchange = (String) binding.get("source");
+            String routingKey = (String) binding.get("routing_key");
+            String propertiesKey = (String) binding.get("properties_key");
+
+            // Only care about bindings for our exchange that don't match the expected routing key
+            if (exchange.equals(sourceExchange) && !expectedRoutingKey.equals(routingKey)) {
+                try {
+                    // Build DELETE URL
+                    String deleteUrl = String.format("http://%s/api/bindings/%s/e/%s/q/%s/%s",
+                            rabbitMqProperties.getAddresses(),
+                            encodedVhost,
+                            sourceExchange,
+                            encodedQueue,
+                            propertiesKey);
+
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+                    headers.setBasicAuth(rabbitMqProperties.getUsername(), rabbitMqProperties.getPassword());
+                    HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+                    restTemplate.exchange(deleteUrl, HttpMethod.DELETE, entity, Void.class);
+
+                    log.info("Deleted old binding: queue={}, exchange={}, routingKey={}", queue, exchange, routingKey);
+                } catch (Exception e) {
+                    log.error("Failed to delete old binding for queue={} exchange={} routingKey={}",
+                            queue, exchange, routingKey, e);
+                }
+            }
+        }
+    }
+
+    public List<Map<String, Object>> getAllBindingsForQueueInExchange(String vHost, String exchange, String queue) {
+        try {
+            String encodedVhost = UriUtils.encodePathSegment(vHost, StandardCharsets.UTF_8);
+            String encodedQueue = UriUtils.encodePathSegment(queue, StandardCharsets.UTF_8);
+
+            String url = String.format("http://%s/api/queues/%s/%s/bindings",
+                    rabbitMqProperties.getAddresses(), encodedVhost, encodedQueue);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+            headers.setBasicAuth(rabbitMqProperties.getUsername(), rabbitMqProperties.getPassword());
+
+            HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
+
+            log.info("Fetching bindings from URL: {}", url);
+
+            ResponseEntity<List<Map<String, Object>>> responseEntity =
+                    restTemplate.exchange(url, HttpMethod.GET, httpEntity,
+                            new ParameterizedTypeReference<>() {});
+
+            List<Map<String, Object>> bindings = responseEntity.getBody();
+            log.info("Bindings found for queue {}: {}", queue, bindings != null ? bindings.size() : 0);
+            return bindings != null ? bindings : Collections.emptyList();
+
+        } catch (Exception e) {
+            log.error("Failed to fetch bindings for queue {} in exchange {}", queue, exchange, e);
+            return Collections.emptyList();
+        }
+    }
+
 
     /**
      * Ensures a vhost exists for the given tenant.

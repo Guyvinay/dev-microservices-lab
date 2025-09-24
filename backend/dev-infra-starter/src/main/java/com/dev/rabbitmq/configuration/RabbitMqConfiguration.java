@@ -141,12 +141,12 @@ public class RabbitMqConfiguration {
      * Helper component for managing RabbitMQ virtual hosts per tenant.
      */
     @Bean
-    public RabbitMqVirtualHosts rabbitMqVirtualHosts(
+    public RabbitMqManagement rabbitMqVirtualHosts(
             RabbitMqProperties rabbitMqProperties,
             RestTemplate restTemplate
     ) {
         log.info("Creating RabbitMqVirtualHosts manager");
-        return new RabbitMqVirtualHosts(rabbitMqProperties, restTemplate);
+        return new RabbitMqManagement(rabbitMqProperties, restTemplate);
     }
 
     /**
@@ -156,10 +156,10 @@ public class RabbitMqConfiguration {
     public TenantRabbitListenerBinding tenantRabbitListenerBinding(
             ApplicationContext applicationContext,
             RabbitAdmin rabbitAdmin,
-            RabbitMqVirtualHosts rabbitMqVirtualHosts
+            RabbitMqManagement rabbitMqManagement
     ) {
         log.info("Creating TenantRabbitListenerBinding for dynamic tenant-based listener registration");
-        return new TenantRabbitListenerBinding(applicationContext, rabbitAdmin, rabbitMqVirtualHosts);
+        return new TenantRabbitListenerBinding(applicationContext, rabbitAdmin, rabbitMqManagement);
     }
 
     /**

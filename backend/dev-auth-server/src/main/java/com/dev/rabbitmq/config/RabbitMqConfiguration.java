@@ -4,6 +4,7 @@ import com.dev.rabbitmq.RabbitMqPublisherProperties;
 import com.dev.rabbitmq.handler.ConfirmCallbackHandler;
 import com.dev.rabbitmq.handler.ReturnsCallbackHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.ExchangeBuilder;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
@@ -81,6 +82,14 @@ public class RabbitMqConfiguration {
         TopicExchange exchange = ExchangeBuilder.topicExchange(TENANT_EVENTS_EXCHANGE).durable(true).build();
         admin.declareExchange(exchange);
         return exchange;
+    }
+
+    @Bean
+    @DependsOn("rabbitMqVirtualHosts")
+    public DirectExchange directExchange(RabbitAdmin rabbitAdmin) {
+        DirectExchange directExchange = ExchangeBuilder.directExchange("tenant.dataset.exchange").durable(true).build();
+        rabbitAdmin.declareExchange(directExchange);
+        return directExchange;
     }
 
     @Bean
