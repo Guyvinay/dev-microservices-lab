@@ -1,15 +1,15 @@
 package com.dev.service.impl;
 
 import com.dev.dto.JwtTokenDto;
-import com.dev.dto.UserProfileResponseDTO;
+import com.dev.security.details.CustomAuthToken;
 import com.dev.security.dto.JWTRefreshTokenDto;
 import com.dev.security.provider.JwtTokenProviderManager;
 import com.dev.service.AuthService;
 import com.dev.service.UserProfileService;
+import com.dev.service.UserProfileTenantService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -29,15 +29,14 @@ import static com.dev.security.SecurityConstants.JWT_TOKEN;
 public class AuthServiceImpl implements AuthService {
 
 
-    private final AuthenticationManager authenticationManager;
     private final JwtTokenProviderManager jwtTokenProviderManager;
     private final UserProfileService userProfileService;
+    private final UserProfileTenantService userProfileTenantService;
 
-
-    public AuthServiceImpl(AuthenticationManager authenticationManager, JwtTokenProviderManager jwtTokenProviderManager, UserProfileService userProfileService) {
-        this.authenticationManager = authenticationManager;
+    public AuthServiceImpl(JwtTokenProviderManager jwtTokenProviderManager, UserProfileService userProfileService, UserProfileTenantService userProfileTenantService) {
         this.jwtTokenProviderManager = jwtTokenProviderManager;
         this.userProfileService = userProfileService;
+        this.userProfileTenantService = userProfileTenantService;
     }
 
     /**
@@ -45,55 +44,53 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public Map<String, String> login() throws JsonProcessingException, JOSEException {
-//        Authentication authentication = new CustomAuthToken(loginRequestDTO.getOrgId(), loginRequestDTO.getUsername(), loginRequestDTO.getPassword());
-//        Authentication authenticated = authenticationManager.authenticate(authentication);
-//        SecurityContextHolder.getContext().setAuthentication(authenticated);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        String username = authentication.getPrincipal().toString();
-        int jwtExpiredIn = 200;
-        int refreshExpiredIn = 1000;
+        CustomAuthToken authToken = (CustomAuthToken) authentication;
+        JwtTokenDto tokenDto = (JwtTokenDto) authToken.getDetails();
+
+        int jwtExpiredIn = 2000000000;
+        int refreshExpiredIn = 2000000000;
         Map<String, String> tokensMap = new HashMap<>();
 
-        UserProfileResponseDTO userProfile = userProfileService.getUserByEmail(username);
-        JwtTokenDto jwtTokenDto = createJwtTokeDto(userProfile, jwtExpiredIn);
-        JWTRefreshTokenDto jwtRefreshTokenDto = createRefreshJwtTokeDto(userProfile, refreshExpiredIn);
+        JwtTokenDto jwtTokenDto = createJwtTokeDto(tokenDto, jwtExpiredIn);
+        JWTRefreshTokenDto jwtRefreshTokenDto = createRefreshJwtTokeDto(tokenDto, refreshExpiredIn);
         tokensMap.put(JWT_TOKEN, jwtTokenProviderManager.createJwtToken( new ObjectMapper().writeValueAsString(jwtTokenDto), jwtExpiredIn));
         tokensMap.put(JWT_REFRESH_TOKEN, jwtTokenProviderManager.createJwtToken( new ObjectMapper().writeValueAsString(jwtRefreshTokenDto), refreshExpiredIn));
 
         return tokensMap;
     }
 
-    private JwtTokenDto createJwtTokeDto(UserProfileResponseDTO userProfile, int expiredIn) {
+    private JwtTokenDto createJwtTokeDto(JwtTokenDto userProfile, int expiredIn) {
         ZonedDateTime zdt = LocalDateTime.now().atZone(ZoneOffset.UTC);
         Date createdDate = Date.from(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
         Date expiaryDate = Date.from(zdt.plusMinutes(expiredIn).toInstant());
 
         return new JwtTokenDto(
-                userProfile.getId(),
-                "org",
+                userProfile.getUserId(),
+                userProfile.getOrg(),
                 userProfile.getName(),
                 userProfile.getEmail(),
-                "123456",
+                userProfile.getTenantId(),
                 createdDate,
                 expiaryDate,
-                List.of("123456", "234567", "345678", "56789", "67890")
+                userProfile.getRoles()
         );
     }
 
-    private JWTRefreshTokenDto createRefreshJwtTokeDto(UserProfileResponseDTO userProfile, int expiredIn) {
+    private JWTRefreshTokenDto createRefreshJwtTokeDto(JwtTokenDto userProfile, int expiredIn) {
         ZonedDateTime zdt = LocalDateTime.now().atZone(ZoneOffset.UTC);
         Date createdDate = Date.from(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
         Date expiaryDate = Date.from(zdt.plusMinutes(expiredIn).toInstant());
         return new JWTRefreshTokenDto(
-                userProfile.getId(),
-                "org",
+                userProfile.getUserId(),
+                userProfile.getOrg(),
                 userProfile.getName(),
                 userProfile.getEmail(),
-                "tenant",
+                userProfile.getTenantId(),
                 createdDate,
                 expiaryDate,
-                List.of("123456", "234567", "345678", "56789", "67890")
+                userProfile.getRoles()
         );
     }
 }

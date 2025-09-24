@@ -1,7 +1,7 @@
 package com.dev.utils;
 
 import com.dev.hibernate.service.DatasourceService;
-import com.dev.rmq.utility.RabbitTenantProvider;
+import com.dev.utility.RabbitTenantProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +23,7 @@ public class TenantProvider implements RabbitTenantProvider {
     @Override
     public Set<String> getAllTenants() {
         Set<String> tenants = new HashSet<>();
+        tenants.add("public");
         List<String> excludeSchema = datasourceService.getExcludeSchema();
         try {
             for (String tenant: datasourceService.getAllTenanats()) {

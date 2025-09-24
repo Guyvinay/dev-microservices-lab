@@ -75,7 +75,8 @@ public class JwtTokenProviderManager {
 
         ZonedDateTime zonedDateTime = LocalDateTime.now().atZone(ZoneOffset.UTC);
 
-        JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder().subject(payload) // Token issuer user details.
+        JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
+                .subject(payload) // Token issuer user details.
                 .issuer(ISSUER)   // issuer service / entity
                 .audience(AUDIENCE)// Token is for my app's user
                 .expirationTime(Date.from(zonedDateTime.plusMinutes(expiryTimeMinutes).toInstant()))  // Expire in 15 min
@@ -155,7 +156,7 @@ public class JwtTokenProviderManager {
 
     public Authentication getAuthentication(String token) throws JsonProcessingException {
         JwtTokenDto jwtToken = OM.readValue(getSubjectPayload(token), JwtTokenDto.class);
-        CustomAuthToken customAuthToken = new CustomAuthToken(jwtToken.getOrg(), jwtToken.getEmail(), "", null);
+        CustomAuthToken customAuthToken = new CustomAuthToken(jwtToken.getEmail(), null, Collections.emptyList());
         customAuthToken.setDetails(jwtToken); // set jwtToken payload as user details ...
         return customAuthToken;
     }

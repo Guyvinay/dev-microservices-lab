@@ -96,8 +96,34 @@ elastic:
 kafka:
   bootstrap-servers: localhost:9092
 
+
+auth:
+  rabbit:
+    host: ${RABBIT_HOST:localhost}
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: public
+    management-base-url: ${RABBIT_MANAGEMENT_BASE_URL:http://localhost:15672/api}
+    management-user: guest
+    management-password: guest
+    publisher-confirms: true
+    publisher-returns: true
+
+
 #logging:
 #  level:
 #    org.springframework.security.saml2: TRACE
 #    org.springframework.security: TRACE
 #    org.opensaml: DEBUG
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus, metrics
+  endpoint:
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}   # tag metrics with service name

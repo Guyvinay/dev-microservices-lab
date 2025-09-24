@@ -2,6 +2,7 @@ package com.dev.service;
 
 import com.dev.dto.UserProfileRequestDTO;
 import com.dev.dto.UserProfileResponseDTO;
+import com.dev.dto.UserProfileTenantWrapper;
 import com.dev.exception.InvalidInputException;
 import com.dev.exception.UserNotFoundException;
 
@@ -23,7 +24,7 @@ public interface UserProfileService {
      * @return A DTO containing the created user profile details.
      * @throws InvalidInputException if the request is null or invalid.
      */
-    UserProfileResponseDTO createUser(UserProfileRequestDTO request);
+    UserProfileTenantWrapper createUser(UserProfileRequestDTO request);
 
     /**
      * Retrieves the user profile by its unique ID.

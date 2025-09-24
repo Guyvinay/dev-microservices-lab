@@ -40,10 +40,9 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String username = request.getParameter(USERNAME);
         String password = request.getParameter(PASSWORD);
-        String organization = request.getHeader(ORGANIZATION);
         CustomAuthToken authToken = null;
-        if(StringUtils.hasText(username) && StringUtils.hasText(password) && StringUtils.hasText(organization)) {
-            authToken = new CustomAuthToken(organization, username, password);
+        if(StringUtils.hasText(username) && StringUtils.hasText(password)) {
+            authToken = new CustomAuthToken(username, password);
         }
 
         if(authToken == null) {
@@ -101,9 +100,8 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
         String username = credentials[0];
         String password = credentials[1];
-        String organization = request.getHeader(ORGANIZATION);
 
-        return new CustomAuthToken(organization, username, password);
+        return new CustomAuthToken(username, password);
     }
 
     @Override

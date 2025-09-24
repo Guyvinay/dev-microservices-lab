@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static com.dev.utility.StringLiterals.ADMINISTRATOR;
@@ -41,8 +40,6 @@ public class OrganizationServiceImpl implements OrganizationService {
     private final UserProfileRoleModelRepository userProfileRoleModelRepository;
     private final UserProfileRoleMappingRepository userProfileRoleMappingRepository;
     private final UserProfileTenantService userProfileTenantService;
-
-    private final AtomicReference<UUID> uuidAtomicReference = new AtomicReference<>();
 
 
     @Override
@@ -76,12 +73,11 @@ public class OrganizationServiceImpl implements OrganizationService {
         OrganizationDTO savedOrg = saveOrganization(orgSignupRequestDTO);
 //        uuidAtomicReference.set(savedOrg.getOrgId());
         OrganizationTenantDTO tenantMapping = saveOrgTenant(savedOrg.getOrgId(), orgSignupRequestDTO);
-        UserProfileResponseDTO savedUser = createAdminUser(tenantMapping.getTenantId(), orgSignupRequestDTO);
-        UserProfileTenantDTO userProfileTenantMapping =  saveUserProfileTenantMapping(tenantMapping.getTenantId(), savedUser.getId(), savedOrg.getOrgId());
-        UserProfileRoleModel userProfileRoleModel = createUserProfileAdminRole(savedUser.getId(), tenantMapping.getTenantId());
-        UserProfileRoleMapping userProfileRoleMapping = createUserprofileRoleMapping(savedUser.getId(), userProfileRoleModel.getRoleId(), tenantMapping.getTenantId());
+        UserProfileTenantWrapper adminUserTenant = createAdminUser(tenantMapping.getTenantId(), savedOrg.getOrgId(), orgSignupRequestDTO);
+        UserProfileRoleModel userProfileRoleModel = createUserProfileAdminRole(adminUserTenant.getProfileResponseDTO().getId(), tenantMapping.getTenantId());
+        UserProfileRoleMapping userProfileRoleMapping = createUserprofileRoleMapping(adminUserTenant.getProfileResponseDTO().getId(), userProfileRoleModel.getRoleId(), tenantMapping.getTenantId());
         log.info("Organization registration completed successfully");
-        return new OrgSignupResponseDTO(savedOrg, tenantMapping, savedUser, userProfileTenantMapping, userProfileRoleModel, userProfileRoleMapping);
+        return new OrgSignupResponseDTO(savedOrg, tenantMapping, adminUserTenant, userProfileRoleModel, userProfileRoleMapping);
     }
 
     private UserProfileRoleMapping createUserprofileRoleMapping(UUID userId, Long roleId, String tenantId) {
@@ -136,7 +132,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         return savedUserProfileTenantMapping;
     }
 
-    private UserProfileResponseDTO createAdminUser(String tenantId, OrgSignupRequestDTO orgSignupRequestDTO) {
+    private UserProfileTenantWrapper createAdminUser(String tenantId, UUID orgId, OrgSignupRequestDTO orgSignupRequestDTO) {
         log.info("Creating admin user for tenant ID: {}", tenantId);
 
         UserProfileRequestDTO userProfileRequestDTO = new UserProfileRequestDTO();
@@ -144,9 +140,11 @@ public class OrganizationServiceImpl implements OrganizationService {
         userProfileRequestDTO.setName(orgSignupRequestDTO.getName());
         userProfileRequestDTO.setEmail(orgSignupRequestDTO.getAdminEmail());
         userProfileRequestDTO.setPassword(orgSignupRequestDTO.getAdminPassword());
+        userProfileRequestDTO.setTenantId(tenantId);
+        userProfileRequestDTO.setOrgId(orgId);
 
-        UserProfileResponseDTO savedUser = userProfileService.createUser(userProfileRequestDTO);
-        log.info("Admin user created successfully with ID: {}", savedUser.getId());
+        UserProfileTenantWrapper savedUser = userProfileService.createUser(userProfileRequestDTO);
+        log.info("Admin user created successfully with ID: {}", savedUser.getProfileResponseDTO().getId());
         return savedUser;
     }
 
