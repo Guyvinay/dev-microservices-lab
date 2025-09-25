@@ -84,6 +84,7 @@ public class TenantRabbitListenerBinding {
         Set<String> knownTenants = getInitialTenants();
         log.info("Onboarding {} tenants with listeners: {}", knownTenants.size(), knownTenants);
         knownTenants.forEach(this::onBoardTenant);
+
         log.info("TenantRabbitListener initialization completed successfully");
     }
 
