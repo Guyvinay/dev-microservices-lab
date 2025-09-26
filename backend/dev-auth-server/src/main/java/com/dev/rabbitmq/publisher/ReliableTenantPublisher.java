@@ -21,13 +21,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ReliableTenantPublisher {
     private final RabbitTemplate rabbitTemplate;
-    private final TopicExchange tenantEventsExchange;
-    private final RabbitAdmin rabbitAdmin;
 
     public void publishTenantCreated(String tenantId) {
-        rabbitAdmin.declareExchange(tenantEventsExchange);
 
-        // 2) Build message and correlation
         String correlationId = UUID.randomUUID().toString();
         MessageProperties props = new MessageProperties();
         props.setContentType(MessageProperties.CONTENT_TYPE_JSON);
@@ -36,15 +32,17 @@ public class ReliableTenantPublisher {
         CorrelationData correlationData = new CorrelationData(correlationId);
 
         try {
-            // Helpful debug: log which vhost we are using
             ConnectionFactory cf = rabbitTemplate.getConnectionFactory();
             if (cf instanceof CachingConnectionFactory ccf) {
                 log.info("Publishing using connection vhost={}", ccf.getVirtualHost());
             } else {
                 log.info("Publishing using connectionFactory={}", cf.getClass().getSimpleName());
             }
-//            SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), resolvePublishTenant(null));
-            rabbitTemplate.convertAndSend(tenantEventsExchange.getName(), "tenant.created", message, correlationData);
+            // SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), resolvePublishTenant(null));
+
+            // You may call this explicitly to an exchange with routing key, otherwise defaults to rabbitTemplate created in config
+            //  rabbitTemplate.convertAndSend(tenantEventsExchange.getName(), "tenant.created", message, correlationData);
+            rabbitTemplate.correlationConvertAndSend(message, correlationData);
             log.info("Published correlationId={} tenant={}", correlationId, tenantId);
         } catch (Exception ex) {
             log.error("Publish failed correlationId={} tenant={}", correlationId, tenantId, ex);
