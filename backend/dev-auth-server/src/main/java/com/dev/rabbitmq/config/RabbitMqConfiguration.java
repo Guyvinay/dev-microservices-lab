@@ -22,6 +22,7 @@ import org.springframework.web.client.RestTemplate;
 @EnableConfigurationProperties(RabbitMqPublisherProperties.class)
 public class RabbitMqConfiguration {
     public static final String TENANT_EVENTS_EXCHANGE = "dev.tenant.events";
+    public static final String TENANT_ROUTING_KEY = "dev.tenant.route";
 
     @Bean
     @ConditionalOnMissingBean
@@ -46,7 +47,10 @@ public class RabbitMqConfiguration {
                                          ReturnsCallbackHandler returnsHandler) {
         RabbitTemplate template = new RabbitTemplate(connectionFactory);
         template.setMessageConverter(messageConverter);
-        template.setExchange(TENANT_EVENTS_EXCHANGE); // sensible default but callers may specify
+
+        // may call convertAndSend(exchange, routingKey, message) to send in other exchange
+        template.setExchange(TENANT_EVENTS_EXCHANGE);
+        template.setRoutingKey(TENANT_ROUTING_KEY);
         template.setMandatory(true); // ensure returned messages are handled
 
         template.setConfirmCallback(confirmHandler);

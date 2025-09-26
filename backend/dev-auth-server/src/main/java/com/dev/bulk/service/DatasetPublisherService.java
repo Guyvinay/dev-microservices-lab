@@ -55,7 +55,7 @@ public class DatasetPublisherService {
                             .datasetId("123456")
                             .batchNumber(batchNumber)
                             .totalBatches((int) Math.ceil((double) rowCount / BATCH_SIZE))
-                            .rows(new ArrayList<>(batch))
+                            .rows(new ArrayList<>())
                             .build();
 
                     rabbitTemplate.convertAndSend(
@@ -67,8 +67,6 @@ public class DatasetPublisherService {
                     batch.clear();
                 }
             }
-
-            System.out.println(batch);
         }
     }
 

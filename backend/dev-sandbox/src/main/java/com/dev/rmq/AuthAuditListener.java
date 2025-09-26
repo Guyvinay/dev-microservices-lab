@@ -10,7 +10,7 @@ import org.springframework.amqp.core.MessageListener;
     value = "AuthAuditListener",
     queue = "tenant.created.sandbox.q", // unique queue
     exchange = "dev.tenant.events",
-    routingKey = "tenant.created",
+    routingKey = "dev.tenant.route",
     type = "topic"
 )
 public class AuthAuditListener implements MessageListener {

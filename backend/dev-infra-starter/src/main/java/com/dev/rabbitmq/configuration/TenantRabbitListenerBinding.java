@@ -52,8 +52,9 @@ public class TenantRabbitListenerBinding {
     @PostConstruct
     public void initMethod() {
         log.info("Starting initialization of TenantRabbitListeners...");
-
-        RabbitMqConfiguration.TENANT_IDS.forEach(rabbitMqManagement::checkAndCreateVirtualHosts);
+        Set<String> knownTenants = getInitialTenants();
+        this.rabbitMqManagement.checkAndCreateVirtualHosts("public");
+        knownTenants.forEach(rabbitMqManagement::checkAndCreateVirtualHosts);
 
         Map<String, Object> beans = applicationContext.getBeansWithAnnotation(TenantRabbitListener.class);
         LISTENER_RMQ_BEANS.putAll(beans);
@@ -81,9 +82,10 @@ public class TenantRabbitListenerBinding {
             }
         }
 
-        Set<String> knownTenants = getInitialTenants();
+
         log.info("Onboarding {} tenants with listeners: {}", knownTenants.size(), knownTenants);
         knownTenants.forEach(this::onBoardTenant);
+        this.onBoardTenant("public");
 
         log.info("TenantRabbitListener initialization completed successfully");
     }
