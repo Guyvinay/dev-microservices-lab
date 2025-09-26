@@ -38,30 +38,21 @@ public class RabbitMqConfiguration {
     private RabbitTenantProvider rabbitTenantProvider;
 
     @Bean
-    public ConnectionFactory connectionFactory(){
+    public ConnectionFactory connectionFactory() {
         log.info("Initializing RabbitMQ tenant connections...");
 
         TENANT_IDS.addAll(rabbitTenantProvider.getAllTenants());
-        log.debug("Loaded tenant IDs: {}", TENANT_IDS);
+        log.info("Loaded tenant IDs: {}", TENANT_IDS);
 
-        CachingConnectionFactory publicCcf = new CachingConnectionFactory();
-        publicCcf.setUsername(rabbitMqProperties.getUsername());
-        publicCcf.setPassword(rabbitMqProperties.getPassword());
-        publicCcf.setHost(rabbitMqProperties.getHost());
-        publicCcf.setVirtualHost("/");
+        // Default "public" vhost connection
+        CachingConnectionFactory publicCcf = createTenantConnectionFactory("public");
         TENANT_CONNECTION_MAP.put("public", publicCcf);
         log.info("Registered public RabbitMQ connection");
 
-
+        // Tenant-specific connections
         TENANT_IDS.forEach(tenantId -> {
-            CachingConnectionFactory ccf = new CachingConnectionFactory();
-            ccf.setUsername(rabbitMqProperties.getUsername());
-            ccf.setPassword(rabbitMqProperties.getPassword());
-            ccf.setHost(rabbitMqProperties.getHost());
-            ccf.setVirtualHost(tenantId);
-
+            CachingConnectionFactory ccf = createTenantConnectionFactory(tenantId);
             TENANT_CONNECTION_MAP.put(tenantId, ccf);
-
             log.info("Registered RabbitMQ connection for tenantId={}", tenantId);
         });
 
@@ -72,6 +63,22 @@ public class RabbitMqConfiguration {
         log.info("RabbitMQ routing connection factory initialized successfully");
         return routingConnectionFactory;
     }
+
+    private CachingConnectionFactory createTenantConnectionFactory(String vHost) {
+        CachingConnectionFactory ccf = new CachingConnectionFactory();
+        ccf.setUsername(rabbitMqProperties.getUsername());
+        ccf.setPassword(rabbitMqProperties.getPassword());
+        ccf.setHost(rabbitMqProperties.getHost());
+        ccf.setVirtualHost(vHost);
+
+        // production-safe defaults
+        ccf.setPublisherConfirmType(CachingConnectionFactory.ConfirmType.CORRELATED);
+        ccf.setChannelCacheSize(25);
+        ccf.setConnectionLimit(10);
+
+        return ccf;
+    }
+
 
     /**
      * RabbitAdmin automatically declares queues, exchanges, and bindings

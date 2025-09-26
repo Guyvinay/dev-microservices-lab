@@ -23,7 +23,6 @@ public class TenantProvider implements RabbitTenantProvider {
     @Override
     public Set<String> getAllTenants() {
         Set<String> tenants = new HashSet<>();
-        tenants.add("public");
         List<String> excludeSchema = datasourceService.getExcludeSchema();
         try {
             for (String tenant: datasourceService.getAllTenanats()) {

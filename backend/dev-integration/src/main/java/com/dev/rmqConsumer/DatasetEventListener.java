@@ -7,11 +7,11 @@ import org.springframework.amqp.core.MessageListener;
 
 @Slf4j
 @TenantRabbitListener(
-        value = "DatasetEventListener",
-        queue = "tenantId.dataset.uploaded.sandbox.qq",
-        exchange = "tenant.dataset.exchange",
-        routingKey = "tenantId.dataset.uploaded",
-        type = "direct"
+    value = "DatasetEventListenerIntegration",
+    queue = "tenantId.dataset.uploaded.integration.q",
+    exchange = "tenant.dataset.exchange",
+    routingKey = "tenantId.dataset.uploaded",
+    type = "direct"
 )
 public class DatasetEventListener implements MessageListener {
     @Override
