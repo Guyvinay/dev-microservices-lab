@@ -15,7 +15,6 @@ import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
 @Slf4j
-@Component
 public class RabbitMqVirtualHosts {
     private final RabbitMqPublisherProperties rabbitMqProperties;
     private final RestTemplate restTemplate;

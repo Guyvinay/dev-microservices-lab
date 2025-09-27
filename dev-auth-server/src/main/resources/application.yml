@@ -109,6 +109,14 @@ auth:
     management-password: guest
     publisher-confirms: true
     publisher-returns: true
+    exchanges:
+      - name: tenant.events.exchange
+        type: topic
+        durable: true
+
+      - name: tenant.dataset.exchange
+        type: direct
+        durable: true
 
 
 #logging:

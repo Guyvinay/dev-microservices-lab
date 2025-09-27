@@ -33,9 +33,9 @@ public class RabbitMqConfiguration {
         cf.setVirtualHost("public");
 
         cf.setConnectionTimeout(5000);
-        cf.setChannelCheckoutTimeout(30000); // wait for channel from pool
+        cf.setChannelCheckoutTimeout(30000);
         cf.setCacheMode(CachingConnectionFactory.CacheMode.CHANNEL);
-        cf.setChannelCacheSize(25); // number of channels cached per connection (tune)
+        cf.setChannelCacheSize(25);
 
         return cf;
     }
@@ -59,6 +59,7 @@ public class RabbitMqConfiguration {
         template.setMessageConverter(messageConverter);
         return template;
     }
+
     @Bean
     @DependsOn("rabbitMqVirtualHosts") // bean name of your vhost checker
     public RabbitAdmin rabbitAdmin(CachingConnectionFactory connectionFactory) {
@@ -79,21 +80,31 @@ public class RabbitMqConfiguration {
         return new ObjectMapper();
     }
 
-    @Bean
+//    @Bean
 //    @ConditionalOnMissingBean
-    @DependsOn("rabbitMqVirtualHosts")
-    public TopicExchange tenantEventsExchange(RabbitAdmin admin) {
-        TopicExchange exchange = ExchangeBuilder.topicExchange(TENANT_EVENTS_EXCHANGE).durable(true).build();
-        admin.declareExchange(exchange);
-        return exchange;
+//    @DependsOn("rabbitMqVirtualHosts")
+//    public TopicExchange tenantEventsExchange(RabbitAdmin admin) {
+//        TopicExchange exchange = ExchangeBuilder.topicExchange(TENANT_EVENTS_EXCHANGE).durable(true).build();
+//        admin.declareExchange(exchange);
+//        return exchange;
+//    }
+
+//    @Bean
+//    @DependsOn("rabbitMqVirtualHosts")
+//    public DirectExchange directExchange(RabbitAdmin rabbitAdmin) {
+//        DirectExchange directExchange = ExchangeBuilder.directExchange("tenant.dataset.exchange").durable(true).build();
+//        rabbitAdmin.declareExchange(directExchange);
+//        return directExchange;
+//    }
+
+    @Bean
+    public RabbitMqExchangeConfig rabbitMqExchangeConfig(RabbitMqPublisherProperties properties, RabbitAdmin rabbitAdmin) {
+        return new RabbitMqExchangeConfig(properties, rabbitAdmin);
     }
 
     @Bean
-    @DependsOn("rabbitMqVirtualHosts")
-    public DirectExchange directExchange(RabbitAdmin rabbitAdmin) {
-        DirectExchange directExchange = ExchangeBuilder.directExchange("tenant.dataset.exchange").durable(true).build();
-        rabbitAdmin.declareExchange(directExchange);
-        return directExchange;
+    public RabbitMqVirtualHosts rabbitMqVirtualHosts(RabbitMqPublisherProperties rabbitMqProperties, RestTemplate restTemplate) {
+        return new RabbitMqVirtualHosts(rabbitMqProperties, restTemplate);
     }
 
     @Bean
