@@ -1,4 +1,4 @@
-package com.dev.bulk.dto;
+package com.dev.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
-import java.util.Map;
 
 @Data
 @AllArgsConstructor
@@ -17,5 +16,5 @@ public class DatasetUploadedEvent {
     private String datasetId;
     private int batchNumber;
     private int totalBatches;
-    private List<Map<String, String>> rows;
+    private List<List<String>> rows;
 }

@@ -20,7 +20,7 @@ public class ColumnDefinition {
     private String type;
 
     @Builder.Default
-    private Integer length = -1;
+    private Integer length = 100;
 
     @Builder.Default
     private Integer precision = -1;

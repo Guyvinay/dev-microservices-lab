@@ -1,5 +1,6 @@
 package com.dev.bulk.generator;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.springframework.stereotype.Component;
@@ -8,6 +9,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Random;
 
+@Slf4j
 @Component
 public class DatasetGenerator {
 
@@ -22,7 +24,7 @@ public class DatasetGenerator {
     public void generate() throws IOException{
         long startTime = System.currentTimeMillis();
         System.out.println("file generation starts");
-        String filePath = "/home/guyvinay/dev/repo/dev-microservices-lab/backend/dev-auth-server/src/main/resources/123456_ds_001.csv";
+        String filePath = "/home/guyvinay/dev/repo/dev-microservices-lab/dev-auth-server/src/main/resources/123456_ds_001.csv";
 
         try (
                 FileWriter fileWriter = new FileWriter(filePath);
@@ -39,13 +41,14 @@ public class DatasetGenerator {
                 }
                 csvPrinter.println();
 
-                if (row % 10000 == 0) {
+                if (row % 100000 == 0) {
+                    log.info("100000 flushed to file");
                     csvPrinter.flush(); // flush in csv after every 10k record.
                 }
             }
             csvPrinter.flush();
         }
-        System.out.println("CSV dataset generated at: " + filePath);
-        System.out.println("Executed in :" + (System.currentTimeMillis() - startTime) + " ms");
+        log.info("CSV dataset generated at: {}", filePath);
+        log.info("Executed in : {} ms", (System.currentTimeMillis() - startTime));
     }
 }

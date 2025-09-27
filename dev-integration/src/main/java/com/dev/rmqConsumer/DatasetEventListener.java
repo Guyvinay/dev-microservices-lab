@@ -10,7 +10,7 @@ import org.springframework.amqp.core.MessageListener;
     value = "DatasetEventListenerIntegration",
     queue = "tenantId.dataset.uploaded.integration.q",
     exchange = "tenant.dataset.exchange",
-    routingKey = "tenantId.dataset.uploaded",
+    routingKey = "tenantId.dataset.uploaded.integration.q",
     type = "direct"
 )
 public class DatasetEventListener implements MessageListener {

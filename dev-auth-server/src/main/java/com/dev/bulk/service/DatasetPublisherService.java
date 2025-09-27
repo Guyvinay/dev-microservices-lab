@@ -1,6 +1,7 @@
 package com.dev.bulk.service;
 
-import com.dev.bulk.dto.DatasetUploadedEvent;
+import com.dev.dto.DatasetUploadedEvent;
+import com.dev.utility.TenantContextUtil;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -12,6 +13,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -26,8 +28,9 @@ public class DatasetPublisherService {
     }
 
     public void publishDataset() throws Exception {
-        String filePath = "/home/guyvinay/dev/repo/dev-microservices-lab/backend/dev-auth-server/src/main/resources/123456_ds_001.csv";
+        String filePath = "/home/guyvinay/dev/repo/dev-microservices-lab/dev-auth-server/src/main/resources/123456_ds_001.csv";
         Path file = Path.of(filePath);
+        String tenantId = TenantContextUtil.getTenantId();
         try (
                 FileReader fileReader = new FileReader(file.toFile());
                 CSVParser csvParser = new CSVParser(fileReader, CSVFormat.DEFAULT.withFirstRecordAsHeader())
@@ -38,24 +41,22 @@ public class DatasetPublisherService {
             int batchNumber = 0;
             int rowCount = 0;
 
-            List<Map<String, String>> batch = new ArrayList<>(BATCH_SIZE);
+            List<List<String>> batch = new LinkedList<>();
 
             while (iterator.hasNext()) {
+                if(batch.isEmpty()) batch.add(headers);
                 CSVRecord csvRecord = iterator.next();
-                Map<String, String> row = new HashMap<>();
-                for (String header : headers) {
-                    row.put(header, csvRecord.get(header));
-                }
-                batch.add(row);
+                List<String> rows = csvRecord.toList();
+                batch.add(rows);
                 rowCount++;
                 if (batch.size() == BATCH_SIZE || !iterator.hasNext()) {
                     batchNumber++;
                     DatasetUploadedEvent event = DatasetUploadedEvent.builder()
-                            .tenantId("123456")
-                            .datasetId("123456")
+                            .tenantId(tenantId)
+                            .datasetId(tenantId)
                             .batchNumber(batchNumber)
                             .totalBatches((int) Math.ceil((double) rowCount / BATCH_SIZE))
-                            .rows(new ArrayList<>())
+                            .rows(batch)
                             .build();
 
                     rabbitTemplate.convertAndSend(
