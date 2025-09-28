@@ -2,13 +2,17 @@ package com.dev.bulk.service;
 
 import com.dev.dto.DatasetUploadedEvent;
 import com.dev.utility.TenantContextUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.FileReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,9 +26,11 @@ public class DatasetPublisherService {
 
     private static final int BATCH_SIZE = 10000;
     private final RabbitTemplate rabbitTemplate;
+    private final ObjectMapper objectMapper;
 
-    public DatasetPublisherService(RabbitTemplate rabbitTemplate) {
+    public DatasetPublisherService(RabbitTemplate rabbitTemplate, ObjectMapper objectMapper) {
         this.rabbitTemplate = rabbitTemplate;
+        this.objectMapper = objectMapper;
     }
 
     public void publishDataset() throws Exception {
@@ -41,32 +47,36 @@ public class DatasetPublisherService {
             int batchNumber = 0;
             int rowCount = 0;
 
-            List<List<String>> batch = new LinkedList<>();
+            StringBuilder stringBuilder = new StringBuilder();
 
             while (iterator.hasNext()) {
-                if(batch.isEmpty()) batch.add(headers);
                 CSVRecord csvRecord = iterator.next();
-                List<String> rows = csvRecord.toList();
-                batch.add(rows);
+                stringBuilder.append(String.join(",", csvRecord)).append("\n");
                 rowCount++;
-                if (batch.size() == BATCH_SIZE || !iterator.hasNext()) {
+                if (rowCount % BATCH_SIZE == 0 || !iterator.hasNext()) {
                     batchNumber++;
                     DatasetUploadedEvent event = DatasetUploadedEvent.builder()
                             .tenantId(tenantId)
                             .datasetId(tenantId)
                             .batchNumber(batchNumber)
+                            .headers(headers)
                             .totalBatches((int) Math.ceil((double) rowCount / BATCH_SIZE))
-                            .rows(batch)
                             .build();
+
+                    MessageProperties properties = new MessageProperties();
+                    properties.setContentType("application/octet-stream");
+                    properties.setHeader("metadata", objectMapper.writeValueAsString(event));
+
+                    byte[] csvByte = stringBuilder.toString().getBytes(StandardCharsets.UTF_8);
+                    Message message = new Message(csvByte, properties);
 
                     rabbitTemplate.convertAndSend(
                             "tenant.dataset.exchange",
                             "tenantId.dataset.uploaded",
-                            event
+                            message
                     );
-//                    System.out.printf("Published batch %d with %d rows%n", batchNumber, batch.size());
-                    System.out.println("TenantId: " + tenantId + ", Published batch: " + batchNumber + ", rows: " + batch.size());
-                    batch.clear();
+                    System.out.println("TenantId: " + tenantId + ", Published batch: " + batchNumber );
+                    stringBuilder.setLength(0);
                 }
             }
         }

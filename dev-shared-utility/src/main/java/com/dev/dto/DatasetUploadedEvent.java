@@ -16,5 +16,6 @@ public class DatasetUploadedEvent {
     private String datasetId;
     private int batchNumber;
     private int totalBatches;
+    private List<String> headers;
     private List<List<String>> rows;
 }
