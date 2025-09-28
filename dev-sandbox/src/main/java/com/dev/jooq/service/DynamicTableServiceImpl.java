@@ -4,6 +4,7 @@ import com.dev.jooq.dto.TableDefinition;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
+import org.jooq.Name;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Service;
@@ -28,8 +29,8 @@ public class DynamicTableServiceImpl implements DynamicTableService {
     }
 
     @Override
-    public boolean isTableExists(String tableName) {
-        List<Table<?>> table = dsl.meta().getTables(tableName);
-        return !table.isEmpty();
+    public boolean isTableExists(Name schemaQualifiedTable) {
+        List<Table<?>> tables = dsl.meta().getTables(schemaQualifiedTable);
+        return !tables.isEmpty();
     }
 }

@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jooq.Name;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 import org.springframework.amqp.core.Message;
@@ -60,14 +61,15 @@ public class DatasetEventListener implements MessageListener {
                     .toList()
             );
 
+            Name name = DSL.name(datasetUploadedEvent.getTenantId(), tableName);
             TableDefinition tableDefinition = TableDefinition.builder()
-                    .name(DSL.name(datasetUploadedEvent.getTenantId(), tableName))
+                    .name(name)
                     .columns(columnDefinitions)
                     .build();
 
-//            if (!dynamicTableService.isTableExists(tableName)) {
-//                dynamicTableService.createTable(tableDefinition);
-//            }
+            if (!dynamicTableService.isTableExists(name)) {
+                dynamicTableService.createTable(tableDefinition);
+            }
 
         } catch (IOException e) {
             throw new RuntimeException(e);
