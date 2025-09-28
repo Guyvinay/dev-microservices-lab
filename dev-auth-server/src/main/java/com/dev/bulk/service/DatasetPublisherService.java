@@ -64,7 +64,8 @@ public class DatasetPublisherService {
                             "tenantId.dataset.uploaded",
                             event
                     );
-                    System.out.printf("Published batch %d with %d rows%n", batchNumber, batch.size());
+//                    System.out.printf("Published batch %d with %d rows%n", batchNumber, batch.size());
+                    System.out.println("TenantId: " + tenantId + ", Published batch: " + batchNumber + ", rows: " + batch.size());
                     batch.clear();
                 }
             }
