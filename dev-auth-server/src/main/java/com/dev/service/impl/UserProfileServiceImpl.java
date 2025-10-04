@@ -14,10 +14,9 @@ import com.dev.security.provider.CustomBcryptEncoder;
 import com.dev.service.UserProfileService;
 import com.dev.service.UserProfileTenantService;
 import com.dev.utility.EntityDtoMapper;
-import com.dev.utility.TenantContextUtil;
+import com.dev.utility.SecurityContextUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -226,7 +225,7 @@ public class UserProfileServiceImpl implements UserProfileService {
         log.info("Fetching all user profiles");
         List<UserProfileModel> profiles = userProfileModelRepository.findAll();
         log.info("user profiles: {}", profiles.size());
-        tenantPublisher.publishTenantCreated(TenantContextUtil.getTenantId());
+        tenantPublisher.publishTenantCreated(SecurityContextUtil.getTenantId());
         return profiles.stream().map(entityDtoMapper::toUserProfileResponseDTO).collect(Collectors.toList());
     }
 

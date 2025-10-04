@@ -6,7 +6,7 @@ import com.dev.dto.JwtTokenDto;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.Authentication;
 
-public class TenantContextUtil {
+public class SecurityContextUtil {
 
     public static String getTenantId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

@@ -1,6 +1,9 @@
-package com.dev.rabbitmq.configuration;
+package com.dev.rabbitmq.listener;
 
+import com.dev.provider.JwtTokenProviderManager;
 import com.dev.rabbitmq.annotation.TenantRabbitListener;
+import com.dev.rabbitmq.configuration.RabbitMqConfiguration;
+import com.dev.rabbitmq.configuration.RabbitMqManagement;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +22,7 @@ import org.springframework.amqp.rabbit.connection.SimpleResourceHolder;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.ApplicationContext;
@@ -39,7 +43,8 @@ public class TenantRabbitListenerBinding {
 
     private final ApplicationContext applicationContext;
     private final RabbitAdmin rabbitAdmin;
-    private  final RabbitMqManagement rabbitMqManagement;
+    private final RabbitMqManagement rabbitMqManagement;
+    private final JwtTokenProviderManager jwtTokenProviderManager;
 
     public final Map<String, Object> LISTENER_RMQ_BEANS = new ConcurrentHashMap<>();
     public final Map<String, AnnotatedBeanDefinition> ANNOTATED_BEAN_DEFINITIONS = new ConcurrentHashMap<>();
@@ -176,6 +181,8 @@ public class TenantRabbitListenerBinding {
                 message.getMessageProperties().setUserId(tenantId);
                 ((MessageListener) listenerBean).onMessage(message);
             });
+            messageListenerContainer.setMessageListener(new CustomMessageListener((MessageListener) listenerBean, jwtTokenProviderManager));
+            messageListenerContainer.setMessageAckListener(new CustomMessageAckListener());
             messageListenerContainer.setConcurrentConsumers(1);
             messageListenerContainer.setMaxConcurrentConsumers(maxConsumers);
             messageListenerContainer.setAcknowledgeMode(AcknowledgeMode.AUTO);

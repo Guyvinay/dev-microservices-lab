@@ -6,7 +6,6 @@ import com.dev.jooq.dto.ColumnDefinition;
 import com.dev.jooq.dto.TableDefinition;
 import com.dev.jooq.service.DynamicTableService;
 import com.dev.rabbitmq.annotation.TenantRabbitListener;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

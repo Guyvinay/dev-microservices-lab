@@ -13,8 +13,9 @@ import java.util.Random;
 @Component
 public class DatasetGenerator {
 
-    private static final int ROWS = 10000000;
-    private static final int COLUMNS = 60;
+    private static final int ROWS = 1000000;
+    private static final int COLUMNS = 40;
+    private static final int BATCH_SIZE = 10000;
 
 //    public static void main(String[] args) throws IOException {
 //        DatasetGenerator datasetGenerator = new DatasetGenerator();
@@ -41,8 +42,8 @@ public class DatasetGenerator {
                 }
                 csvPrinter.println();
 
-                if (row % 100000 == 0) {
-                    log.info("100000 flushed to file");
+                if (row % BATCH_SIZE == 0) {
+                    log.info("{} flushed to file", BATCH_SIZE);
                     csvPrinter.flush(); // flush in csv after every 10k record.
                 }
             }

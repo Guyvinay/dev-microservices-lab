@@ -1,7 +1,7 @@
 package com.dev.redis.aspect;
 
 import com.dev.redis.annotation.RedisCacheAdapter;
-import com.dev.utility.TenantContextUtil;
+import com.dev.utility.SecurityContextUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -27,7 +27,7 @@ public class RedisCacheAdapterAspect {
 
     @Around(value = "@annotation(com.dev.redis.annotation.RedisCacheAdapter)")
     public Object redisCacheAdapterAspect(ProceedingJoinPoint joinPoint) throws Throwable {
-        String tenantId = TenantContextUtil.getTenantId();
+        String tenantId = SecurityContextUtil.getTenantId();
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
         Method method = methodSignature.getMethod();
         RedisCacheAdapter redisCacheAdapter = method.getAnnotation(RedisCacheAdapter.class);

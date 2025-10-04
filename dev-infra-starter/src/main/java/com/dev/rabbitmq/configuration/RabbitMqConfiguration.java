@@ -1,5 +1,7 @@
 package com.dev.rabbitmq.configuration;
 
+import com.dev.provider.JwtTokenProviderManager;
+import com.dev.rabbitmq.listener.TenantRabbitListenerBinding;
 import com.dev.rabbitmq.publisher.RabbitMqPublisher;
 import com.dev.rabbitmq.utility.RabbitMqProperties;
 import com.dev.utility.RabbitTenantProvider;
@@ -165,10 +167,11 @@ public class RabbitMqConfiguration {
     public TenantRabbitListenerBinding tenantRabbitListenerBinding(
             ApplicationContext applicationContext,
             RabbitAdmin rabbitAdmin,
-            RabbitMqManagement rabbitMqManagement
+            RabbitMqManagement rabbitMqManagement,
+            JwtTokenProviderManager jwtTokenProviderManager
     ) {
         log.info("Creating TenantRabbitListenerBinding for dynamic tenant-based listener registration");
-        return new TenantRabbitListenerBinding(applicationContext, rabbitAdmin, rabbitMqManagement);
+        return new TenantRabbitListenerBinding(applicationContext, rabbitAdmin, rabbitMqManagement,  jwtTokenProviderManager);
     }
 
     /**
