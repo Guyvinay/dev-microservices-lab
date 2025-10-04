@@ -50,43 +50,9 @@ public class DatasetEventListener implements MessageListener {
         try {
             String metadataJson = (String) message.getMessageProperties().getHeaders().get("metadata");
             DatasetUploadedEvent batch = objectMapper.readValue(metadataJson, DatasetUploadedEvent.class);
-            String tableName = batch.getTenantId() + "_" + batch.getDatasetId();
-
-            Name name = DSL.name(batch.getTenantId(), tableName);
-
-            if (batch.getBatchNumber() == 1) {
-                List<ColumnDefinition> columnDefinitions = new ArrayList<>();
-
-                columnDefinitions.add(
-                        ColumnDefinition.builder()
-                                .name("id")
-                                .type(SQLDataType.BIGINT.identity(true))
-                                .primaryKey(true)
-                                .build()
-                );
-
-                columnDefinitions.addAll(
-                        batch.getHeaders().stream()
-                                .map(col -> ColumnDefinition.builder()
-                                        .name(col)
-                                        .type(SQLDataType.VARCHAR.length(255))
-                                        .build()
-                                )
-                                .toList()
-                );
-
-                TableDefinition tableDefinition = TableDefinition.builder()
-                        .name(name)
-                        .columns(columnDefinitions)
-                        .build();
-
-                if (!dynamicTableService.isTableExists(name)) {
-                    dynamicTableService.createTable(tableDefinition);
-                }
-            }
 
             try (InputStream csvStream = new ByteArrayInputStream(message.getBody())) {
-                copyInsertFromStream(name, batch.getHeaders(), csvStream);
+                copyInsertFromStream(batch, csvStream);
             }
             log.info("Sandbox inserted batch {} of {} for dataset {}",
                     batch.getBatchNumber(), batch.getTotalBatches(), batch.getDatasetId());
@@ -95,12 +61,48 @@ public class DatasetEventListener implements MessageListener {
         }
     }
 
-    private void copyInsertFromStream(Name table, List<String> headers, InputStream csvStream) {
-        String schema = table.first();  // tenant schema
-        String tableName = table.last();
+    private void ensureTableExists(Name name, List<String> headers) {
+        List<ColumnDefinition> columnDefinitions = new ArrayList<>();
 
-        String columns = headers.stream()
-                .map(col -> "\"" + col + "\"") // safe quoting for column names
+        columnDefinitions.add(
+                ColumnDefinition.builder()
+                        .name("id")
+                        .type(SQLDataType.BIGINT.identity(true))
+                        .primaryKey(true)
+                        .build()
+        );
+
+        columnDefinitions.addAll(
+                headers.stream()
+                        .map(col -> ColumnDefinition.builder()
+                                .name(col)
+                                .type(SQLDataType.VARCHAR.length(255))
+                                .build()
+                        )
+                        .toList()
+        );
+
+        TableDefinition tableDefinition = TableDefinition.builder()
+                .name(name)
+                .columns(columnDefinitions)
+                .build();
+
+        if (!dynamicTableService.isTableExists(name)) {
+            dynamicTableService.createTable(tableDefinition);
+        }
+    }
+
+    private void copyInsertFromStream(DatasetUploadedEvent uploadedEvent, InputStream csvStream) {
+        String tableName = uploadedEvent.getTenantId() + "_" + uploadedEvent.getDatasetId();
+        Name table = DSL.name(uploadedEvent.getTenantId(), tableName);
+        String schema = table.first();
+
+        if (uploadedEvent.getBatchNumber() == 1) {
+            ensureTableExists(table, uploadedEvent.getHeaders());
+        }
+
+        String columns = uploadedEvent.getHeaders().stream()
+                .map(col -> "\"" + col + "\"")
                 .collect(Collectors.joining(", "));
 
         String sql = "COPY \"" + schema + "\".\"" + tableName + "\" (" + columns + ") FROM STDIN WITH (FORMAT csv)";
@@ -118,14 +120,20 @@ public class DatasetEventListener implements MessageListener {
                 log.warn("Schema {} not found, creating it dynamically...", schema);
                 schemaInitializer.initialize(schema);
                 try {
-                    copyInsertFromStream(table, headers, csvStream);
+                    copyInsertFromStream(uploadedEvent, csvStream);
                 } catch (Exception retryEx) {
                     log.error("Retry COPY failed for {}.{}", schema, tableName, retryEx);
                     throw new RuntimeException("COPY insert failed after schema creation", retryEx);
                 }
-            } else {
-                log.error("Failed to COPY data into table {}.{}", schema, tableName, psqlException);
-                throw new RuntimeException("COPY insert failed", psqlException);
+            } else if (psqlException != null && psqlException.getMessage().contains("relation \"" + schema + "\".\"" + tableName + "\" does not exist")){
+                log.warn("Failed to COPY data into table {}.{}", schema, tableName, psqlException);
+                try {
+                    ensureTableExists(table, uploadedEvent.getHeaders());
+                    copyInsertFromStream(uploadedEvent, csvStream);
+                } catch (Exception retryEx) {
+                    log.error("Retry COPY failed for {}.{}", schema, tableName, retryEx);
+                    throw new RuntimeException("COPY insert failed after schema creation", retryEx);
+                }
             }
         } catch (Exception e) {
             log.error("Unexpected failure during COPY into {}.{}", schema, tableName, e);
