@@ -76,6 +76,8 @@ public class RabbitMqConfiguration {
         ccf.setChannelCacheSize(25);
         ccf.setConnectionLimit(10);
 
+        ccf.getRabbitConnectionFactory().setMaxInboundMessageBodySize(200 * 1024 * 1024); // size to 200 MB
+
         return ccf;
     }
 

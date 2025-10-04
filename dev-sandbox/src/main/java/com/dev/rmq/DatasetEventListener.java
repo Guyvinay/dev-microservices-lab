@@ -1,5 +1,6 @@
 package com.dev.rmq;
 
+import com.dev.CustomSchemaInitializer;
 import com.dev.dto.DatasetUploadedEvent;
 import com.dev.jooq.dto.ColumnDefinition;
 import com.dev.jooq.dto.TableDefinition;
@@ -14,6 +15,7 @@ import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 import org.postgresql.PGConnection;
 import org.postgresql.copy.CopyManager;
+import org.postgresql.util.PSQLException;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageListener;
 import org.springframework.jdbc.datasource.DataSourceUtils;
@@ -41,6 +43,7 @@ public class DatasetEventListener implements MessageListener {
     private final ObjectMapper objectMapper;
     private final DataSource dataSource;
     private final DynamicTableService dynamicTableService;
+    private final CustomSchemaInitializer schemaInitializer;
 
     @Override
     public void onMessage(Message message) {
@@ -94,21 +97,39 @@ public class DatasetEventListener implements MessageListener {
     }
 
     private void copyInsertFromStream(Name table, List<String> headers, InputStream csvStream) {
+        String schema = table.first();  // tenant schema
+        String tableName = table.last();
+
         String columns = headers.stream()
-                .map(col -> "\"" + col + "\"") // safe quoting
+                .map(col -> "\"" + col + "\"") // safe quoting for column names
                 .collect(Collectors.joining(", "));
 
-        String sql = "COPY " + table + " (" + columns + ") FROM STDIN WITH (FORMAT csv)";
+        String sql = "COPY \"" + schema + "\".\"" + tableName + "\" (" + columns + ") FROM STDIN WITH (FORMAT csv)";
 
         try (Connection conn = DataSourceUtils.getConnection(dataSource)) {
             PGConnection pgConn = conn.unwrap(PGConnection.class);
             CopyManager copyManager = pgConn.getCopyAPI();
 
             long rows = copyManager.copyIn(sql, csvStream);
-            log.info("Inserted {} rows into {}", rows, table);
+            log.info("Inserted {} rows into {}.{}", rows, schema, tableName);
 
+        } catch (PSQLException psqlException) {
+            if (psqlException.getMessage() != null
+                    && psqlException.getMessage().contains("schema \"" + schema + "\" does not exist")) {
+                log.warn("Schema {} not found, creating it dynamically...", schema);
+                schemaInitializer.initialize(schema);
+                try {
+                    copyInsertFromStream(table, headers, csvStream);
+                } catch (Exception retryEx) {
+                    log.error("Retry COPY failed for {}.{}", schema, tableName, retryEx);
+                    throw new RuntimeException("COPY insert failed after schema creation", retryEx);
+                }
+            } else {
+                log.error("Failed to COPY data into table {}.{}", schema, tableName, psqlException);
+                throw new RuntimeException("COPY insert failed", psqlException);
+            }
         } catch (Exception e) {
-            log.error("Failed to COPY data into table {}", table, e);
+            log.error("Unexpected failure during COPY into {}.{}", schema, tableName, e);
             throw new RuntimeException("COPY insert failed", e);
         }
     }

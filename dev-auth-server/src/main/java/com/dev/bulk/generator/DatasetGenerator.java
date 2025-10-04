@@ -13,8 +13,8 @@ import java.util.Random;
 @Component
 public class DatasetGenerator {
 
-    private static final int ROWS = 1000000;
-    private static final int COLUMNS = 40;
+    private static final int ROWS = 10000000;
+    private static final int COLUMNS = 60;
 
 //    public static void main(String[] args) throws IOException {
 //        DatasetGenerator datasetGenerator = new DatasetGenerator();

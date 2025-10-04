@@ -24,7 +24,7 @@ import java.util.Map;
 @Service
 public class DatasetPublisherService {
 
-    private static final int BATCH_SIZE = 10000;
+    private static final int BATCH_SIZE = 100000;
     private final RabbitTemplate rabbitTemplate;
     private final ObjectMapper objectMapper;
 

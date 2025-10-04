@@ -37,6 +37,8 @@ public class RabbitMqConfiguration {
         cf.setCacheMode(CachingConnectionFactory.CacheMode.CHANNEL);
         cf.setChannelCacheSize(25);
 
+        cf.getRabbitConnectionFactory().setMaxInboundMessageBodySize(200 * 1024 * 1024); // size to 200 MB
+
         return cf;
     }
 

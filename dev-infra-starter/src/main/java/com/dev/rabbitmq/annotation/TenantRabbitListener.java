@@ -22,7 +22,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Component // makes annotated class a Spring bean candidate
+@Component
 public @interface TenantRabbitListener {
     /**
      * bean name (unique identifier for this listener)
