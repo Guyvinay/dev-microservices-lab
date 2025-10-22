@@ -43,14 +43,16 @@ public class RabbitMqPublisher {
      * @param routingKey the routing key (or queue name if using default exchange)
      * @param payload    the message payload (converted to JSON string)
      */
-    public void publish(String tenantId, String exchange, String routingKey, Object payload) {
+    public void publish(String tenantId, String exchange, String routingKey, Object payload, Message message) {
         String resolvedTenant = resolveTenant(tenantId);
         String resolvedExchange = StringUtils.isNotBlank(exchange) ? exchange : "";
 
-        Message message = MessageBuilder.withBody((String.valueOf(payload)).getBytes(StandardCharsets.UTF_8))
-                .setContentType(MessageProperties.CONTENT_TYPE_JSON)
-                .setMessageId(UUID.randomUUID().toString())
-                .build();
+        if(message == null) {
+            message = MessageBuilder.withBody((String.valueOf(payload)).getBytes(StandardCharsets.UTF_8))
+                    .setContentType(MessageProperties.CONTENT_TYPE_JSON)
+                    .setMessageId(UUID.randomUUID().toString())
+                    .build();
+        }
 
         CorrelationData correlationData = new CorrelationData(message.getMessageProperties().getMessageId());
 
@@ -86,7 +88,30 @@ public class RabbitMqPublisher {
     public void sendToQueue(String queueName, Object payload) {
         log.info("Sending message directly to queue='{}' [payloadClass={}]",
                 queueName, payload != null ? payload.getClass().getSimpleName() : "null");
-        publish(null, "", queueName, payload);
+        publish(null, "", queueName, payload, null);
+    }
+
+    /**
+     * Convenience method to send a message directly to a queue using the default exchange ("").
+     *
+     * @param queueName the queue name
+     * @param payload   the message payload
+     */
+    public void sendToQueue(String exchange, String queueName, Object payload) {
+        log.info("Sending message directly to exchange={} queue='{}' [payloadClass={}]", exchange,
+                queueName, payload != null ? payload.getClass().getSimpleName() : "null");
+        publish(null, exchange, queueName, payload, null);
+    }
+
+    /**
+     * Convenience method to send a message directly to a queue using the default exchange ("").
+     *
+     * @param queueName the queue name
+     */
+    public void sendToQueueWithMessage(String exchange, String queueName, Message message) {
+        log.info("Sending message directly to exchange={} queue='{}'", exchange,
+                queueName);
+        publish(null, exchange, queueName, null, message);
     }
 
     /**
@@ -99,7 +124,7 @@ public class RabbitMqPublisher {
      */
     public void publishToExchange(String tenantId, String exchange, String routingKey, Object payload) {
         log.info("Publishing to exchange='{}' with routingKey='{}' for tenant={}", exchange, routingKey, tenantId);
-        publish(tenantId, exchange, routingKey, payload);
+        publish(tenantId, exchange, routingKey, payload, null);
     }
 
     /**
@@ -111,7 +136,7 @@ public class RabbitMqPublisher {
      */
     public void publishBroadcast(String tenantId, String fanoutExchange, Object payload) {
         log.info("Publishing broadcast to fanoutExchange='{}' for tenant={}", fanoutExchange, tenantId);
-        publish(tenantId, fanoutExchange, "", payload);
+        publish(tenantId, fanoutExchange, "", payload, null);
     }
 
     /**

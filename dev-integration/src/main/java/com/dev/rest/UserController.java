@@ -1,5 +1,6 @@
 package com.dev.rest;
 
+import com.dev.util.CustomSchemaInitializer;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,6 +24,9 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private CustomSchemaInitializer schemaInitializer;
+
     @GetMapping
     @Requires(privilege = "privilege", actions = {"actions1", "actions2", "actions3", "actions4"})
     public ApiResponse<List<UserDTO>> getAllUsers() {
@@ -32,8 +36,16 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<UserDTO>> getUserById(@PathVariable Long id) {
+
         UserDTO userDTO = userService.findById(id);
         return ResponseEntity.ok(new ApiResponse<>("200", "User retrieved successfully", userDTO));
+    }
+
+    @GetMapping("/initialize/{id}")
+    public ResponseEntity<String> initializeSchema(@PathVariable String id) {
+
+        schemaInitializer.initialize(id);
+        return ResponseEntity.ok("Schema initialized for tenant " + id);
     }
 
     @PostMapping
