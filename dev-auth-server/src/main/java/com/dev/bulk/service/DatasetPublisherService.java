@@ -39,7 +39,7 @@ public class DatasetPublisherService {
         authentication.getDetails();
         try (
                 FileReader fileReader = new FileReader(file.toFile());
-                CSVParser csvParser = new CSVParser(fileReader, CSVFormat.DEFAULT.withFirstRecordAsHeader())
+                CSVParser csvParser = new CSVParser(fileReader, CSVFormat.DEFAULT.withFirstRecordAsHeader());
         ) {
             List<String> headers = csvParser.getHeaderNames();
             Iterator<CSVRecord> iterator = csvParser.iterator();
