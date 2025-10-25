@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -33,13 +34,16 @@ public class EmailDocument {
     // ============================================================
     // 3. DELIVERY TRACKING & STATUS
     // ============================================================
-    private String status;                // READY / PENDING / SUCCESS / FAILED / SKIPPED
-    private String errorMessage;          // Failure reason, if any
-    private int retryCount;               // Number of resend attempts
-    private int emailSentTimes;           // Number of total send attempts
-    private long sentAt;                  // Timestamp when email was actually sent
-    private long lastUpdatedAt;           // Timestamp of last update (status change)
-    private long deliveryTimeMs;          // Time taken to send (latency/metrics)
+    private String status;                  // READY | SENT | DELIVERED | FAILED | BOUNCED | DISABLED
+    private String errorMessage;            // Failure reason, if any
+    private int retryCount;                 // Number of resend attempts
+    private int emailSentTimes;             // Number of total send attempts
+    private long lastSentAt;                // Timestamp when email was actually sent
+    private long lastUpdatedAt;             // Timestamp of last update (status change)
+    private long deliveryTimeMs;            // Time taken to send (latency/metrics)
+    private Instant dateCreated;            // Time taken to send (latency/metrics)
+    private String category;                // Email category like (APPLICATION | FOLLOWUP etc.)
+    private boolean resendEligible;         // // flag to allow re-sending
 
     // ============================================================
     // 4. ATTACHMENT METADATA
