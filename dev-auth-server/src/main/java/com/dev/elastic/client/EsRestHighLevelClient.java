@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.settings.get.GetSettingsRequest;
 import org.elasticsearch.action.admin.indices.settings.get.GetSettingsResponse;
+import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
@@ -81,6 +83,10 @@ public class EsRestHighLevelClient {
 
     public IndexResponse indexDocument(IndexRequest request) throws IOException {
         return restHighLevelClient.index(request, RequestOptions.DEFAULT);
+    }
+
+    public BulkResponse bulkIndexDocument(BulkRequest request) throws IOException {
+        return restHighLevelClient.bulk(request, RequestOptions.DEFAULT);
     }
 
     public CloseIndexResponse closeIndex(CloseIndexRequest request) throws IOException {

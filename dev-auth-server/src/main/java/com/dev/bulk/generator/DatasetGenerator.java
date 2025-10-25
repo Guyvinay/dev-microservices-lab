@@ -25,7 +25,7 @@ public class DatasetGenerator {
     public void generate() throws IOException{
         long startTime = System.currentTimeMillis();
         System.out.println("file generation starts");
-        String filePath = "/home/guyvinay/dev/repo/dev-microservices-lab/dev-auth-server/src/main/resources/123456_ds_001.csv";
+        String filePath = "/home/guyvinay/dev/repo/assets/123456_ds_001.csv";
 
         try (
                 FileWriter fileWriter = new FileWriter(filePath);

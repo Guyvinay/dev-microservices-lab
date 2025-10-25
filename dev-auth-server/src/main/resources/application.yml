@@ -62,12 +62,12 @@ spring:
     username: mrsinghvinay563@gmail.com # Gmail username
     password: ${app-password}            # Gmail App Password (from env/secret)
     properties:
-#      mail.debug: true                   # Enable SMTP debug logs (for development)
+      mail.debug: false                   # Enable SMTP debug logs (for development)
       mail.smtp.auth: true               # Enable SMTP authentication
       mail.smtp.starttls.enable: true    # Enable STARTTLS for secure connection
-      mail.smtp.connectiontimeout: 5000  # Max time (ms) to establish SMTP connection
-      mail.smtp.timeout: 5000            # Max time (ms) to wait for SMTP response
-      mail.smtp.writetimeout: 5000       # Max time (ms) to send message data
+      mail.smtp.connectiontimeout: 10000  # Max time (ms) to establish SMTP connection
+      mail.smtp.timeout: 15000            # Max time (ms) to wait for SMTP response
+      mail.smtp.writetimeout: 15000       # Max time (ms) to send message data
       mail.smtp.pool: true               # Enable SMTP connection pooling (reuse connections)
       mail.smtp.pool.size: 5             # Max concurrent connections in the pool
 
