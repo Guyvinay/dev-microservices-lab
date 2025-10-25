@@ -23,12 +23,14 @@ import org.thymeleaf.context.Context;
 import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -41,6 +43,7 @@ public class EmailService {
     private final TemplateEngine templateEngine;
     private final EsRestHighLevelClient esRestHighLevelClient;
     private final ObjectMapper objectMapper;
+    private final EmailElasticService emailElasticService;
     private static final int DUPLICATE_DAYS = 30;
 
 
@@ -167,11 +170,14 @@ public class EmailService {
 
         // --- Status & tracking ---
         emailDocument.setStatus("READY");
+        emailDocument.setCategory("APPLICATION");
+        emailDocument.setResendEligible(true);
         emailDocument.setValidEmail(validateEmailFormat(emailTo));
         emailDocument.setRetryCount(0);
         emailDocument.setEmailSentTimes(0);
-        emailDocument.setLastUpdatedAt(Instant.now().toEpochMilli());
-        emailDocument.setSentAt(0L); // Not sent yet
+//        emailDocument.setLastUpdatedAt(Instant.now().toEpochMilli());
+
+        emailDocument.setLastSentAt(0L); // Not sent yet
         emailDocument.setDeliveryTimeMs(0L);
 
         // --- System info ---
@@ -179,10 +185,36 @@ public class EmailService {
         emailDocument.setSentBy("mrsinghvinay563@gmail.com");
         emailDocument.setThreadName(Thread.currentThread().getName());
 
+        boolean flag = true;
+        Random random = new Random();
+        Instant instantNow = Instant.now();
+        Instant randomInstant;
+        if(flag) {
+            flag = false;
+            long moreDaysAgo = 30 + random.nextInt(20);
+            randomInstant = instantNow.minus(moreDaysAgo, ChronoUnit.DAYS);
+        } else {
+            flag = true;
+            long lessDaysAgo = 30 - random.nextInt(20);
+            randomInstant = instantNow.minus(lessDaysAgo, ChronoUnit.DAYS);
+        }
+
+        emailDocument.setLastUpdatedAt(randomInstant.toEpochMilli());
+        emailDocument.setLastSentAt(randomInstant.toEpochMilli());
+        emailDocument.setDateCreated(randomInstant);
+
         return emailDocument;
     }
 
     private boolean validateEmailFormat(String email) {
         return email != null && email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$");
+    }
+
+    public List<EmailDocument> getEligibleEmailDocuments(int daysAgo) throws IOException {
+
+        Instant instant = Instant.now();
+        long lte = instant.minus(daysAgo, ChronoUnit.DAYS).toEpochMilli();
+        long gte = instant.minus(daysAgo + 30, ChronoUnit.DAYS).toEpochMilli();
+        return emailElasticService.getEligibleEmails(gte, lte);
     }
 }

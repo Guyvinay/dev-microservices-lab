@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.File;
@@ -57,8 +58,16 @@ public class BulkEmailController {
     }
 
     @PostMapping(value = "/sync")
-    public ResponseEntity<Map<String, EmailDocument>> SyncEmailsToES(@RequestBody String rawInput) throws IOException {
+    public ResponseEntity<Map<String, EmailDocument>> syncEmailsToES(@RequestBody String rawInput) throws IOException {
         Map<String, EmailDocument> processed = emailService.processAndSyncEmails(rawInput);
         return ResponseEntity.ok(processed);
     }
+
+    @PostMapping(value = "/eligible")
+    public ResponseEntity<List<EmailDocument>> getEligibleEmailDocuments(@RequestParam(value = "days", defaultValue = "5", required = false) int daysAgo) throws IOException {
+        List<EmailDocument> processed = emailService.getEligibleEmailDocuments(daysAgo);
+        return ResponseEntity.ok(processed);
+    }
+
+
 }
