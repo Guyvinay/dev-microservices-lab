@@ -32,7 +32,7 @@ public class DatasetPublisherService {
     }
 
     public void publishDataset() throws Exception {
-        String filePath = "/home/guyvinay/dev/repo/dev-microservices-lab/dev-auth-server/src/main/resources/123456_ds_001.csv";
+        String filePath = "/home/guyvinay/dev/repo/assets/123456_ds_001.csv";
         Path file = Path.of(filePath);
         String tenantId = SecurityContextUtil.getTenantId();
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

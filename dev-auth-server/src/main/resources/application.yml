@@ -56,6 +56,22 @@ spring:
             token-uri: https://oauth2.googleapis.com/token
             user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
 
+  mail:
+    host: smtp.gmail.com                 # Gmail SMTP server
+    port: 587                            # TLS/STARTTLS port
+    username: mrsinghvinay563@gmail.com # Gmail username
+    password: ${app-password}            # Gmail App Password (from env/secret)
+    properties:
+#      mail.debug: true                   # Enable SMTP debug logs (for development)
+      mail.smtp.auth: true               # Enable SMTP authentication
+      mail.smtp.starttls.enable: true    # Enable STARTTLS for secure connection
+      mail.smtp.connectiontimeout: 5000  # Max time (ms) to establish SMTP connection
+      mail.smtp.timeout: 5000            # Max time (ms) to wait for SMTP response
+      mail.smtp.writetimeout: 5000       # Max time (ms) to send message data
+      mail.smtp.pool: true               # Enable SMTP connection pooling (reuse connections)
+      mail.smtp.pool.size: 5             # Max concurrent connections in the pool
+
+
   redis:
     host: localhost
     port: 6379
