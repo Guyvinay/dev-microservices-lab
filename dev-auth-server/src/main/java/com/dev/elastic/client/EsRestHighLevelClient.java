@@ -6,6 +6,8 @@ import org.elasticsearch.action.admin.indices.settings.get.GetSettingsRequest;
 import org.elasticsearch.action.admin.indices.settings.get.GetSettingsResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.get.GetRequest;
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
@@ -83,6 +85,14 @@ public class EsRestHighLevelClient {
 
     public IndexResponse indexDocument(IndexRequest request) throws IOException {
         return restHighLevelClient.index(request, RequestOptions.DEFAULT);
+    }
+
+    public GetResponse getDocument(GetRequest request) throws IOException {
+        return restHighLevelClient.get(request, RequestOptions.DEFAULT);
+    }
+
+    public boolean documentExists(GetRequest request) throws IOException {
+        return restHighLevelClient.exists(request, RequestOptions.DEFAULT);
     }
 
     public BulkResponse bulkIndexDocument(BulkRequest request) throws IOException {

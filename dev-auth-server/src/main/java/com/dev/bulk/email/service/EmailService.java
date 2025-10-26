@@ -1,27 +1,23 @@
 package com.dev.bulk.email.service;
 
 import com.dev.bulk.email.dto.EmailDocument;
-import com.dev.bulk.email.dto.EmailRequest;
-import com.dev.elastic.client.EsRestHighLevelClient;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.action.bulk.BulkRequest;
-import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.xcontent.XContentType;
-import org.springframework.mail.MailException;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -41,41 +37,99 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
-    private final EsRestHighLevelClient esRestHighLevelClient;
-    private final ObjectMapper objectMapper;
     private final EmailElasticService emailElasticService;
     private static final int DUPLICATE_DAYS = 30;
+    private final EmailSendService emailSendService;
 
+    public void sendEmailFromCSVFile() throws MessagingException, FileNotFoundException {
+        File csvFile = new File("/home/guyvinay/dev/repo/assets/hr_contacts.csv");
 
-    @Async("threadPoolTaskExecutor")
-    public void sendEmail(EmailRequest request, File resumeFile) throws MessagingException {
-        log.info("Preparing email template for: {}, thread: {}", request.getEmailTo(), Thread.currentThread().getName());
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+        try (Reader reader = new FileReader(csvFile);
+             CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader())) {
 
-            helper.setTo(request.getEmailTo());
-            helper.setSubject(request.getSubject());
-            helper.setFrom(request.getEmailFrom());
+            for (CSVRecord record : csvParser) {
+                String emailId = record.get("email");
+                String name = record.get("name");
+                String company = record.get("company");
+                EmailDocument emailDocument;
+                if(emailElasticService.emailDocumentExits(emailId)) {
 
-            Map<String, String> templateVariables = new HashMap<>();
-            templateVariables.put("name", request.getName());
-            templateVariables.put("company", request.getCompany());
-            String htmlContent = prepareEmailTemplate(templateVariables);
+                    emailDocument = emailElasticService.getEmailDocumentFromESByEmailID(emailId);
 
-            helper.setText(htmlContent, true);
+                    if(!isEligibleToSend(emailDocument)) {
+                        log.info("Skipping ineligible email to {} (status={}, lastSent={})",
+                                emailDocument.getEmailTo(),
+                                emailDocument.getStatus(),
+                                Instant.ofEpochMilli(emailDocument.getLastSentAt()));
+                        continue;
+                    }
 
-            helper.addAttachment("Vinay_Java_Backend_Developer.pdf", resumeFile);
-            log.info("Sending email to: {}, company: {}", request.getEmailTo(), request.getCompany());
-            mailSender.send(message);
-            log.info("Email sent to: {}", request.getEmailTo());
-        } catch (MessagingException | MailException e) {
+                    if(StringUtils.isNotBlank(name)) emailDocument.setRecipientName(name);
+                    if(StringUtils.isNotBlank(emailId)) emailDocument.setEmailTo(emailId);
+                    if(StringUtils.isNotBlank(company)) emailDocument.setCompany(company);
+                    Map<String, String> templateVariable = Map.of(
+                            "name", emailDocument.getRecipientName(),
+                            "compnay", emailDocument.getCompany()
+                    );
+                    emailDocument.setEmailTemplate(prepareEmailTemplate(templateVariable));
+                    emailDocument.setTemplateVariables(templateVariable);
+                } else {
+                    emailDocument = prepareEmailDocument(name, company, emailId);
+                }
+
+                try {
+                    emailSendService.sendEmail(emailDocument);
+                } catch (IOException e) {
+                    log.error("Failed to send email to: {}", emailId, e);
+                    throw new RuntimeException(e);
+                }
+            }
+        } catch (IOException e) {
             throw new RuntimeException(e);
-        } finally {
-            log.info("Email sent in finally: {}", request.getEmailTo());
         }
     }
 
+    private boolean isEligibleToSend(EmailDocument emailDocument) {
+        if (emailDocument == null || !emailDocument.isValidEmail()) return false;
+
+        long cutoffTime = Instant.now().minus(DUPLICATE_DAYS, ChronoUnit.DAYS).toEpochMilli();
+
+        return !"DISABLED".equalsIgnoreCase(emailDocument.getStatus()) &&
+                emailDocument.getLastSentAt() <= cutoffTime &&
+                emailDocument.isResendEligible() &&
+                emailDocument.getRetryCount() <= 15;
+    }
+
+    public String sendEligibleEmailsFromElastic(int daysAgo) throws IOException {
+        daysAgo = DUPLICATE_DAYS; // comment if require from user input.
+        List<EmailDocument> emailDocuments = getEligibleEmailDocuments(daysAgo);
+        if(emailDocuments.isEmpty()) {
+            log.warn("No eligible email document found to send to ({} days)", daysAgo);
+            return String.format("No eligible emails found up to %d", daysAgo);
+        }
+
+        log.info("Sending {} eligible emails asynchronously...", emailDocuments.size());
+
+        for (EmailDocument email : emailDocuments) {
+            try {
+                // @Async non-blocking parallel send
+                emailSendService.sendEmail(email);
+            } catch (Exception e) {
+                log.error("Failed to trigger email send for {}: {}", email.getEmailTo(), e.getMessage(), e);
+            }
+        }
+
+        log.info("All eligible emails submitted for sending.");
+        return String.format("Submitted %d emails for sending", emailDocuments.size());
+    }
+
+    public List<EmailDocument> getEligibleEmailDocuments(int daysAgo) throws IOException {
+        daysAgo = DUPLICATE_DAYS; // comment if require custom days.
+        Instant instant = Instant.now();
+        long lte = instant.minus(daysAgo, ChronoUnit.DAYS).toEpochMilli();
+        long gte = instant.minus(daysAgo + 30, ChronoUnit.DAYS).toEpochMilli();
+        return emailElasticService.getEligibleEmails(gte, lte);
+    }
     private String prepareEmailTemplate(Map<String, String> templateVariables) {
         Context context = new Context();
         for (Map.Entry<String, String> entry: templateVariables.entrySet()) {
@@ -87,45 +141,28 @@ public class EmailService {
     public Map<String, EmailDocument> processAndSyncEmails(String rawInput) throws IOException {
         Map<String, EmailDocument> emailDocuments = prepareEmailDocumentsFromRawInput(rawInput);
         log.info("emailDocuments prepared to sync to elastic: {}", emailDocuments.size());
-        bulkIndexEmails(emailDocuments);
+        emailElasticService.bulkIndexEmails(emailDocuments);
 
         return emailDocuments;
-    }
-
-    private void bulkIndexEmails(Map<String, EmailDocument> emailDocuments) throws IOException {
-        if (emailDocuments.isEmpty()) return;
-        log.info("email syncing to elastic start");
-
-        BulkRequest bulkRequest = new BulkRequest();
-        String index = _index();
-
-        for (Map.Entry<String, EmailDocument> entry: emailDocuments.entrySet()) {
-            String docId = entry.getKey();
-            String jsonValue = objectMapper.writeValueAsString(entry.getValue());
-
-            bulkRequest.add(
-                    new IndexRequest(index)
-                            .id(docId)
-                            .source(jsonValue,  XContentType.JSON)
-            );
-        }
-
-        BulkResponse bulkResponse = esRestHighLevelClient.bulkIndexDocument(bulkRequest);
-        if (bulkResponse.hasFailures()) {
-            log.warn("Bulk insert completed with some failures: {}", bulkResponse.buildFailureMessage());
-        } else {
-            log.info("Bulk insert successful: {} emails indexed", emailDocuments.size());
-        }
-    }
-
-    private String _index() {
-        return "email_index";
     }
 
     private Map<String, EmailDocument> prepareEmailDocumentsFromRawInput(String rawInput) {
         return Arrays.stream(rawInput.split("\\r?\\n"))
                 .skip(1)
-                .map(this::prepareEmailDocument)
+                .map((emailRow)-> {
+
+                    String[] parts = emailRow.split(",");
+                    String emailTo = parts[1].trim().toLowerCase();
+                    if (parts.length >= 3 && !validateEmailFormat(emailTo)) {
+                        log.warn("Invalid line skipped: {}", emailRow);
+                        return null;
+                    }
+
+                    String name = parts[0].trim();
+                    String company = parts[2].trim();
+
+                    return prepareEmailDocument(name, company, emailTo);
+                })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toMap(
                         EmailDocument::getEmailTo,
@@ -134,22 +171,12 @@ public class EmailService {
                 ));
     }
 
-    private EmailDocument prepareEmailDocument(String emailRow) {
-        String[] parts = emailRow.split(",");
-        String emailTo = parts[1].trim().toLowerCase();
-        if (parts.length >= 3 && !validateEmailFormat(emailTo)) {
-            log.warn("Invalid line skipped: {}", emailRow);
-            return null;
-        }
-
-        String name = parts[0].trim();
-        String company = parts[2].trim();
-
+    private EmailDocument prepareEmailDocument(String recipientName, String companyName, String emailTo) {
         // --- Initialize document ---
         EmailDocument emailDocument = new EmailDocument();
-        emailDocument.setRecipientName(name);
         emailDocument.setEmailTo(emailTo);
-        emailDocument.setCompany(company);
+        emailDocument.setRecipientName(recipientName);
+        emailDocument.setCompany(companyName);
         emailDocument.setEmailFrom("mrsinghvinay563@gmail.com");
         emailDocument.setSubject("Java Backend Developer Application For New Opportunities");
 
@@ -157,8 +184,8 @@ public class EmailService {
         emailDocument.setHtml(true);
         emailDocument.setTemplateName("email-template.html");
         Map<String, String> templateVariables = new HashMap<>();
-        templateVariables.put("name", name);
-        templateVariables.put("company", company);
+        templateVariables.put("name", recipientName);
+        templateVariables.put("company", companyName);
         emailDocument.setTemplateVariables(templateVariables);
         emailDocument.setEmailTemplate(prepareEmailTemplate(templateVariables));
 
@@ -185,6 +212,7 @@ public class EmailService {
         emailDocument.setSentBy("mrsinghvinay563@gmail.com");
         emailDocument.setThreadName(Thread.currentThread().getName());
 
+        // Just for testing only to simulate ideal scenario
         boolean flag = true;
         Random random = new Random();
         Instant instantNow = Instant.now();
@@ -210,11 +238,4 @@ public class EmailService {
         return email != null && email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$");
     }
 
-    public List<EmailDocument> getEligibleEmailDocuments(int daysAgo) throws IOException {
-
-        Instant instant = Instant.now();
-        long lte = instant.minus(daysAgo, ChronoUnit.DAYS).toEpochMilli();
-        long gte = instant.minus(daysAgo + 30, ChronoUnit.DAYS).toEpochMilli();
-        return emailElasticService.getEligibleEmails(gte, lte);
-    }
 }
