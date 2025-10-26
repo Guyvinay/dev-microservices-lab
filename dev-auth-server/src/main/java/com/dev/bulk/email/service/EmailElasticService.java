@@ -14,22 +14,25 @@ import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
+import org.elasticsearch.index.query.TermsQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.elasticsearch.xcontent.XContentType;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -47,14 +50,14 @@ public class EmailElasticService {
         BulkRequest bulkRequest = new BulkRequest();
         String index = _index();
 
-        for (Map.Entry<String, EmailDocument> entry: emailDocuments.entrySet()) {
+        for (Map.Entry<String, EmailDocument> entry : emailDocuments.entrySet()) {
             String docId = entry.getKey();
             String jsonValue = objectMapper.writeValueAsString(entry.getValue());
 
             bulkRequest.add(
                     new IndexRequest(index)
                             .id(docId)
-                            .source(jsonValue,  XContentType.JSON)
+                            .source(jsonValue, XContentType.JSON)
             );
         }
 
@@ -67,7 +70,7 @@ public class EmailElasticService {
     }
 
     public void indexEmail(EmailDocument emailDocument) throws IOException {
-        if (emailDocument==null) return;
+        if (emailDocument == null) return;
         log.info("Indexing email to elastic start: {}", emailDocument.getEmailTo());
 
         String index = _index();
@@ -82,7 +85,7 @@ public class EmailElasticService {
         log.info("Email synced to elastic: {}, {}", emailDocument.getEmailTo(), indexResponse.status());
     }
 
-    public List<EmailDocument> getEligibleEmails(long gte,  long lte) throws IOException {
+    private BoolQueryBuilder boolQueryBuilder(long gte, long lte) {
         // 1. Create BoolQueryBuilder
         BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
 
@@ -104,6 +107,13 @@ public class EmailElasticService {
         // 4. FILTER conditions (non-scoring, cached)
         RangeQueryBuilder lastSentAtRangeQuery = QueryBuilders.rangeQuery("lastSentAt").lte(lte).gte(gte);
         boolQueryBuilder.filter(lastSentAtRangeQuery);
+        return boolQueryBuilder;
+    }
+
+    public List<EmailDocument> getEligibleEmails(long gte, long lte) throws IOException {
+
+        // Initial Steps in this method
+        BoolQueryBuilder boolQueryBuilder = boolQueryBuilder(gte, lte);
 
         // 5. Build SearchSource
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
@@ -121,18 +131,23 @@ public class EmailElasticService {
         SearchResponse searchResponse = esRestHighLevelClient.search(request);
 
         // 8. Get Hits from the response and parse in the desired format.
-        SearchHits searchHits = searchResponse.getHits();
-        SearchHit[] hits = searchHits.getHits();
-        log.info("Total Eligible email document: {}", hits.length);
-        return Arrays.stream(hits).map((hit)-> {
-            try {
-                EmailDocument emailDocument = objectMapper.readValue(hit.getSourceAsString(), EmailDocument.class);
-                log.info("Email document: {}", emailDocument.getEmailTo());
-                return emailDocument;
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-        }).collect(Collectors.toList());
+        return processSearchResponse(searchResponse);
+    }
+
+    public long getEligibleEmailsCount(long gte, long lte) throws IOException {
+        BoolQueryBuilder boolQueryBuilder = boolQueryBuilder(gte, lte);
+        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder()
+                .query(boolQueryBuilder)
+                .size(0)
+                .trackTotalHits(true);
+
+        log.info("Eligible emails count query: {}", sourceBuilder);
+
+        SearchRequest request = new SearchRequest(_index());
+        request.source(sourceBuilder);
+
+        SearchResponse searchResponse = esRestHighLevelClient.search(request);
+        return Objects.requireNonNull(searchResponse.getHits().getTotalHits()).value;
     }
 
     public EmailDocument getEmailDocumentFromESByEmailID(String email) throws IOException {
@@ -147,7 +162,7 @@ public class EmailElasticService {
 
             String sourceString = response.getSourceAsString();
             return objectMapper.readValue(sourceString, EmailDocument.class);
-        }  catch (IOException e) {
+        } catch (IOException e) {
             log.error("Error fetching document from Elasticsearch for email ID: {}", email, e);
             throw new RuntimeException("Failed to fetch email document from Elasticsearch", e);
         }
@@ -174,6 +189,48 @@ public class EmailElasticService {
             log.error("Error checking existence for email document with ID: {}", emailId, e);
             throw new RuntimeException("Failed to check email document existence in Elasticsearch", e);
         }
+    }
+
+    public List<EmailDocument> getEmailDocumentFromEmailIds(List<String> emailIds) throws IOException {
+        if (emailIds == null || emailIds.isEmpty()) {
+            log.warn("Email ID list is empty, returning no results.");
+            return Collections.emptyList();
+        }
+        TermsQueryBuilder termsQueryBuilder = new TermsQueryBuilder("emailTo.keyword", emailIds);
+
+        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder()
+                .query(termsQueryBuilder)
+                .sort(SortBuilders.fieldSort("lastSentAt").order(SortOrder.DESC))
+                .size(Math.min(emailIds.size(), 1000))
+                .trackTotalHits(true); // ensure accurate total count if needed
+
+        log.info("Query to fetch email documents: {}", sourceBuilder);
+
+        SearchRequest searchRequest = new SearchRequest(_index())
+                .source(sourceBuilder);
+
+        return processSearchResponse(esRestHighLevelClient.search(searchRequest));
+    }
+
+    private List<EmailDocument> processSearchResponse(SearchResponse searchResponse) {
+        if (searchResponse == null || searchResponse.getHits() == null) {
+            log.warn("Empty or null response from Elasticsearch.");
+            return Collections.emptyList();
+        }
+        SearchHits searchHits = searchResponse.getHits();
+        SearchHit[] hits = searchHits.getHits();
+        log.info("Found {} email documents.", hits.length);
+
+        return Arrays.stream(hits).map((hit) -> {
+                    try {
+                        return objectMapper.readValue(hit.getSourceAsString(), EmailDocument.class);
+                    } catch (JsonProcessingException e) {
+                        log.error("Failed to parse document ID {}: {}", hit.getId(), e.getMessage(), e);
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 }
 /**

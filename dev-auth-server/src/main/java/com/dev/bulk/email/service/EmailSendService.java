@@ -61,7 +61,7 @@ public class EmailSendService {
             // ============================================================
             // 3️Send email
             // ============================================================
-            mailSender.send(message);
+//            mailSender.send(message);
 
             // ============================================================
             // 4️Update EmailDocument metadata

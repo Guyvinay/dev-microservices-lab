@@ -22,9 +22,9 @@ public class CustomAsyncConfigurer implements AsyncConfigurer {
     @Bean(name = "threadPoolTaskExecutor")
     public Executor threadPoolTaskExecutor() {
         taskExecutor = new ThreadPoolTaskExecutor();
-        taskExecutor.setCorePoolSize(8);
-        taskExecutor.setMaxPoolSize(32);
-        taskExecutor.setQueueCapacity(64);
+        taskExecutor.setCorePoolSize(16);
+        taskExecutor.setMaxPoolSize(64);
+        taskExecutor.setQueueCapacity(256);
         taskExecutor.setThreadNamePrefix("threadPoolTaskExecutor-");
         taskExecutor.initialize();
         return taskExecutor;

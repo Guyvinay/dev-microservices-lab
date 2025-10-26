@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -38,7 +37,7 @@ public class EmailService {
     private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
     private final EmailElasticService emailElasticService;
-    private static final int DUPLICATE_DAYS = 30;
+    private static final int DUPLICATE_DAYS = 15;
     private final EmailSendService emailSendService;
 
     public void sendEmailFromCSVFile() throws MessagingException, FileNotFoundException {
@@ -101,7 +100,7 @@ public class EmailService {
     }
 
     public String sendEligibleEmailsFromElastic(int daysAgo) throws IOException {
-        daysAgo = DUPLICATE_DAYS; // comment if require from user input.
+//        daysAgo = DUPLICATE_DAYS; // comment if require from user input.
         List<EmailDocument> emailDocuments = getEligibleEmailDocuments(daysAgo);
         if(emailDocuments.isEmpty()) {
             log.warn("No eligible email document found to send to ({} days)", daysAgo);
@@ -124,7 +123,7 @@ public class EmailService {
     }
 
     public List<EmailDocument> getEligibleEmailDocuments(int daysAgo) throws IOException {
-        daysAgo = DUPLICATE_DAYS; // comment if require custom days.
+//        daysAgo = DUPLICATE_DAYS; // comment if require custom days.
         Instant instant = Instant.now();
         long lte = instant.minus(daysAgo, ChronoUnit.DAYS).toEpochMilli();
         long gte = instant.minus(daysAgo + 30, ChronoUnit.DAYS).toEpochMilli();
@@ -144,6 +143,13 @@ public class EmailService {
         emailElasticService.bulkIndexEmails(emailDocuments);
 
         return emailDocuments;
+    }
+
+    public long getEligibleEmailsCount(int daysAgo) throws IOException {
+        Instant instant = Instant.now();
+        long lte = instant.minus(daysAgo, ChronoUnit.DAYS).toEpochMilli();
+        long gte = instant.minus(daysAgo + 30, ChronoUnit.DAYS).toEpochMilli();
+        return emailElasticService.getEligibleEmailsCount(gte, lte);
     }
 
     private Map<String, EmailDocument> prepareEmailDocumentsFromRawInput(String rawInput) {
@@ -203,7 +209,6 @@ public class EmailService {
         emailDocument.setRetryCount(0);
         emailDocument.setEmailSentTimes(0);
 //        emailDocument.setLastUpdatedAt(Instant.now().toEpochMilli());
-
         emailDocument.setLastSentAt(0L); // Not sent yet
         emailDocument.setDeliveryTimeMs(0L);
 
@@ -212,20 +217,22 @@ public class EmailService {
         emailDocument.setSentBy("mrsinghvinay563@gmail.com");
         emailDocument.setThreadName(Thread.currentThread().getName());
 
+        Instant randomInstant = Instant.now();
+
         // Just for testing only to simulate ideal scenario
-        boolean flag = true;
-        Random random = new Random();
-        Instant instantNow = Instant.now();
-        Instant randomInstant;
-        if(flag) {
-            flag = false;
-            long moreDaysAgo = 30 + random.nextInt(20);
-            randomInstant = instantNow.minus(moreDaysAgo, ChronoUnit.DAYS);
-        } else {
-            flag = true;
-            long lessDaysAgo = 30 - random.nextInt(20);
-            randomInstant = instantNow.minus(lessDaysAgo, ChronoUnit.DAYS);
-        }
+//        boolean flag = true;
+//        Random random = new Random();
+//        Instant instantNow = Instant.now();
+//        randomInstant = Instant.now().minus(DUPLICATE_DAYS, ChronoUnit.DAYS);
+//        if(flag) {
+//            flag = false;
+//            long moreDaysAgo = DUPLICATE_DAYS + random.nextInt(20);
+//            randomInstant = instantNow.minus(moreDaysAgo, ChronoUnit.DAYS);
+//        } else {
+//            flag = true;
+//            long lessDaysAgo = DUPLICATE_DAYS - random.nextInt(20);
+//            randomInstant = instantNow.minus(lessDaysAgo, ChronoUnit.DAYS);
+//        }
 
         emailDocument.setLastUpdatedAt(randomInstant.toEpochMilli());
         emailDocument.setLastSentAt(randomInstant.toEpochMilli());
@@ -238,4 +245,8 @@ public class EmailService {
         return email != null && email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$");
     }
 
+    public List<EmailDocument> getEmailDocumentFromEmailIds(List<String> emailIds) throws IOException {
+
+        return emailElasticService.getEmailDocumentFromEmailIds(emailIds);
+    }
 }

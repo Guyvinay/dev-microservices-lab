@@ -45,5 +45,15 @@ public class BulkEmailController {
         return ResponseEntity.ok(emailService.sendEligibleEmailsFromElastic(daysAgo));
     }
 
+    @GetMapping(value = "/eligible-email-count")
+    public ResponseEntity<Long> getEligibleEmailsCount(@RequestParam(value = "days", defaultValue = "5", required = false) int daysAgo) throws Exception {
+        return ResponseEntity.ok(emailService.getEligibleEmailsCount(daysAgo));
+    }
+
+    @PostMapping(value = "/email-docs-by-ids")
+    public ResponseEntity<List<EmailDocument>> getEmailDocumentFromEmailIds(@RequestBody List<String> emailIds) throws IOException {
+        return ResponseEntity.ok(emailService.getEmailDocumentFromEmailIds(emailIds));
+    }
+
 
 }
