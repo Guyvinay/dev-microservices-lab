@@ -25,6 +25,7 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.elasticsearch.xcontent.XContentType;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -42,6 +43,9 @@ public class EmailElasticService {
 
     private final EsRestHighLevelClient esRestHighLevelClient;
     private final ObjectMapper objectMapper;
+
+    @Value("${elastic.index.email}")
+    private String index;
 
     public void bulkIndexEmails(Map<String, EmailDocument> emailDocuments) throws IOException {
         if (emailDocuments.isEmpty()) return;
@@ -99,7 +103,7 @@ public class EmailElasticService {
         boolQueryBuilder.must(retryRange);
 
         // Status = READY
-//        boolQueryBuilder.must(QueryBuilders.termsQuery("status.keyword", "READY"));
+//        boolQueryBuilder.must(QueryBuilders.termsQuery("status.keyword", "FAILED"));
 
         // 3. MUST NOT condition.
         boolQueryBuilder.mustNot(QueryBuilders.termsQuery("status.keyword", "DISABLED"));
@@ -232,6 +236,7 @@ public class EmailElasticService {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
+
 }
 /**
  * GET /email_index/_search
