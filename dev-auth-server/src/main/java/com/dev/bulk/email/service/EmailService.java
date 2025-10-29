@@ -1,6 +1,7 @@
 package com.dev.bulk.email.service;
 
 import com.dev.bulk.email.dto.EmailDocument;
+import com.dev.bulk.email.dto.EmailRequest;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +38,7 @@ public class EmailService {
     private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
     private final EmailElasticService emailElasticService;
-    private static final int DUPLICATE_DAYS = 15;
+    private static final int HOURS_TO = 24;
     private final EmailSendService emailSendService;
 
     public void sendEmailFromCSVFile() throws MessagingException, FileNotFoundException {
@@ -45,7 +46,7 @@ public class EmailService {
 
         try (Reader reader = new FileReader(csvFile);
              CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader())) {
-
+            List<String> skippedEmails = new ArrayList<>();
             for (CSVRecord record : csvParser) {
                 String emailId = record.get("email");
                 String name = record.get("name");
@@ -60,6 +61,7 @@ public class EmailService {
                                 emailDocument.getEmailTo(),
                                 emailDocument.getStatus(),
                                 Instant.ofEpochMilli(emailDocument.getLastSentAt()));
+                        skippedEmails.add(emailId);
                         continue;
                     }
 
@@ -78,11 +80,13 @@ public class EmailService {
 
                 try {
                     emailSendService.sendEmail(emailDocument);
-                } catch (IOException e) {
+                    Thread.sleep(1500);
+                } catch (IOException | InterruptedException e) {
                     log.error("Failed to send email to: {}", emailId, e);
                     throw new RuntimeException(e);
                 }
             }
+            log.info("{} Emails skipped=[{}]", skippedEmails.size(), skippedEmails);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -91,20 +95,20 @@ public class EmailService {
     private boolean isEligibleToSend(EmailDocument emailDocument) {
         if (emailDocument == null || !emailDocument.isValidEmail()) return false;
 
-        long cutoffTime = Instant.now().minus(DUPLICATE_DAYS, ChronoUnit.DAYS).toEpochMilli();
+        long cutoffTime = Instant.now().minus(HOURS_TO, ChronoUnit.HOURS).toEpochMilli();
 
-        return !"DISABLED".equalsIgnoreCase(emailDocument.getStatus()) &&
+        return !"DISABLED".equalsIgnoreCase(emailDocument.getStatus()) && !"SUCCESS".equalsIgnoreCase(emailDocument.getStatus()) &&
                 emailDocument.getLastSentAt() <= cutoffTime &&
                 emailDocument.isResendEligible() &&
                 emailDocument.getRetryCount() <= 15;
     }
 
-    public String sendEligibleEmailsFromElastic(int daysAgo) throws IOException {
-//        daysAgo = DUPLICATE_DAYS; // comment if require from user input.
-        List<EmailDocument> emailDocuments = getEligibleEmailDocuments(daysAgo);
+    public String sendEligibleEmailsFromElastic(int hours) throws IOException {
+//        hours = HOURS_TO; // comment if require from user input.
+        List<EmailDocument> emailDocuments = getEligibleEmailDocuments(hours);
         if(emailDocuments.isEmpty()) {
-            log.warn("No eligible email document found to send to ({} days)", daysAgo);
-            return String.format("No eligible emails found up to %d", daysAgo);
+            log.warn("No eligible email document found to send to ({} hours)", hours);
+            return String.format("No eligible emails found up to %d", hours);
         }
 
         log.info("Sending {} eligible emails asynchronously...", emailDocuments.size());
@@ -122,11 +126,11 @@ public class EmailService {
         return String.format("Submitted %d emails for sending", emailDocuments.size());
     }
 
-    public List<EmailDocument> getEligibleEmailDocuments(int daysAgo) throws IOException {
-//        daysAgo = DUPLICATE_DAYS; // comment if require custom days.
+    public List<EmailDocument> getEligibleEmailDocuments(int hours) throws IOException {
+//        hours = DUPLICATE_DAYS; // comment if require custom days.
         Instant instant = Instant.now();
-        long lte = instant.minus(daysAgo, ChronoUnit.DAYS).toEpochMilli();
-        long gte = instant.minus(daysAgo + 30, ChronoUnit.DAYS).toEpochMilli();
+        long lte = instant.minus(0, ChronoUnit.HOURS).toEpochMilli();
+        long gte = instant.minus(hours + 120, ChronoUnit.HOURS).toEpochMilli();
         return emailElasticService.getEligibleEmails(gte, lte);
     }
     private String prepareEmailTemplate(Map<String, String> templateVariables) {
@@ -145,10 +149,10 @@ public class EmailService {
         return emailDocuments;
     }
 
-    public long getEligibleEmailsCount(int daysAgo) throws IOException {
+    public long getEligibleEmailsCount(int hours) throws IOException {
         Instant instant = Instant.now();
-        long lte = instant.minus(daysAgo, ChronoUnit.DAYS).toEpochMilli();
-        long gte = instant.minus(daysAgo + 30, ChronoUnit.DAYS).toEpochMilli();
+        long lte = instant.minus(hours, ChronoUnit.HOURS).toEpochMilli();
+        long gte = instant.minus(hours + 120, ChronoUnit.HOURS).toEpochMilli();
         return emailElasticService.getEligibleEmailsCount(gte, lte);
     }
 

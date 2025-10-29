@@ -10,7 +10,5 @@ import lombok.NoArgsConstructor;
 public class EmailRequest {
     private String name;
     private String emailTo;
-    private String emailFrom;
     private String company;
-    private String subject;
 }
