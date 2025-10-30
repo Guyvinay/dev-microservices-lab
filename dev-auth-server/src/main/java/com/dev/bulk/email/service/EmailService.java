@@ -38,55 +38,68 @@ public class EmailService {
     private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
     private final EmailElasticService emailElasticService;
-    private static final int HOURS_TO = 24;
+    private static final int HOURS_TO = 12;
     private final EmailSendService emailSendService;
 
-    public void sendEmailFromCSVFile() throws MessagingException, FileNotFoundException {
+    public void sendEmailFromCSVFile() throws IOException {
+        List<String> skippedEmails = new ArrayList<>();
+        Map<String, EmailRequest> toSend = getEmailRequestsFromCSV();
+        for (Map.Entry<String, EmailRequest> entry: toSend.entrySet()) {
+            EmailRequest emailRequest = entry.getValue();
+            String name = emailRequest.getName();
+            String company = emailRequest.getCompany();
+            String emailId = emailRequest.getEmailTo();
+            EmailDocument emailDocument;
+            if(emailElasticService.emailDocumentExits(emailId)) {
+
+                emailDocument = emailElasticService.getEmailDocumentFromESByEmailID(emailId);
+
+                if(!isEligibleToSend(emailDocument)) {
+                    log.info("Skipping ineligible email to {} (status={}, lastSent={})",
+                            emailDocument.getEmailTo(),
+                            emailDocument.getStatus(),
+                            Instant.ofEpochMilli(emailDocument.getLastSentAt()));
+                    skippedEmails.add(emailId);
+                    continue;
+                }
+
+                if(StringUtils.isNotBlank(name)) emailDocument.setRecipientName(name);
+                if(StringUtils.isNotBlank(emailId)) emailDocument.setEmailTo(emailId);
+                if(StringUtils.isNotBlank(company)) emailDocument.setCompany(company);
+                Map<String, String> templateVariable = Map.of(
+                        "name", emailDocument.getRecipientName(),
+                        "compnay", emailDocument.getCompany()
+                );
+                emailDocument.setEmailTemplate(prepareEmailTemplate(templateVariable));
+                emailDocument.setTemplateVariables(templateVariable);
+            } else {
+                emailDocument = prepareEmailDocument(name, company, emailId);
+            }
+
+            try {
+                emailSendService.sendEmail(emailDocument);
+                Thread.sleep(1500);
+            } catch (IOException | InterruptedException e) {
+                log.error("Failed to send email to: {}", emailId, e);
+                throw new RuntimeException(e);
+            }
+        }
+        log.info("{} Emails skipped=[{}]", skippedEmails.size(), skippedEmails);
+    }
+
+    private Map<String, EmailRequest> getEmailRequestsFromCSV() {
         File csvFile = new File("/home/guyvinay/dev/repo/assets/hr_contacts.csv");
 
         try (Reader reader = new FileReader(csvFile);
              CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader())) {
-            List<String> skippedEmails = new ArrayList<>();
+            Map<String, EmailRequest> toSend = new HashMap<>();
             for (CSVRecord record : csvParser) {
                 String emailId = record.get("email");
                 String name = record.get("name");
                 String company = record.get("company");
-                EmailDocument emailDocument;
-                if(emailElasticService.emailDocumentExits(emailId)) {
-
-                    emailDocument = emailElasticService.getEmailDocumentFromESByEmailID(emailId);
-
-                    if(!isEligibleToSend(emailDocument)) {
-                        log.info("Skipping ineligible email to {} (status={}, lastSent={})",
-                                emailDocument.getEmailTo(),
-                                emailDocument.getStatus(),
-                                Instant.ofEpochMilli(emailDocument.getLastSentAt()));
-                        skippedEmails.add(emailId);
-                        continue;
-                    }
-
-                    if(StringUtils.isNotBlank(name)) emailDocument.setRecipientName(name);
-                    if(StringUtils.isNotBlank(emailId)) emailDocument.setEmailTo(emailId);
-                    if(StringUtils.isNotBlank(company)) emailDocument.setCompany(company);
-                    Map<String, String> templateVariable = Map.of(
-                            "name", emailDocument.getRecipientName(),
-                            "compnay", emailDocument.getCompany()
-                    );
-                    emailDocument.setEmailTemplate(prepareEmailTemplate(templateVariable));
-                    emailDocument.setTemplateVariables(templateVariable);
-                } else {
-                    emailDocument = prepareEmailDocument(name, company, emailId);
-                }
-
-                try {
-                    emailSendService.sendEmail(emailDocument);
-                    Thread.sleep(1500);
-                } catch (IOException | InterruptedException e) {
-                    log.error("Failed to send email to: {}", emailId, e);
-                    throw new RuntimeException(e);
-                }
+                toSend.put(emailId, new EmailRequest(name, emailId, company));
             }
-            log.info("{} Emails skipped=[{}]", skippedEmails.size(), skippedEmails);
+            return toSend;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
