@@ -97,7 +97,11 @@ public class EmailService {
                 String emailId = record.get("email");
                 String name = record.get("name");
                 String company = record.get("company");
-                toSend.put(emailId, new EmailRequest(name, emailId, company));
+                if(validateEmailFormat(emailId)) {
+                    toSend.put(emailId, new EmailRequest(name, emailId, company));
+                } else {
+                    log.warn("Email: {} not valid so skipped", emailId);
+                }
             }
             return toSend;
         } catch (IOException e) {
@@ -130,6 +134,7 @@ public class EmailService {
             try {
                 // @Async non-blocking parallel send
                 emailSendService.sendEmail(email);
+                Thread.sleep(2000);
             } catch (Exception e) {
                 log.error("Failed to trigger email send for {}: {}", email.getEmailTo(), e.getMessage(), e);
             }

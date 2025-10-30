@@ -103,14 +103,14 @@ public class EmailElasticService {
         boolQueryBuilder.must(retryRange);
 
         // Status = READY
-//        boolQueryBuilder.must(QueryBuilders.termsQuery("status.keyword", "FAILED"));
+        boolQueryBuilder.must(QueryBuilders.termsQuery("status.keyword", "FAILED"));
 
         // 3. MUST NOT condition.
         boolQueryBuilder.mustNot(QueryBuilders.termsQuery("status.keyword", "DISABLED"));
 
         // 4. FILTER conditions (non-scoring, cached)
-        RangeQueryBuilder lastSentAtRangeQuery = QueryBuilders.rangeQuery("lastSentAt").lte(lte).gte(gte);
-        boolQueryBuilder.filter(lastSentAtRangeQuery);
+//        RangeQueryBuilder lastSentAtRangeQuery = QueryBuilders.rangeQuery("lastSentAt").lte(lte).gte(gte);
+//        boolQueryBuilder.filter(lastSentAtRangeQuery);
         return boolQueryBuilder;
     }
 
