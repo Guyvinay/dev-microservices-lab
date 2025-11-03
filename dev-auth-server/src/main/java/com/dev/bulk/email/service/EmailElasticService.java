@@ -2,6 +2,7 @@ package com.dev.bulk.email.service;
 
 import com.dev.bulk.email.dto.EmailDocument;
 import com.dev.elastic.client.EsRestHighLevelClient;
+import com.dev.utility.ElasticUtility;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -109,8 +110,8 @@ public class EmailElasticService {
         boolQueryBuilder.mustNot(QueryBuilders.termsQuery("status.keyword", "DISABLED"));
 
         // 4. FILTER conditions (non-scoring, cached)
-//        RangeQueryBuilder lastSentAtRangeQuery = QueryBuilders.rangeQuery("lastSentAt").lte(lte).gte(gte);
-//        boolQueryBuilder.filter(lastSentAtRangeQuery);
+        RangeQueryBuilder lastSentAtRangeQuery = QueryBuilders.rangeQuery("lastSentAt").lte(lte).gte(gte);
+        boolQueryBuilder.filter(lastSentAtRangeQuery);
         return boolQueryBuilder;
     }
 
@@ -235,6 +236,11 @@ public class EmailElasticService {
                 })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+    }
+
+    private void createIndexWithAliasAdnMapping() {
+        Map<String, Object> mappings = ElasticUtility.getEmailDocumentMapping();
+
     }
 
 }

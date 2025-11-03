@@ -78,7 +78,7 @@ public class EmailService {
 
             try {
                 emailSendService.sendEmail(emailDocument);
-                Thread.sleep(1500);
+                Thread.sleep(2500);
             } catch (IOException | InterruptedException e) {
                 log.error("Failed to send email to: {}", emailId, e);
                 throw new RuntimeException(e);

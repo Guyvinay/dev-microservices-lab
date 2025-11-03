@@ -1,6 +1,9 @@
 package com.dev.elastic.client;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.elasticsearch.action.admin.indices.alias.Alias;
+import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.settings.get.GetSettingsRequest;
 import org.elasticsearch.action.admin.indices.settings.get.GetSettingsResponse;
@@ -24,6 +27,8 @@ import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.ReindexRequest;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 public class EsRestHighLevelClient {
@@ -105,5 +110,39 @@ public class EsRestHighLevelClient {
 
     public AcknowledgedResponse deleteIndex(DeleteIndexRequest request) throws IOException {
         return restHighLevelClient.indices().delete(request, RequestOptions.DEFAULT);
+    }
+
+    public String createIndexWithAlias(String indexName, Map<String, Object> mappings, Map<String, Object> settings) throws IOException {
+        String aliasName = indexName + "_data";
+
+        boolean exists = indexExists(new GetIndexRequest(indexName));
+        if (exists) {
+            log.warn("Index {} already exists, skipping creation.", indexName);
+            return "Index already exists, skipping creation.";
+        }
+
+        if(settings == null || settings.isEmpty()) {
+            settings = new HashMap<>();
+            settings.put("index.number_of_shards", 3);
+            settings.put("index.number_of_replicas", 1);
+            settings.put("index.refresh_interval", "30s");
+            settings.put("index.mapping.total_fields.limit", 2000);
+            settings.put("index.codec", "best_compression");
+        }
+
+        CreateIndexRequest createIndexRequest = new CreateIndexRequest(indexName);
+        createIndexRequest.mapping(mappings);
+        createIndexRequest.settings(settings);
+        createIndexRequest.alias(new Alias(aliasName));
+
+        CreateIndexResponse response = restHighLevelClient.indices()
+                .create(createIndexRequest, RequestOptions.DEFAULT);
+
+        if (response.isAcknowledged()) {
+            log.info("Index '{}' created with alias '{}'", indexName, aliasName);
+        } else {
+            log.error("Failed to create index '{}'", indexName);
+        }
+        return "Index created";
     }
 }

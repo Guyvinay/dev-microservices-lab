@@ -1,0 +1,93 @@
+{
+  "mappings": {
+    "properties": {
+      "emailTo": {
+        "type": "keyword"
+      },
+      "recipientName": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword"
+          }
+        }
+      },
+      "emailFrom": {
+        "type": "keyword"
+      },
+      "company": {
+        "type": "keyword"
+      },
+      "validEmail": {
+        "type": "boolean"
+      },
+      "subject": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword"
+          }
+        }
+      },
+      "isHtml": {
+        "type": "boolean"
+      },
+      "templateName": {
+        "type": "keyword"
+      },
+      "templateVariables": {
+        "type": "object",
+        "enabled": false
+      },
+      "emailTemplate": {
+        "type": "text"
+      },
+      "status": {
+        "type": "keyword"
+      },
+      "errorMessage": {
+        "type": "text"
+      },
+      "retryCount": {
+        "type": "integer"
+      },
+      "emailSentTimes": {
+        "type": "integer"
+      },
+      "lastSentAt": {
+        "type": "long"
+      },
+      "lastUpdatedAt": {
+        "type": "long"
+      },
+      "deliveryTimeMs": {
+        "type": "long"
+      },
+      "dateCreated": {
+        "type": "date",
+        "format": "strict_date_optional_time||epoch_millis"
+      },
+      "category": {
+        "type": "keyword"
+      },
+      "resendEligible": {
+        "type": "boolean"
+      },
+      "attachmentNames": {
+        "type": "keyword"
+      },
+      "attachmentSizeBytes": {
+        "type": "long"
+      },
+      "sentBy": {
+        "type": "keyword"
+      },
+      "threadName": {
+        "type": "text"
+      },
+      "environment": {
+        "type": "keyword"
+      }
+    }
+  }
+}
