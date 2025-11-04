@@ -2,6 +2,7 @@ package com.dev.bulk.email.service;
 
 import com.dev.bulk.email.dto.EmailDocument;
 import com.dev.bulk.email.dto.EmailRequest;
+import com.dev.utility.ElasticUtility;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -270,5 +271,10 @@ public class EmailService {
     public List<EmailDocument> getEmailDocumentFromEmailIds(List<String> emailIds) throws IOException {
 
         return emailElasticService.getEmailDocumentFromEmailIds(emailIds);
+    }
+
+    private void createIndexWithAliasAdnMapping() {
+        Map<String, Object> mappings = ElasticUtility.getEmailDocumentMapping();
+
     }
 }

@@ -1,11 +1,13 @@
 package com.dev.bulk.email.controller;
 
 import com.dev.bulk.email.dto.EmailDocument;
+import com.dev.bulk.email.service.EmailElasticService;
 import com.dev.bulk.email.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +24,7 @@ import java.util.Map;
 @Slf4j
 public class BulkEmailController {
     private final EmailService emailService;
+    private final EmailElasticService emailElasticService;
 
     @GetMapping(value = "/send-from-csv-file")
     public void run() throws Exception {
@@ -53,5 +56,15 @@ public class BulkEmailController {
     @PostMapping(value = "/email-docs-by-ids")
     public ResponseEntity<List<EmailDocument>> getEmailDocumentFromEmailIds(@RequestBody List<String> emailIds) throws IOException {
         return ResponseEntity.ok(emailService.getEmailDocumentFromEmailIds(emailIds));
+    }
+
+    @GetMapping(value = "/create-index/{index}")
+    public ResponseEntity<String> createEmailIndex(@PathVariable String index) throws IOException {
+        return ResponseEntity.ok(emailElasticService.createIndexWithAliasAdnMapping(index));
+    }
+
+    @GetMapping(value = "/reindex/{aliasIndex}")
+    public ResponseEntity<String> reindexTenantIndex(@PathVariable String aliasIndex) throws IOException {
+        return ResponseEntity.ok(emailElasticService.reindexTenantIndex(aliasIndex));
     }
 }

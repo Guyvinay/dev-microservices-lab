@@ -3,6 +3,7 @@ package com.dev.bulk.email.service;
 import com.dev.bulk.email.dto.EmailDocument;
 import com.dev.elastic.client.EsRestHighLevelClient;
 import com.dev.utility.ElasticUtility;
+import com.dev.utility.SecurityContextUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -238,9 +240,21 @@ public class EmailElasticService {
                 .collect(Collectors.toList());
     }
 
-    private void createIndexWithAliasAdnMapping() {
+    public String createIndexWithAliasAdnMapping(String indexName) throws IOException {
         Map<String, Object> mappings = ElasticUtility.getEmailDocumentMapping();
+        String index = indexName(indexName);
+        return esRestHighLevelClient.createIndexWithAlias(index, mappings, new HashMap<>(), true);
+    }
 
+    public String reindexTenantIndex(String aliasName) throws IOException {
+        Map<String, Object> mappings = ElasticUtility.getEmailDocumentMapping();
+        esRestHighLevelClient.reindexTenantIndex(indexName(aliasName), mappings, new HashMap<>());
+        return "Reindex complete";
+    }
+
+    private String indexName(String indexName) {
+        String tenantId = SecurityContextUtil.getTenantId();
+        return tenantId +"_" + indexName;
     }
 
 }
