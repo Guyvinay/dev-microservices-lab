@@ -3,7 +3,6 @@ package com.dev.bulk.email.service;
 import com.dev.bulk.email.dto.EmailDocument;
 import com.dev.bulk.email.dto.EmailRequest;
 import com.dev.utility.ElasticUtility;
-import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
@@ -29,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,6 +45,7 @@ public class EmailService {
     public void sendEmailFromCSVFile() throws IOException {
         List<String> skippedEmails = new ArrayList<>();
         Map<String, EmailRequest> toSend = getEmailRequestsFromCSV();
+        log.info("Emails to send: {}", toSend.size());
         for (Map.Entry<String, EmailRequest> entry: toSend.entrySet()) {
             EmailRequest emailRequest = entry.getValue();
             String name = emailRequest.getName();
@@ -265,7 +266,10 @@ public class EmailService {
     }
 
     private boolean validateEmailFormat(String email) {
-        return email != null && email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$");
+        Pattern EMAIL_PATTERN = Pattern.compile(
+                "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
+        );
+        return email != null && EMAIL_PATTERN.matcher(email).matches();
     }
 
     public List<EmailDocument> getEmailDocumentFromEmailIds(List<String> emailIds) throws IOException {
@@ -275,6 +279,5 @@ public class EmailService {
 
     private void createIndexWithAliasAdnMapping() {
         Map<String, Object> mappings = ElasticUtility.getEmailDocumentMapping();
-
     }
 }
