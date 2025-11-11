@@ -13,7 +13,7 @@ import java.util.Random;
 @Component
 public class DatasetGenerator {
 
-    private static final int ROWS = 100000;
+    private static final int ROWS = 1000000;
     private static final int COLUMNS = 40;
     private static final int BATCH_SIZE = 10000;
 
