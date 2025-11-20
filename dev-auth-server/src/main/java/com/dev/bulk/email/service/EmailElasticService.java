@@ -243,7 +243,8 @@ public class EmailElasticService {
     public String createIndexWithAliasAdnMapping(String indexName) throws IOException {
         Map<String, Object> mappings = ElasticUtility.getEmailDocumentMapping();
         String index = indexName(indexName);
-        return esRestHighLevelClient.createIndexWithAlias(index, mappings, new HashMap<>(), true);
+        String aliasName = aliasNameFromIndexName(index);
+        return esRestHighLevelClient.createIndexWithAlias(index, aliasName, mappings, new HashMap<>(), true);
     }
 
     public String reindexTenantIndex(String aliasName) throws IOException {
@@ -255,6 +256,11 @@ public class EmailElasticService {
     private String indexName(String indexName) {
         String tenantId = SecurityContextUtil.getTenantId();
         return tenantId +"_" + indexName;
+    }
+
+    private String aliasNameFromIndexName(String indexName) {
+        int vIndex = indexName.lastIndexOf("_v");
+        return indexName.substring(0, vIndex+1);
     }
 
 }

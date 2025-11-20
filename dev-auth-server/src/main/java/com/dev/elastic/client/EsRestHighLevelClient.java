@@ -28,6 +28,7 @@ import org.elasticsearch.client.core.CountRequest;
 import org.elasticsearch.client.core.CountResponse;
 import org.elasticsearch.client.indices.*;
 import org.elasticsearch.cluster.metadata.AliasMetadata;
+import org.elasticsearch.index.VersionType;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.ReindexRequest;
 
@@ -61,6 +62,12 @@ public class EsRestHighLevelClient {
 
     public CountResponse countDocuments(CountRequest countRequest) throws IOException {
         return restHighLevelClient.count(countRequest, RequestOptions.DEFAULT);
+    }
+
+    public long countDocs(String index) throws IOException {
+        CountRequest req = new CountRequest(index);
+        CountResponse res = restHighLevelClient.count(req, RequestOptions.DEFAULT);
+        return res.getCount();
     }
 
     public GetFieldMappingsResponse getFieldMapping(GetFieldMappingsRequest request, RequestOptions requestOptions) throws IOException {
@@ -119,11 +126,9 @@ public class EsRestHighLevelClient {
         return restHighLevelClient.indices().delete(request, RequestOptions.DEFAULT);
     }
 
-    public String createIndexWithAlias(String indexName, Map<String, Object> mappings, Map<String, Object> settings, Boolean makeWriteIndex) throws IOException {
+    public String createIndexWithAlias(String indexName, String aliasName, Map<String, Object> mappings, Map<String, Object> settings, Boolean makeWriteIndex) throws IOException {
 
         if (!StringUtils.isNotBlank(indexName)) throw new RuntimeException("Index name cannot be blank");
-
-        String aliasName = aliasNameFromIndexName(indexName);
 
         // ======================================================================
         // 1. Check if index already exists
@@ -194,6 +199,7 @@ public class EsRestHighLevelClient {
     public void reindexTenantIndex(String tenantAlias, Map<String, Object> mappings, Map<String, Object> settings) throws IOException {
 
         String currentIndex = resolveIndexNameFromAlias(tenantAlias);
+
         if (currentIndex == null) {
             throw new IllegalStateException("No physical write index found for alias: " + tenantAlias);
         }
@@ -201,12 +207,43 @@ public class EsRestHighLevelClient {
 
         String newIndex = inferNewIndexWithNextVersion(currentIndex);
 
-        createIndexWithAlias(newIndex, mappings, settings, false);
+        createIndexWithAlias(newIndex, tenantAlias, mappings, settings, false);
+
+        reindexData(currentIndex, newIndex);
+
+        long currentDocumentCount = countDocs(currentIndex);
+        long countAfterReindex = countDocs(newIndex);
+
+        log.info("currentDocumentCount: {}, countAfterReindex: {}", currentDocumentCount, countAfterReindex);
 
         swapAliasFromIndex(currentIndex, newIndex, tenantAlias);
 
     }
+    public void reindexData(String sourceIndex, String destIndex) throws IOException {
+        ReindexRequest reindexRequest = new ReindexRequest();
+        reindexRequest.setSourceIndices(sourceIndex);
+        reindexRequest.setDestIndex(destIndex);
 
+        // Important for large datasets
+        reindexRequest.setConflicts("proceed");           // otherwise reindex may fail
+        reindexRequest.setRefresh(true);                  // flush after reindex
+        reindexRequest.setSlices(4);                      // parallelism; keep <= CPU cores
+
+        // Avoid version conflicts when mappings change
+        reindexRequest.setDestVersionType(VersionType.INTERNAL);
+
+        // Optional: throttling
+        reindexRequest.setRequestsPerSecond(5000);        // adjust for cluster load
+
+        BulkByScrollResponse bulkByScrollResponse = restHighLevelClient.reindex(reindexRequest, RequestOptions.DEFAULT);
+
+        if (!bulkByScrollResponse.getBulkFailures().isEmpty()) {
+            throw new RuntimeException("Reindex encountered failures: " +
+                    bulkByScrollResponse.getBulkFailures());
+        }
+
+        log.info("Total docs reindexed: {}", bulkByScrollResponse.getTotal());
+    }
     private void swapAliasFromIndex(String currentIndex, String newIndex, String tenantAlias) throws IOException {
         IndicesAliasesRequest aliasesRequest = new IndicesAliasesRequest();
 
@@ -232,10 +269,6 @@ public class EsRestHighLevelClient {
         return newIndex;
     }
 
-    private String aliasNameFromIndexName(String indexName) {
-        int vIndex = indexName.lastIndexOf("_v");
-        return indexName.substring(0, vIndex+1);
-    }
 
     private String resolveIndexNameFromAlias(String tenantAlias) {
         GetAliasesRequest aliasesRequest = new GetAliasesRequest(tenantAlias);
