@@ -31,8 +31,8 @@ public class JwtTokenProviderManager {
 
     private JWSSigner reqSigner;
     private JWSVerifier jwsVerifier;
-    private final String ISSUER = "dev-auth";
-    private final List<String> AUDIENCE = Arrays.asList("dev-takeaway", "dev-revised");
+    private final String ISSUER = "dev-auth-server";
+    private final List<String> AUDIENCE = Arrays.asList("dev-sandbox", "dev-integration");
     private final List<String> AUTHZ = Arrays.asList("ADMIN", "USER", "MANAGER");
     private final String PERMISSION = "permission";
 

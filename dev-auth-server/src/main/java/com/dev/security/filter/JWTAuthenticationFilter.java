@@ -7,9 +7,12 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -19,16 +22,16 @@ import java.util.Objects;
 
 import static com.dev.security.SecurityConstants.*;
 
-//@Component
+@Component
 @Slf4j
 public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
-    private final AuthenticationManager authenticationManager;
+    @Autowired
+    private AuthenticationConfiguration authenticationConfiguration;
 
-    public JWTAuthenticationFilter(AuthenticationManager authenticationManager) {
-        this.authenticationManager = authenticationManager;
+    private AuthenticationManager getAuthManager() throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
-
     /**
      * @param request
      * @param response
@@ -52,7 +55,7 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
         if(authToken == null) throw new AuthenticationException("Invalid Authentication request.");
 
         try {
-            Authentication authentication = authenticationManager.authenticate(authToken);
+            Authentication authentication = getAuthManager().authenticate(authToken);
             SecurityContextHolder.getContext().setAuthentication(authentication);
             log.info("Authentication successful for: {}", authentication.getPrincipal());
             filterChain.doFilter(request, response);

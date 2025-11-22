@@ -12,6 +12,7 @@ import com.dev.security.provider.CustomAuthenticationEntryPoint;
 import com.dev.security.provider.CustomAuthenticationProvider;
 import com.dev.security.provider.CustomBcryptEncoder;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,45 +30,28 @@ import java.util.List;
 @Configuration
 //@EnableWebSecurity(debug = true)
 //@EnableWebSecurity
-//@RequiredArgsConstructor
+@RequiredArgsConstructor
 public class SecurityConfiguration {
 
+    // ====== Core Components ======
+    private final CustomUserDetailsService customUserDetailsService;
     private final CustomBcryptEncoder customBcryptEncoder;
     private final CustomAuthenticationProvider customAuthenticationProvider;
-    private final CustomUserDetailsService customUserDetailsService;
-    private final JWTAuthorizationFilter jwtAuthorizationFilter;
+
+    // ====== JWT Filters ======
+    private final JWTAuthenticationFilter jwtAuthenticationFilter;   // Login filter
+    private final JWTAuthorizationFilter jwtAuthorizationFilter;     // Token validator
+
+    // ====== Extra Config ======
     private final CustomCorsConfiguration corsConfiguration;
     private final RequestLoggingFilter requestLoggingFilter;
+
+    // ====== OAuth2 Components ======
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
     private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessTokenEndpointHandler customAccessTokenEndpointHandler;
-
-    public SecurityConfiguration(
-            CustomOAuth2UserService customOAuth2UserService,
-            CustomBcryptEncoder customBcryptEncoder,
-            CustomAuthenticationProvider customAuthenticationProvider,
-            CustomUserDetailsService customUserDetailsService,
-            JWTAuthorizationFilter jwtAuthorizationFilter,
-            CustomCorsConfiguration corsConfiguration,
-            RequestLoggingFilter requestLoggingFilter,
-            OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
-            CustomAuthenticationFailureHandler customAuthenticationFailureHandler,
-            CustomAuthenticationEntryPoint customAuthenticationEntryPoint,
-            CustomAccessTokenEndpointHandler customAccessTokenEndpointHandler) {
-        this.customOAuth2UserService = customOAuth2UserService;
-        this.customBcryptEncoder = customBcryptEncoder;
-        this.customAuthenticationProvider = customAuthenticationProvider;
-        this.customUserDetailsService = customUserDetailsService;
-        this.jwtAuthorizationFilter = jwtAuthorizationFilter;
-        this.corsConfiguration = corsConfiguration;
-        this.requestLoggingFilter = requestLoggingFilter;
-        this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
-        this.customAuthenticationFailureHandler = customAuthenticationFailureHandler;
-        this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
-        this.customAccessTokenEndpointHandler = customAccessTokenEndpointHandler;
-    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -82,24 +66,27 @@ public class SecurityConfiguration {
                             .requestMatchers(
                                     "/swagger-ui*/**", "/v3/api-docs*/**",
                                     "/oauth2/authorize/github", "/oauth2/authorize/google",
+                                    "/oauth2/authorization/github",
                                     "api/v1.0/organization/setup-org",
                                     "/graphiql*/**", "/actuator*/**"
                             ).permitAll()
                             .anyRequest().authenticated();
                 })
                 .csrf(AbstractHttpConfigurer::disable)
-                .addFilterBefore(new JWTAuthenticationFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
-                .addFilterAfter(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class) // Process JWT after username/password authentication
-//                .addFilterBefore(requestLoggingFilter, UsernamePasswordAuthenticationFilter.class)  // Log before authentication
+
+                .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAt(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(requestLoggingFilter, JWTAuthorizationFilter.class)
+
                 .oauth2Login(oauth2 -> oauth2 // Enables OAuth2 login
                         .tokenEndpoint(token -> token
                                 .accessTokenResponseClient(customAccessTokenEndpointHandler)
                         )
                         .authorizationEndpoint(authz -> authz
-                                .baseUri("/dev-auth/oauth2/authorize") // http://localhost:8000/oauth2/authorize/github
+                                .baseUri("/dev-auth-server/oauth2/authorize") // http://localhost:8000/dev-auth-server/oauth2/authorize/github
                         ) // Custom login URL
                         .redirectionEndpoint(redir -> redir
-                                .baseUri("/dev-auth/login/oauth2/code/*")
+                                .baseUri("/dev-auth-server/login/oauth2/code/*")
                         )
                         // Ensures GitHub redirects correctly
                         .userInfoEndpoint(userInfo -> userInfo
@@ -134,16 +121,23 @@ public class SecurityConfiguration {
     }
 
 
+
+    // =====================================================================================
+    // 1. AuthenticationManager
+    // =====================================================================================
     /**
      * AuthenticationManager with both Custom and Dao Authentication Providers
      */
     @Bean
     public AuthenticationManager authenticationManager() {
-        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
-        daoAuthenticationProvider.setUserDetailsService(customUserDetailsService);
-        daoAuthenticationProvider.setPasswordEncoder(customBcryptEncoder);
 
-        return new ProviderManager(List.of(customAuthenticationProvider, daoAuthenticationProvider));
+        DaoAuthenticationProvider daoProvider = new DaoAuthenticationProvider();
+        daoProvider.setUserDetailsService(customUserDetailsService);
+        daoProvider.setPasswordEncoder(customBcryptEncoder);
+
+        return new ProviderManager(
+                List.of(customAuthenticationProvider, daoProvider)
+        );
     }
 
 }
