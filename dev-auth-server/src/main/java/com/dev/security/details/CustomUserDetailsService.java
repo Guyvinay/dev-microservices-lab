@@ -8,6 +8,7 @@ import com.dev.repository.OrganizationTenantMappingRepository;
 import com.dev.repository.UserProfileModelRepository;
 import com.dev.repository.UserProfileRoleMappingRepository;
 import com.dev.repository.UserProfileTenantMappingRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -21,22 +22,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    @Autowired
-    private UserProfileModelRepository userProfileModelRepository;
+    private final UserProfileModelRepository userProfileModelRepository;
 
-    @Autowired
-    private OrganizationModelRepository organizationModelRepository;
+    private final OrganizationModelRepository organizationModelRepository;
 
-    @Autowired
-    private OrganizationTenantMappingRepository tenantMappingRepository;
+    private final OrganizationTenantMappingRepository tenantMappingRepository;
 
-    @Autowired
-    private UserProfileTenantMappingRepository userProfileTenantMappingRepository;
+    private final UserProfileTenantMappingRepository userProfileTenantMappingRepository;
 
-    @Autowired
-    private UserProfileRoleMappingRepository roleMappingRepository;
+    private final UserProfileRoleMappingRepository roleMappingRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

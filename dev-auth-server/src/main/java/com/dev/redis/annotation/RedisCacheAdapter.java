@@ -15,7 +15,7 @@ public @interface RedisCacheAdapter {
 
     long ttl() default 20;
 
-    boolean log() default true;
+    boolean log() default false;
 
     RedisCacheOperation operation() default RedisCacheOperation.CACHE;
 

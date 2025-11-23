@@ -136,7 +136,7 @@ public class UserProfileServiceImpl implements UserProfileService {
      */
     @Override
 //    @Cacheable(cacheNames = "user", keyGenerator = "tenantAwareKeyGenerator")
-    @RedisCacheAdapter()
+    @RedisCacheAdapter(log = true)
     public UserProfileResponseDTO getUserById(UUID id) {
         if (Objects.isNull(id)) throw new InvalidInputException("User ID cannot be null");
 
@@ -157,6 +157,7 @@ public class UserProfileServiceImpl implements UserProfileService {
      * @throws UserNotFoundException if no user is found with the given ID.
      */
     @Override
+    @RedisCacheAdapter(log = true)
     public UserProfileResponseDTO getUserByEmail(String email) {
         if (Objects.isNull(email)) throw new InvalidInputException("User ID cannot be null");
 
@@ -220,12 +221,11 @@ public class UserProfileServiceImpl implements UserProfileService {
     }
 
     @Override
-//    @RedisCacheAdapter()
+    @RedisCacheAdapter(log = true)
     public List<UserProfileResponseDTO> getAllUsers() {
         log.info("Fetching all user profiles");
         List<UserProfileModel> profiles = userProfileModelRepository.findAll();
         log.info("user profiles: {}", profiles.size());
-        tenantPublisher.publishTenantCreated(SecurityContextUtil.getTenantId());
         return profiles.stream().map(entityDtoMapper::toUserProfileResponseDTO).collect(Collectors.toList());
     }
 
