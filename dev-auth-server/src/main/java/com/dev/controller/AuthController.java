@@ -1,6 +1,8 @@
 package com.dev.controller;
 
 import com.dev.dto.LoginRequestDTO;
+import com.dev.dto.RequestPasswordResetDto;
+import com.dev.dto.ResetPasswordDto;
 import com.dev.service.AuthService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.nimbusds.jose.JOSEException;
@@ -10,6 +12,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,5 +57,37 @@ public class AuthController {
     @GetMapping("/login")
     public ResponseEntity<Map<String, String>> login() throws JsonProcessingException, JOSEException {
         return ResponseEntity.ok(authService.login());
+    }
+
+    @PostMapping("/request-password-reset")
+    public ResponseEntity<Map<String, String>> requestPasswordReset(
+            @RequestBody RequestPasswordResetDto requestPasswordResetDto,
+            HttpServletRequest request
+    ) throws MessagingException {
+        String url = getBaseUrl(request);
+        return ResponseEntity.ok(authService.requestPasswordReset(url, requestPasswordResetDto));
+    }
+
+    @GetMapping("/validate-reset-password")
+    public ResponseEntity<Map<String, String>> validateResetPassword(
+            @RequestParam(name = "email") String email,
+            @RequestParam(name = "token") String token
+    ) {
+        return ResponseEntity.ok(authService.validateResetPassword(email, token));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Map<String, String>> reset(
+            @RequestBody @Valid ResetPasswordDto dto
+    ) {
+        return ResponseEntity.ok(authService.resetPassword(dto));
+    }
+
+    private String getBaseUrl(HttpServletRequest request) {
+        String scheme = request.getScheme();             // http
+        String host = request.getServerName();           // localhost or domain
+        int port = request.getServerPort();              // 8000
+        String portPart = (port == 80 || port == 443) ? "" : ":" + port;
+        return scheme + "://" + host + portPart;        // e.g. http://localhost:8000
     }
 }

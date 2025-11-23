@@ -37,16 +37,6 @@ public interface UserProfileService {
     UserProfileResponseDTO getUserById(UUID id);
 
     /**
-     * Retrieves the user profile by its unique ID.
-     *
-     * @param email The unique identifier of the user.
-     * @return A DTO containing the user profile details.
-     * @throws InvalidInputException if the ID is null.
-     * @throws UserNotFoundException if no user is found with the given ID.
-     */
-    UserProfileResponseDTO getUserByEmail(String email);
-
-    /**
      * Updates an existing user profile.
      *
      * @param id      The unique identifier of the user to be updated.
@@ -56,6 +46,16 @@ public interface UserProfileService {
      * @throws UserNotFoundException if no user is found with the given ID.
      */
     UserProfileResponseDTO updateUser(UUID id, UserProfileRequestDTO request);
+
+    /**
+     * Retrieves the user profile by its unique ID.
+     *
+     * @param email The unique identifier of the user.
+     * @return A DTO containing the user profile details.
+     * @throws InvalidInputException if the ID is null.
+     * @throws UserNotFoundException if no user is found with the given ID.
+     */
+    UserProfileResponseDTO getUserByEmail(String email);
 
     /**
      * Deletes a user profile by its unique ID.

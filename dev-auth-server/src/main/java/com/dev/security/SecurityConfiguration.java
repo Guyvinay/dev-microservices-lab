@@ -19,7 +19,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -67,6 +66,9 @@ public class SecurityConfiguration {
                                     "/swagger-ui*/**", "/v3/api-docs*/**",
                                     "/oauth2/authorize/github", "/oauth2/authorize/google",
                                     "api/v1.0/organization/setup-org",
+                                    "/api/auth/request-password-reset",
+                                    "/api/auth/validate-reset-password/**",
+                                    "/api/auth/reset-password",
                                     "/graphiql*/**", "/actuator*/**"
                             ).permitAll()
                             .anyRequest().authenticated();

@@ -4,7 +4,7 @@ import com.dev.dto.UserProfileTenantDTO;
 import com.dev.entity.UserProfileTenantMapping;
 import com.dev.exception.DuplicateResourceException;
 import com.dev.exception.ResourceNotFoundException;
-import com.dev.repository.UserProfileTenantRepository;
+import com.dev.repository.UserProfileTenantMappingRepository;
 import com.dev.service.UserProfileTenantService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserProfileTenantServiceImpl implements UserProfileTenantService {
 
-    private final UserProfileTenantRepository repository;
+    private final UserProfileTenantMappingRepository repository;
     private final ModelMapper modelMapper;
 
     @Override

@@ -36,7 +36,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     private final CustomBcryptEncoder customBcryptEncoder;
     private final UserProfileModelRepository userProfileModelRepository;
     private final UserProfileService userProfileService;
-    private final UserProfileTenantRepository userProfileTenantRepository;
+    private final UserProfileTenantMappingRepository userProfileTenantMappingRepository;
     private final UserProfileRoleModelRepository userProfileRoleModelRepository;
     private final UserProfileRoleMappingRepository userProfileRoleMappingRepository;
     private final UserProfileTenantService userProfileTenantService;
@@ -149,15 +149,19 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     private OrganizationTenantDTO saveOrgTenant(UUID orgId, OrgSignupRequestDTO orgSignupRequestDTO) {
-        log.info("Creating tenant for organization ID: {}", orgId);
-
-        long tenantId = AuthUtility.generateRandomNumber(5);
+        log.info("Creating tenant for organization ID: {}, tenant: {}", orgId, orgSignupRequestDTO.getTenantName());
 
         OrganizationTenantDTO organizationTenantDTO = new OrganizationTenantDTO();
-        organizationTenantDTO.setTenantId(String.valueOf(tenantId));
+        String tenant = orgSignupRequestDTO.getTenantName();
+        if(tenant.equalsIgnoreCase("public")) {
+            organizationTenantDTO.setTenantId(tenant);
+        } else {
+            long tenantId = AuthUtility.generateRandomNumber(5);
+            organizationTenantDTO.setTenantId(String.valueOf(tenantId));
+        }
         organizationTenantDTO.setOrgId(orgId);
+        organizationTenantDTO.setTenantName(tenant);
         organizationTenantDTO.setTenantActive(true);
-        organizationTenantDTO.setTenantName(orgSignupRequestDTO.getTenantName());
 
         OrganizationTenantDTO savedTenant = organizationTenantService.createTenant(organizationTenantDTO);
         log.info("Tenant saved successfully with ID: {}", savedTenant.getTenantId());

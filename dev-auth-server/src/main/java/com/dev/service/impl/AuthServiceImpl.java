@@ -1,8 +1,17 @@
 package com.dev.service.impl;
 
+import com.dev.bulk.email.service.EmailSendService;
 import com.dev.dto.JwtTokenDto;
+import com.dev.dto.RequestPasswordResetDto;
+import com.dev.dto.ResetPasswordDto;
+import com.dev.dto.UserProfileResponseDTO;
+import com.dev.entity.PasswordResetToken;
+import com.dev.entity.UserProfileModel;
+import com.dev.repository.PasswordResetTokenRepository;
+import com.dev.repository.UserProfileModelRepository;
 import com.dev.security.details.CustomAuthToken;
 import com.dev.security.dto.JWTRefreshTokenDto;
+import com.dev.security.provider.CustomBcryptEncoder;
 import com.dev.security.provider.JwtTokenProviderManager;
 import com.dev.service.AuthService;
 import com.dev.service.UserProfileService;
@@ -10,34 +19,37 @@ import com.dev.service.UserProfileTenantService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
+import jakarta.mail.MessagingException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static com.dev.security.SecurityConstants.JWT_REFRESH_TOKEN;
 import static com.dev.security.SecurityConstants.JWT_TOKEN;
 
 @Service
+@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
 
     private final JwtTokenProviderManager jwtTokenProviderManager;
     private final UserProfileService userProfileService;
     private final UserProfileTenantService userProfileTenantService;
-
-    public AuthServiceImpl(JwtTokenProviderManager jwtTokenProviderManager, UserProfileService userProfileService, UserProfileTenantService userProfileTenantService) {
-        this.jwtTokenProviderManager = jwtTokenProviderManager;
-        this.userProfileService = userProfileService;
-        this.userProfileTenantService = userProfileTenantService;
-    }
+    private final CustomBcryptEncoder customBcryptEncoder;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final EmailSendService emailSendService;
+    private final UserProfileModelRepository userProfileModelRepository;
 
     /**
      * @return
@@ -59,6 +71,77 @@ public class AuthServiceImpl implements AuthService {
         tokensMap.put(JWT_REFRESH_TOKEN, jwtTokenProviderManager.createJwtToken( new ObjectMapper().writeValueAsString(jwtRefreshTokenDto), refreshExpiredIn));
 
         return tokensMap;
+    }
+
+    @Override
+    public Map<String, String> requestPasswordReset(String url, RequestPasswordResetDto resetDto) throws MessagingException {
+        UserProfileResponseDTO profileResponseDTO = userProfileService.getUserByEmail(resetDto.getEmail());
+        if (profileResponseDTO != null) {
+            String token = UUID.randomUUID() + "-" + UUID.randomUUID();
+            String encodedToken = customBcryptEncoder.encode(token);
+            long TOKEN_EXPIRY = Instant.now().plus(15, ChronoUnit.MINUTES).toEpochMilli();
+            PasswordResetToken resetToken = PasswordResetToken.builder()
+                    .used(false)
+                    .readyToUse(false)
+                    .tokenHash(encodedToken)
+                    .email(resetDto.getEmail())
+                    .createdAt(Instant.now().toEpochMilli())
+                    .expiresAt(TOKEN_EXPIRY)
+                    .build();
+
+            passwordResetTokenRepository.save(resetToken);
+            String resetLink = String.format("%s/dev-auth-server/api/auth/validate-reset-password?email=%s&token=%s", url, resetToken.getEmail(), token);
+            emailSendService.sendPasswordResetEmail(resetToken.getEmail(), resetLink);
+        }
+        return Map.of();
+    }
+
+    @Override
+    public Map<String, String> validateResetPassword(String email, String token) {
+        PasswordResetToken passwordResetToken = passwordResetTokenRepository.findFirstByEmailAndUsedFalseOrderByCreatedAtDesc(email)
+                .orElseThrow(()-> new RuntimeException("No Password request found for this email: " + email));
+
+        if (passwordResetToken.isUsed()) throw new RuntimeException("Token already used");
+
+        if (Instant.ofEpochMilli(passwordResetToken.getExpiresAt()).isBefore(Instant.now()))
+            throw new RuntimeException("Token expired: " + Instant.ofEpochMilli(passwordResetToken.getExpiresAt()));
+
+        // Compare raw token with stored hash
+        boolean matches = customBcryptEncoder.matches(token, passwordResetToken.getTokenHash());
+        if (!matches) throw new RuntimeException("Invalid token");
+
+        passwordResetToken.setReadyToUse(true);
+        passwordResetTokenRepository.save(passwordResetToken);
+
+        return Map.of("message", "token activate, ready to reset", "token", token);
+    }
+
+    @Override
+    public Map<String, String> resetPassword(ResetPasswordDto dto) {
+        PasswordResetToken passwordResetToken = passwordResetTokenRepository.findFirstByEmailAndUsedFalseOrderByCreatedAtDesc(dto.getEmail())
+                .orElseThrow(() -> new RuntimeException("No password reset request found"));
+
+        if (passwordResetToken.isUsed()) throw new RuntimeException("Token already used");
+
+        if (Instant.ofEpochMilli(passwordResetToken.getExpiresAt()).isBefore(Instant.now()))
+            throw new RuntimeException("Token expired: " + Instant.ofEpochMilli(passwordResetToken.getExpiresAt()));
+
+        // Compare raw token with stored hash
+        boolean matches = customBcryptEncoder.matches(dto.getToken(), passwordResetToken.getTokenHash());
+        if (!matches) throw new RuntimeException("Invalid token");
+
+        UserProfileModel user = userProfileModelRepository.findByEmail(dto.getEmail())
+                .orElseThrow(() -> new IllegalStateException("User not found"));
+
+        user.setPassword(customBcryptEncoder.encode(dto.getNewPassword()));
+        userProfileModelRepository.save(user);
+
+        // mark token used
+        passwordResetToken.setUsed(true);
+        passwordResetToken.setReadyToUse(false);
+        passwordResetTokenRepository.save(passwordResetToken);
+
+        return Map.of("status", "password reset successfully");
     }
 
     private JwtTokenDto createJwtTokeDto(JwtTokenDto userProfile, int expiredIn) {
