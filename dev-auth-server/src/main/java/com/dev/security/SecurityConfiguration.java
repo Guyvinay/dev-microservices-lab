@@ -83,6 +83,9 @@ public class SecurityConfiguration {
                                     "/swagger-ui*/**", "/v3/api-docs*/**",
                                     "/oauth2/authorize/github", "/oauth2/authorize/google",
                                     "api/v1.0/organization/setup-org",
+                                    "/api/auth/request-password-reset",
+                                    "/api/auth/validate-reset-password/**",
+                                    "/api/auth/reset-password",
                                     "/graphiql*/**", "/actuator*/**"
                             ).permitAll()
                             .anyRequest().authenticated();

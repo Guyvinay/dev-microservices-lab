@@ -8,14 +8,19 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.mail.MailException;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +29,7 @@ public class EmailSendService {
 
     private final JavaMailSender mailSender;
     private final EmailElasticService emailElasticService;
+    private final TemplateEngine templateEngine;
 
     @Async("threadPoolTaskExecutor")
     public void sendEmail(EmailDocument emailDocument) throws IOException {
@@ -113,5 +119,38 @@ public class EmailSendService {
 
     private void indexEmailDocument(EmailDocument emailDocument) throws IOException {
         emailElasticService.indexEmail(emailDocument);
+    }
+
+    @Async("threadPoolTaskExecutor")
+    public void sendPasswordResetEmail(String to, String resetLink) throws MessagingException {
+
+        // =============================================
+        // 1️ Prepare email template variables
+        // =============================================
+        Map<String, String> templateVars = new HashMap<>();
+        templateVars.put("resetLink", resetLink);
+        templateVars.put("email", to); // or real name if you have it
+        String htmlBody = prepareEmailTemplate(templateVars);
+
+
+        // =============================================
+        // 2️ Build email message
+        // =============================================
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+        helper.setTo(to);
+        helper.setFrom("mrsinghvinay563@gmail.com");
+        helper.setSubject("Password reset request");
+        helper.setText(htmlBody, true);    // true = HTML
+        mailSender.send(message);
+    }
+
+    private String prepareEmailTemplate(Map<String, String> templateVariables) {
+        Context context = new Context();
+        for (Map.Entry<String, String> entry: templateVariables.entrySet()) {
+            context.setVariable(entry.getKey(), entry.getValue());
+        }
+        return templateEngine.process("password-reset-email.html", context);
     }
 }
