@@ -14,6 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrganizationTenantDTO {
+
     private String tenantId;
 
     @NotNull(message = "Organization ID is required")

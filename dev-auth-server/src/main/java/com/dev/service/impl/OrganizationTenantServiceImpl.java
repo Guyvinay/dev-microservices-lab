@@ -9,6 +9,7 @@ import com.dev.service.OrganizationTenantService;
 import com.dev.utility.AuthUtility;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -34,8 +35,12 @@ public class OrganizationTenantServiceImpl implements OrganizationTenantService 
         log.info("Creating new tenant with name={} for orgId={}", dto.getTenantName(), dto.getOrgId());
 
         OrganizationTenantMapping tenantMapping = new OrganizationTenantMapping();
-        long tenantId = AuthUtility.generateRandomNumber(5);
-        tenantMapping.setTenantId(String.valueOf(tenantId));
+        if(StringUtils.isNotBlank(dto.getTenantId())) {
+            tenantMapping.setTenantId(dto.getTenantId());
+        } else {
+            long tenantId = AuthUtility.generateRandomNumber(5);
+            tenantMapping.setTenantId(String.valueOf(tenantId));
+        }
         tenantMapping.setOrgId(dto.getOrgId());
         tenantMapping.setTenantActive(true);
         tenantMapping.setCreatedAt(Instant.now().toEpochMilli());

@@ -99,10 +99,10 @@ public class SecurityConfiguration {
                                 .accessTokenResponseClient(customAccessTokenEndpointHandler)
                         )
                         .authorizationEndpoint(authz -> authz
-                                .baseUri("/dev-auth/oauth2/authorize") // http://localhost:8000/oauth2/authorize/github
+                                .baseUri("/oauth2/authorize") // http://localhost:8000/oauth2/authorize/github
                         ) // Custom login URL
                         .redirectionEndpoint(redir -> redir
-                                .baseUri("/dev-auth/login/oauth2/code/*")
+                                .baseUri("/login/oauth2/code/*")
                         )
                         // Ensures GitHub redirects correctly
                         .userInfoEndpoint(userInfo -> userInfo

@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface UserProfileTenantRepository extends JpaRepository<UserProfileTenantMapping, UUID> {
+public interface UserProfileTenantMappingRepository extends JpaRepository<UserProfileTenantMapping, UUID> {
 
     List<UserProfileTenantMapping> findByTenantId(String tenantId);
 
