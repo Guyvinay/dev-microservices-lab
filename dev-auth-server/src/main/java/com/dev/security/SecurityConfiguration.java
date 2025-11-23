@@ -66,7 +66,6 @@ public class SecurityConfiguration {
                             .requestMatchers(
                                     "/swagger-ui*/**", "/v3/api-docs*/**",
                                     "/oauth2/authorize/github", "/oauth2/authorize/google",
-                                    "/oauth2/authorization/github",
                                     "api/v1.0/organization/setup-org",
                                     "/graphiql*/**", "/actuator*/**"
                             ).permitAll()
@@ -83,10 +82,10 @@ public class SecurityConfiguration {
                                 .accessTokenResponseClient(customAccessTokenEndpointHandler)
                         )
                         .authorizationEndpoint(authz -> authz
-                                .baseUri("/dev-auth-server/oauth2/authorize") // http://localhost:8000/dev-auth-server/oauth2/authorize/github
+                                .baseUri("/oauth2/authorize") // http://localhost:8000/dev-auth-server/oauth2/authorize/github
                         ) // Custom login URL
                         .redirectionEndpoint(redir -> redir
-                                .baseUri("/dev-auth-server/login/oauth2/code/*")
+                                .baseUri("/login/oauth2/code/*")
                         )
                         // Ensures GitHub redirects correctly
                         .userInfoEndpoint(userInfo -> userInfo
