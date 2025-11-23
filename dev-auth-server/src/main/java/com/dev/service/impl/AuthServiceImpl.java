@@ -21,6 +21,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -33,11 +35,14 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import static com.dev.security.SecurityConstants.JWT_REFRESH_TOKEN;
 import static com.dev.security.SecurityConstants.JWT_TOKEN;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -45,7 +50,6 @@ public class AuthServiceImpl implements AuthService {
 
     private final JwtTokenProviderManager jwtTokenProviderManager;
     private final UserProfileService userProfileService;
-    private final UserProfileTenantService userProfileTenantService;
     private final CustomBcryptEncoder customBcryptEncoder;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final EmailSendService emailSendService;
@@ -77,7 +81,21 @@ public class AuthServiceImpl implements AuthService {
     public Map<String, String> requestPasswordReset(String url, RequestPasswordResetDto resetDto) throws MessagingException {
         UserProfileResponseDTO profileResponseDTO = userProfileService.getUserByEmail(resetDto.getEmail());
         if (profileResponseDTO != null) {
-            String token = UUID.randomUUID() + "-" + UUID.randomUUID();
+
+            Optional<PasswordResetToken> resetTokenOptional = passwordResetTokenRepository.findFirstByEmailAndUsedFalseOrderByCreatedAtDesc(resetDto.getEmail());
+            if(resetTokenOptional.isPresent()) {
+                PasswordResetToken token = resetTokenOptional.get();
+                long now = Instant.now().toEpochMilli();
+                long expiresAt = token.getExpiresAt();
+                long remainingMillis = expiresAt - now;
+                if(remainingMillis > 0) {
+                    long remainingMinutes = TimeUnit.MILLISECONDS.toMinutes(remainingMillis);
+                    log.info("Request to reset password already present, try in {} minutes", remainingMinutes);
+                    throw new RuntimeException("Already requested for reset password. try after " + remainingMinutes + " minutes.");
+                }
+            }
+
+            String token = UUID.randomUUID().toString().replace("-", "") + RandomStringUtils.randomAlphanumeric(64);;
             String encodedToken = customBcryptEncoder.encode(token);
             long TOKEN_EXPIRY = Instant.now().plus(15, ChronoUnit.MINUTES).toEpochMilli();
             PasswordResetToken resetToken = PasswordResetToken.builder()

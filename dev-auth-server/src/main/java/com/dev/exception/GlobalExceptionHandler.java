@@ -1,23 +1,41 @@
 package com.dev.exception;
 
+import com.dev.dto.exception.GeneralResponseDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-//@RestControllerAdvice
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidInputException.class)
-    public ResponseEntity<String> handleInvalidInput(InvalidInputException ex) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    public ResponseEntity<GeneralResponseDTO<Object>> handleInvalidInput(InvalidInputException ex) {
+        GeneralResponseDTO<Object> responseDTO = GeneralResponseDTO.builder()
+                .errorMsg(ex.getMessage())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .build();
+        return new ResponseEntity<>(responseDTO, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<String> handleUserNotFound(UserNotFoundException ex) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    public ResponseEntity<GeneralResponseDTO<Object>> handleUserNotFound(UserNotFoundException ex) {
+        GeneralResponseDTO<Object> responseDTO = GeneralResponseDTO.builder()
+                .errorMsg(ex.getMessage())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .build();
+        return new ResponseEntity<>(responseDTO, HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<GeneralResponseDTO<Object>> handleRuntimeException(RuntimeException ex) {
+        GeneralResponseDTO<Object> responseDTO = GeneralResponseDTO.builder()
+                .errorMsg(ex.getMessage())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .build();
+        return new ResponseEntity<>(responseDTO, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
 
 //    @ExceptionHandler(Exception.class)
 //    public ResponseEntity<String> handleGenericException(Exception ex) {
