@@ -59,12 +59,13 @@ public class AuthController {
         return ResponseEntity.ok(authService.login());
     }
 
-    @PostMapping("/request-password-reset")
+    @GetMapping("/request-password-reset")
     public ResponseEntity<Map<String, String>> requestPasswordReset(
-            @RequestBody RequestPasswordResetDto requestPasswordResetDto,
+            @RequestParam(name = "email") String email,
             HttpServletRequest request
     ) throws MessagingException {
         String url = getBaseUrl(request);
+        RequestPasswordResetDto requestPasswordResetDto = new RequestPasswordResetDto(email);
         return ResponseEntity.ok(authService.requestPasswordReset(url, requestPasswordResetDto));
     }
 

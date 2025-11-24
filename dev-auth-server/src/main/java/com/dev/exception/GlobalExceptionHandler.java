@@ -1,16 +1,19 @@
 package com.dev.exception;
 
 import com.dev.dto.exception.GeneralResponseDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+@Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidInputException.class)
     public ResponseEntity<GeneralResponseDTO<Object>> handleInvalidInput(InvalidInputException ex) {
+        log.error("Exception: ", ex);
         GeneralResponseDTO<Object> responseDTO = GeneralResponseDTO.builder()
                 .errorMsg(ex.getMessage())
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -20,6 +23,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<GeneralResponseDTO<Object>> handleUserNotFound(UserNotFoundException ex) {
+        log.error("Exception: ", ex);
         GeneralResponseDTO<Object> responseDTO = GeneralResponseDTO.builder()
                 .errorMsg(ex.getMessage())
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -29,6 +33,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<GeneralResponseDTO<Object>> handleRuntimeException(RuntimeException ex) {
+        log.error("Exception: ", ex);
         GeneralResponseDTO<Object> responseDTO = GeneralResponseDTO.builder()
                 .errorMsg(ex.getMessage())
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())

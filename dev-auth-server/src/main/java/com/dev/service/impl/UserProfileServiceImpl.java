@@ -157,7 +157,7 @@ public class UserProfileServiceImpl implements UserProfileService {
      * @throws UserNotFoundException if no user is found with the given ID.
      */
     @Override
-    @RedisCacheAdapter(log = true)
+//    @RedisCacheAdapter(log = true) cannot use here because this is being on public endpoint like reset register.
     public UserProfileResponseDTO getUserByEmail(String email) {
         if (Objects.isNull(email)) throw new InvalidInputException("User ID cannot be null");
 

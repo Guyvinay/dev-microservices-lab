@@ -26,6 +26,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -88,11 +89,11 @@ public class AuthServiceImpl implements AuthService {
                 long now = Instant.now().toEpochMilli();
                 long expiresAt = token.getExpiresAt();
                 long remainingMillis = expiresAt - now;
-                if(remainingMillis > 0) {
-                    long remainingMinutes = TimeUnit.MILLISECONDS.toMinutes(remainingMillis);
-                    log.info("Request to reset password already present, try in {} minutes", remainingMinutes);
-                    throw new RuntimeException("Already requested for reset password. try after " + remainingMinutes + " minutes.");
-                }
+//                if(remainingMillis > 0) {
+//                    long remainingMinutes = TimeUnit.MILLISECONDS.toMinutes(remainingMillis);
+//                    log.info("Request to reset password already present, try in {} minutes", remainingMinutes);
+//                    throw new RuntimeException("Already requested for reset password. try after " + remainingMinutes + " minutes.");
+//                }
             }
 
             String token = UUID.randomUUID().toString().replace("-", "") + RandomStringUtils.randomAlphanumeric(64);;
@@ -107,11 +108,12 @@ public class AuthServiceImpl implements AuthService {
                     .expiresAt(TOKEN_EXPIRY)
                     .build();
 
-            passwordResetTokenRepository.save(resetToken);
             String resetLink = String.format("%s/dev-auth-server/api/auth/validate-reset-password?email=%s&token=%s", url, resetToken.getEmail(), token);
-            emailSendService.sendPasswordResetEmail(resetToken.getEmail(), resetLink);
+            emailSendService.sendPasswordResetEmail(resetToken.getEmail(), resetLink, profileResponseDTO.getName(), token);
+            passwordResetTokenRepository.save(resetToken);
+            return Map.of("response", "email sent, please check your email.");
         }
-        return Map.of();
+        return Map.of("response", "User not found");
     }
 
     @Override
@@ -135,11 +137,14 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional
     public Map<String, String> resetPassword(ResetPasswordDto dto) {
-        PasswordResetToken passwordResetToken = passwordResetTokenRepository.findFirstByEmailAndUsedFalseOrderByCreatedAtDesc(dto.getEmail())
+        PasswordResetToken passwordResetToken = passwordResetTokenRepository.findFirstByEmailOrderByCreatedAtDesc(dto.getEmail())
                 .orElseThrow(() -> new RuntimeException("No password reset request found"));
 
         if (passwordResetToken.isUsed()) throw new RuntimeException("Token already used");
+
+        if (!passwordResetToken.isReadyToUse()) throw new RuntimeException("Token is not validated, please first validate it.");
 
         if (Instant.ofEpochMilli(passwordResetToken.getExpiresAt()).isBefore(Instant.now()))
             throw new RuntimeException("Token expired: " + Instant.ofEpochMilli(passwordResetToken.getExpiresAt()));
@@ -159,7 +164,7 @@ public class AuthServiceImpl implements AuthService {
         passwordResetToken.setReadyToUse(false);
         passwordResetTokenRepository.save(passwordResetToken);
 
-        return Map.of("status", "password reset successfully");
+        return Map.of("status", "password reset successfully, you may login");
     }
 
     private JwtTokenDto createJwtTokeDto(JwtTokenDto userProfile, int expiredIn) {

@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.mail.MailException;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -122,14 +121,16 @@ public class EmailSendService {
     }
 
     @Async("threadPoolTaskExecutor")
-    public void sendPasswordResetEmail(String to, String resetLink) throws MessagingException {
+    public void sendPasswordResetEmail(String to, String resetLink, String name, String token) throws MessagingException {
 
         // =============================================
         // 1️ Prepare email template variables
         // =============================================
         Map<String, String> templateVars = new HashMap<>();
         templateVars.put("resetLink", resetLink);
-        templateVars.put("email", to); // or real name if you have it
+        templateVars.put("email", to);
+        templateVars.put("name", name);
+        templateVars.put("token", token);
         String htmlBody = prepareEmailTemplate(templateVars);
 
 
