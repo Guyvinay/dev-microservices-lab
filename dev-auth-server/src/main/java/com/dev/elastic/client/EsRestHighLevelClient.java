@@ -31,8 +31,11 @@ import org.elasticsearch.cluster.metadata.AliasMetadata;
 import org.elasticsearch.index.VersionType;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.ReindexRequest;
+import org.elasticsearch.script.Script;
+import org.elasticsearch.script.ScriptType;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -224,25 +227,48 @@ public class EsRestHighLevelClient {
         reindexRequest.setSourceIndices(sourceIndex);
         reindexRequest.setDestIndex(destIndex);
 
-        // Important for large datasets
-        reindexRequest.setConflicts("proceed");           // otherwise reindex may fail
-        reindexRequest.setRefresh(true);                  // flush after reindex
-        reindexRequest.setSlices(4);                      // parallelism; keep <= CPU cores
+        // Prevent accidental duplicates on repeated reindex
+        reindexRequest.setDestOpType("create");
 
-        // Avoid version conflicts when mappings change
+        reindexRequest.setConflicts("proceed");
+        reindexRequest.setRefresh(true);
+        reindexRequest.setSlices(4);
         reindexRequest.setDestVersionType(VersionType.INTERNAL);
+        reindexRequest.setRequestsPerSecond(1000);
 
-        // Optional: throttling
-        reindexRequest.setRequestsPerSecond(5000);        // adjust for cluster load
+        reindexRequest.setScript(new Script(
+                ScriptType.INLINE,
+                "painless",
+                """
+                    // Preserve original ID
+                    ctx._id = ctx._id;
+    
+                    if (ctx._source.conversations == null) {
+                        ctx._source.conversations = new ArrayList();
+                    }
+    
+                    Map conv = new HashMap();
+                    conv.put("responseType", "DEFAULT_TYPE");
+                    conv.put("response", "Auto-generated during migration");
+                    conv.put("status", "PENDING");
+                    conv.put("responder", "SYSTEM");
+                    conv.put("contact", "UNKNOWN");
+                    conv.put("dateCreated", null);
+                    conv.put("followUpNeeded", false);
+    
+                    ctx._source.conversations.add(conv);
+                """,
+                Collections.emptyMap()
+        ));
 
-        BulkByScrollResponse bulkByScrollResponse = restHighLevelClient.reindex(reindexRequest, RequestOptions.DEFAULT);
+        BulkByScrollResponse response =
+                restHighLevelClient.reindex(reindexRequest, RequestOptions.DEFAULT);
 
-        if (!bulkByScrollResponse.getBulkFailures().isEmpty()) {
-            throw new RuntimeException("Reindex encountered failures: " +
-                    bulkByScrollResponse.getBulkFailures());
+        if (!response.getBulkFailures().isEmpty()) {
+            throw new RuntimeException("Reindex failures: " + response.getBulkFailures());
         }
 
-        log.info("Total docs reindexed: {}", bulkByScrollResponse.getTotal());
+        log.info("Total docs reindexed: {}", response.getTotal());
     }
     private void swapAliasFromIndex(String currentIndex, String newIndex, String tenantAlias) throws IOException {
         IndicesAliasesRequest aliasesRequest = new IndicesAliasesRequest();

@@ -276,8 +276,4 @@ public class EmailService {
 
         return emailElasticService.getEmailDocumentFromEmailIds(emailIds);
     }
-
-    private void createIndexWithAliasAdnMapping() {
-        Map<String, Object> mappings = ElasticUtility.getEmailDocumentMapping();
-    }
 }

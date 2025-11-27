@@ -260,7 +260,10 @@ public class EmailElasticService {
 
     private String aliasNameFromIndexName(String indexName) {
         int vIndex = indexName.lastIndexOf("_v");
-        return indexName.substring(0, vIndex+1);
+        if(vIndex>0) {
+            return indexName.substring(0, vIndex);
+        }
+        return indexName + "_read";
     }
 
 }

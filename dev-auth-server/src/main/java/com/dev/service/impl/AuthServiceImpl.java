@@ -150,7 +150,7 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Token expired: " + Instant.ofEpochMilli(passwordResetToken.getExpiresAt()));
 
         // Compare raw token with stored hash
-        boolean matches = customBcryptEncoder.matches(dto.getToken(), passwordResetToken.getTokenHash());
+            boolean matches = customBcryptEncoder.matches(dto.getToken(), passwordResetToken.getTokenHash());
         if (!matches) throw new RuntimeException("Invalid token");
 
         UserProfileModel user = userProfileModelRepository.findByEmail(dto.getEmail())

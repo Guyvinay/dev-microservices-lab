@@ -1,0 +1,5 @@
+package com.dev.play.patterns.prototype;
+
+public interface Prototype extends Cloneable {
+    Prototype clone(); // Method to clone an object
+}

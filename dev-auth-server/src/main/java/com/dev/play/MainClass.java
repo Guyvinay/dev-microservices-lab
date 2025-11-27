@@ -4,9 +4,11 @@ import com.dev.play.patterns.Abstract.Button;
 import com.dev.play.patterns.Abstract.Checkbox;
 import com.dev.play.patterns.Abstract.GUIFactory;
 import com.dev.play.patterns.Abstract.WindowsFactory;
+import com.dev.play.patterns.SingletonClass;
 import com.dev.play.patterns.builder.UserBuilder;
 import com.dev.play.patterns.factory.Shape;
 import com.dev.play.patterns.factory.ShapeFactory;
+import com.dev.play.patterns.prototype.Employee;
 
 public class MainClass {
 
@@ -55,6 +57,27 @@ public class MainClass {
                 .age(24)
                 .role("Dev")
                 .build();
+
+
+        /**
+         * Prototype = clone objects instead of creating from scratch.
+         *
+         * Can implement shallow or deep copy depending on mutable fields.
+         *
+         * Reduces expensive initialization overhead.
+         */
+        Employee employee = new Employee("Vinay", 24);
+        Employee clonedEmp = employee.clone();
+        // Modify the clone
+        clonedEmp.setName("V");
+
+        System.out.println(employee); // Employee{name='Vinay', age=28}
+        System.out.println(clonedEmp);   // Employee{name='Amit', age=28}
+
+
+
+
     }
+
 
 }

@@ -1,4 +1,4 @@
-package com.dev.play;
+package com.dev.play.patterns;
 
 public class SingletonClass {
 
