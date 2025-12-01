@@ -53,23 +53,6 @@ public class JwtTokenProviderManager {
         return createJwtToken(payload, expInMinutes, reqSigner);
     }
 
-    public JwtTokenDto createJwtTokeDto(UserProfileResponseDTO userProfile, int expiredIn) {
-        ZonedDateTime zdt = LocalDateTime.now().atZone(ZoneOffset.UTC);
-        Date createdDate = Date.from(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
-        Date expiaryDate = Date.from(zdt.plusMinutes(expiredIn).toInstant());
-
-        return new JwtTokenDto(
-                userProfile.getId(),
-                "org",
-                userProfile.getName(),
-                userProfile.getEmail(),
-                "123456",
-                createdDate,
-                expiaryDate,
-                List.of("123456", "234567", "345678", "56789", "67890")
-        );
-    }
-
 
     public String createJwtToken(String payload, int expiryTimeMinutes, JWSSigner jwsSigner) throws JOSEException {
 

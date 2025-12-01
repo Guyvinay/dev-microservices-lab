@@ -21,13 +21,11 @@ import java.io.IOException;
 @Slf4j
 public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    private final SecurityUtils securityUtils;
     private final JwtTokenProviderManager jwtTokenProviderManager;
     private final ObjectMapper objectMapper;
 
 
-    public OAuth2LoginSuccessHandler(SecurityUtils securityUtils, JwtTokenProviderManager jwtTokenProviderManager, ObjectMapper objectMapper) {
-        this.securityUtils = securityUtils;
+    public OAuth2LoginSuccessHandler(JwtTokenProviderManager jwtTokenProviderManager, ObjectMapper objectMapper) {
         this.jwtTokenProviderManager = jwtTokenProviderManager;
         this.objectMapper = objectMapper;
     }

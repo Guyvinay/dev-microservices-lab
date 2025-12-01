@@ -79,7 +79,7 @@ public class RedisCacheAdapterAspect {
         Object value = cache.get(key, Object.class);
         if (value != null) {
             if(redisCacheAdapter.log()) {
-                log.info("[RedisCacheAdapter] HIT {} -> {}", key, value);
+                log.info("[RedisCacheAdapter] HIT {}", key);
             }
             return value;
         }
@@ -95,8 +95,9 @@ public class RedisCacheAdapterAspect {
         MethodSignature signature = (MethodSignature) pjp.getSignature();
         Method method = signature.getMethod();
         RedisCacheAdapter redisCacheAdapter = method.getAnnotation(RedisCacheAdapter.class);
+        String className = method.getDeclaringClass().getName();
         String name = redisCacheAdapter.name();
-        String cacheName = StringUtils.isEmpty(name) ? method.getName() : name;
+        String cacheName = StringUtils.isEmpty(name) ? className + "." + method.getName() : name;
         Object[] args = pjp.getArgs();
         String paramKey = Arrays.stream(args).map(String::valueOf).collect(Collectors.joining(":"));
         return String.format("%s:%s:%s", tenantId, cacheName, paramKey);

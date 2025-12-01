@@ -1,6 +1,7 @@
 package com.dev.oauth2.service;
 
 import com.dev.dto.JwtTokenDto;
+import com.dev.dto.UserProfileDetailsDto;
 import com.dev.entity.UserProfileModel;
 import com.dev.oauth2.dto.CustomOAuth2User;
 import com.dev.security.utility.SecurityUtils;
@@ -62,8 +63,8 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 .updatedAt(Instant.now().toEpochMilli())
                 .build();
 
-        UserProfileModel profileModel = oAuth2UserProfileService.processOAuthPostLogin(provider, providerId,  userProfileModel);
-        log.info("User profile processed: {}", profileModel.getId());
+        UserProfileDetailsDto profileModel = oAuth2UserProfileService.processOAuthPostLogin(provider, providerId,  userProfileModel);
+        log.info("User profile processed: {}", profileModel.getUserId());
 
         JwtTokenDto jwtTokenDto = securityUtils.createJwtTokeDtoFromModel(profileModel, 2000000000);
 

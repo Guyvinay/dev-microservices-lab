@@ -269,7 +269,7 @@ public class EmailService {
         Pattern EMAIL_PATTERN = Pattern.compile(
                 "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
         );
-        return email != null && EMAIL_PATTERN.matcher(email).matches();
+        return email != null && EMAIL_PATTERN.matcher(email.trim()).matches();
     }
 
     public List<EmailDocument> getEmailDocumentFromEmailIds(List<String> emailIds) throws IOException {
