@@ -36,11 +36,12 @@ spring:
             client-id: Ov23li30OfNzzSRFzDHs
             client-secret: 41f772602859078e72fd41d4ccfd2b9aef93d750
             scope: read:user, user:email
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+#            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            redirect-uri: "https://7bc8cad45657.ngrok-free.app/dev-auth-server/login/oauth2/code/github"
             client-authentication-method: client_secret_post
             authorization-grant-type: authorization_code
             client-name: GitHub
-          google:
+          google: # https://7bc8cad45657.ngrok-free.app/dev-auth-server/oauth2/authorize/google
             client-id: 190624024371-5rnr5nhn766nk7okgev8vp126oqpd96d.apps.googleusercontent.com
             client-secret: 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
             scope: profile, email
@@ -62,7 +63,7 @@ spring:
     host: smtp.gmail.com                 # Gmail SMTP server
     port: 587                            # TLS/STARTTLS port
     username: mrsinghvinay563@gmail.com # Gmail username
-    password: acwovynbhuaahcls            # Gmail App Password (from env/secret)
+    password: ${ password }            # Gmail App Password (from env/secret)
     properties:
       mail.debug: false                   # Enable SMTP debug logs (for development)
       mail.smtp.auth: true               # Enable SMTP authentication

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="false">
+
+    <springProperty scope="context" name="SERVICE_NAME" source="spring.application.name" defaultValue="unknown-service"/>
+
+    <springProperty scope="context" name="LOGGING_FORMAT" source="logging.custom.format" defaultValue="PLAIN"/>
+
+    <!-- ====================================================== -->
+    <!-- 1. Appender: PLAIN (text format, human-readable)       -->
+    <!-- ====================================================== -->
+    <appender name="CONSOLE_PLAIN" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [${SERVICE_NAME}] [%-5level] - %msg - [%logger{36}]%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- ====================================================== -->
+    <!-- 2. Appender: JSON (structured logs)                    -->
+    <!-- ====================================================== -->
+    <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>{"service":"${SERVICE_NAME}"}</customFields>
+            <timestampPattern>yyyy-MM-dd HH:mm:ss.SSS</timestampPattern>
+            <fieldNames>
+                <version>[ignore]</version>
+                <levelValue>[ignore]</levelValue>
+                <timestamp>ts</timestamp>
+                <message>msg</message>
+                <logger>logger</logger>
+                <thread>thread</thread>
+            </fieldNames>
+        </encoder>
+    </appender>
+
+    <!-- ====================================================== -->
+    <!-- 3. Appender: CSV (basic comma-separated logs)          -->
+    <!-- ====================================================== -->
+    <appender name="CONSOLE_CSV" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="ch.qos.logback.classic.PatternLayout">
+                <pattern>%d{"yyyy-MM-dd HH:mm:ss"},%level,${SERVICE_NAME},%logger,%msg%n</pattern>
+            </layout>
+        </encoder>
+    </appender>
+
+    <!-- ====================================================== -->
+    <!--     Conditional Activation of Appendders               -->
+    <!-- ====================================================== -->
+
+    <if condition='property("LOGGING_FORMAT").equalsIgnoreCase("PLAIN")'>
+        <then>
+            <root level="INFO">
+                <appender-ref ref="CONSOLE_PLAIN" />
+            </root>
+        </then>
+    </if>
+
+    <if condition='property("LOGGING_FORMAT").equalsIgnoreCase("JSON")'>
+        <then>
+            <root level="INFO">
+                <appender-ref ref="CONSOLE_JSON" />
+            </root>
+        </then>
+    </if>
+
+    <if condition='property("LOGGING_FORMAT").equalsIgnoreCase("CSV")'>
+        <then>
+            <root level="INFO">
+                <appender-ref ref="CONSOLE_CSV" />
+            </root>
+        </then>
+    </if>
+
+    <!-- ====================================================== -->
+    <!--   DEFAULT FALLBACK IF INVALID OR MISSING PROPERTY      -->
+    <!-- ====================================================== -->
+    <if condition='!property("LOGGING_FORMAT").matches("PLAIN|JSON|CSV")'>
+        <then>
+            <root level="INFO">
+                <appender-ref ref="CONSOLE_PLAIN" />
+            </root>
+        </then>
+    </if>
+
+</configuration>
