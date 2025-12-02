@@ -2,22 +2,21 @@ package com.dev.bulk.email.service;
 
 import com.dev.bulk.email.dto.EmailDocument;
 import com.dev.bulk.email.dto.EmailRequest;
-import com.dev.utility.ElasticUtility;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -36,15 +35,14 @@ import java.util.stream.Collectors;
 @Slf4j
 public class EmailService {
 
-    private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
     private final EmailElasticService emailElasticService;
     private static final int HOURS_TO = 12;
     private final EmailSendService emailSendService;
 
-    public void sendEmailFromCSVFile() throws IOException {
+    public void sendEmailFromCSVFile(MultipartFile file) throws IOException {
         List<String> skippedEmails = new ArrayList<>();
-        Map<String, EmailRequest> toSend = getEmailRequestsFromCSV();
+        Map<String, EmailRequest> toSend = getEmailRequestsFromCSV(file);
         log.info("Emails to send: {}", toSend.size());
         for (Map.Entry<String, EmailRequest> entry: toSend.entrySet()) {
             EmailRequest emailRequest = entry.getValue();
@@ -89,10 +87,9 @@ public class EmailService {
         log.info("{} Emails skipped=[{}]", skippedEmails.size(), skippedEmails);
     }
 
-    private Map<String, EmailRequest> getEmailRequestsFromCSV() {
-        File csvFile = new File("/home/guyvinay/dev/repo/assets/hr_contacts.csv");
+    private Map<String, EmailRequest> getEmailRequestsFromCSV(MultipartFile file) {
 
-        try (Reader reader = new FileReader(csvFile);
+        try (Reader reader = getReaderFromMultipart(file);
              CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader())) {
             Map<String, EmailRequest> toSend = new HashMap<>();
             for (CSVRecord record : csvParser) {
@@ -109,6 +106,11 @@ public class EmailService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private Reader getReaderFromMultipart(MultipartFile file) throws IOException {
+        if (Objects.isNull(file)) return new FileReader(new File("/home/guyvinay/dev/repo/assets/hr_contacts.csv"));
+        return new InputStreamReader(file.getInputStream());
     }
 
     private boolean isEligibleToSend(EmailDocument emailDocument) {

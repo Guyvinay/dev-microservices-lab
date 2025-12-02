@@ -41,6 +41,9 @@ public class PdfEmailExtractorService {
         // Using Set to avoid duplicate emails automatically
         Set<String> emails = new HashSet<>();
         for (MultipartFile file: pdfFiles) {
+            String fileName = file.getOriginalFilename();
+            Set<String> currentEmails = new HashSet<>();
+            log.info("Extracting email start from {}", fileName);
             InputStream pdfStream = file.getInputStream();
 
             /**
@@ -64,17 +67,19 @@ public class PdfEmailExtractorService {
                  */
                 Matcher matcher = EMAIL_PATTERN.matcher(text);
                 while (matcher.find()) {
-
                     // matcher.group() returns the exact email that matched the regex
-                    emails.add(matcher.group());
+                    currentEmails.add(matcher.group());
                 }
-
+                log.info("Extracted {} emails from {}", currentEmails.size(), fileName);
+                emails.addAll(currentEmails);
             } catch (IOException e) {
                 log.error("Exception: ", e);
                 // Wrap the exception into an unchecked one to simplify API layer handling
                 throw new RuntimeException("Failed to extract emails from PDF", e);
             }
         }
+
+        log.info("Total {} emails extracted",  emails.size());
         return emails;
     }
 }
