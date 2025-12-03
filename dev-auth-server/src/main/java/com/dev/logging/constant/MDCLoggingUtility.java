@@ -6,7 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.MDC;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpRequest;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 @Slf4j
@@ -37,4 +40,13 @@ public class MDCLoggingUtility {
         MDC.remove(TENANT_ID);
     }
 
+    public static HttpRequest addMDCVariablesToHeaders(HttpRequest request) {
+        HttpHeaders headers = request.getHeaders();
+
+        headers.put(TRACE_ID, Arrays.asList(MDC.get(TRACE_ID)));
+        headers.put(USER_ID, Arrays.asList(MDC.get(USER_ID)));
+        headers.put(TENANT_ID, Arrays.asList(MDC.get(TENANT_ID)));
+
+        return request;
+    }
 }
