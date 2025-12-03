@@ -10,7 +10,7 @@
     <!-- ====================================================== -->
     <appender name="CONSOLE_PLAIN" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [${SERVICE_NAME}] [%-5level] - %msg - [%logger{36}]%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [${SERVICE_NAME}] [%-5level]  [%X{traceId}] [%X{tenant}] [%X{userId}] - %msg - [%logger{36}]%n</pattern>
         </encoder>
     </appender>
 
