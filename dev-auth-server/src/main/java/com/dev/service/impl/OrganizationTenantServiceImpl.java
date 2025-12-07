@@ -54,7 +54,7 @@ public class OrganizationTenantServiceImpl implements OrganizationTenantService 
 
         log.info("Tenant created successfully: tenantId={} tenantName={} orgId={}",
                 tenantMapping.getTenantId(), tenantMapping.getTenantName(), tenantMapping.getOrgId());
-        tenantPublisher.publishTenantCreated(SecurityContextUtil.getTenantId());
+        tenantPublisher.publishTenantCreated(tenantMapping.getTenantId());
         return modelMapper.map(tenantMapping, OrganizationTenantDTO.class);
     }
 

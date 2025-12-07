@@ -13,7 +13,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidInputException.class)
     public ResponseEntity<GeneralResponseDTO<Object>> handleInvalidInput(InvalidInputException ex) {
-        log.error("Exception: ", ex);
+        log.error("InvalidInputException: ", ex);
         GeneralResponseDTO<Object> responseDTO = GeneralResponseDTO.builder()
                 .errorMsg(ex.getMessage())
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -23,7 +23,17 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<GeneralResponseDTO<Object>> handleUserNotFound(UserNotFoundException ex) {
-        log.error("Exception: ", ex);
+        log.error("UserNotFoundException: ", ex);
+        GeneralResponseDTO<Object> responseDTO = GeneralResponseDTO.builder()
+                .errorMsg(ex.getMessage())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .build();
+        return new ResponseEntity<>(responseDTO, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<GeneralResponseDTO<Object>> duplicateResourceException(DuplicateResourceException ex) {
+        log.error("DuplicateResourceException: ", ex);
         GeneralResponseDTO<Object> responseDTO = GeneralResponseDTO.builder()
                 .errorMsg(ex.getMessage())
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -33,7 +43,27 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<GeneralResponseDTO<Object>> handleRuntimeException(RuntimeException ex) {
-        log.error("Exception: ", ex);
+        log.error("RuntimeException: ", ex);
+        GeneralResponseDTO<Object> responseDTO = GeneralResponseDTO.builder()
+                .errorMsg(ex.getMessage())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .build();
+        return new ResponseEntity<>(responseDTO, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(JWTTokenException.class)
+    public ResponseEntity<GeneralResponseDTO<Object>> jWTTokenException(JWTTokenException ex) {
+        log.error("JWTTokenException: ", ex);
+        GeneralResponseDTO<Object> responseDTO = GeneralResponseDTO.builder()
+                .errorMsg(ex.getMessage())
+                .status(HttpStatus.UNAUTHORIZED.value())
+                .build();
+        return new ResponseEntity<>(responseDTO, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<GeneralResponseDTO<Object>> authenticationException(AuthenticationException ex) {
+        log.error("AuthenticationException: ", ex);
         GeneralResponseDTO<Object> responseDTO = GeneralResponseDTO.builder()
                 .errorMsg(ex.getMessage())
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())

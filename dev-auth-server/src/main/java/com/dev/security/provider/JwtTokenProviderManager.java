@@ -2,7 +2,8 @@ package com.dev.security.provider;
 
 import com.dev.dto.JwtTokenDto;
 import com.dev.dto.UserProfileResponseDTO;
-import com.dev.exception.JWTTokenExpiredException;
+import com.dev.exception.AuthenticationException;
+import com.dev.exception.JWTTokenException;
 import com.dev.security.SecurityConstants;
 import com.dev.security.details.CustomAuthToken;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -90,14 +91,14 @@ public class JwtTokenProviderManager {
 
             if (!signedJWT.verify(jwsVerifier)) {
                 log.warn("Signature of the token found invalid.");
-                throw new JOSEException("Signature of the token found invalid.");
+                throw new JWTTokenException("Signature of the token found invalid.");
             }
 
             JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
 
             if (null == jwtClaimsSet.getExpirationTime()) {
                 log.error("No expiration time on SignedJWT claim.");
-                throw new JOSEException("No expiration time on SignedJWT claims");
+                throw new JWTTokenException("No expiration time on SignedJWT claims");
             }
 
             ZonedDateTime tokenExpirationTime = ZonedDateTime.ofInstant(jwtClaimsSet.getExpirationTime().toInstant(), ZoneOffset.UTC);
@@ -105,18 +106,18 @@ public class JwtTokenProviderManager {
 
             if (tokenExpirationTime.isBefore(currentDateTime)) {
                 log.warn("Jwt token expired to date: {}", currentDateTime);
-                throw new JWTTokenExpiredException("Jwt token expired to date: " + currentDateTime);
+                throw new AuthenticationException("Jwt token expired to date: " + currentDateTime);
             }
 
             if (ISSUER.equals(jwtClaimsSet.getClaim(ISSUER))) {
                 log.warn("Invalid token issuer found: {}", ISSUER);
-                throw new JWTTokenExpiredException("Invalid token issuer found: {}" + ISSUER);
+                throw new AuthenticationException("Invalid token issuer found: {}" + ISSUER);
             }
 
             // Validate audience
             List<String> tokenAudiences = jwtClaimsSet.getAudience();
             if (Collections.disjoint(tokenAudiences, AUDIENCE)) {
-                throw new SecurityException("Invalid audience");
+                throw new AuthenticationException("Invalid audience");
             }
 
             return jwtClaimsSet;
@@ -132,7 +133,7 @@ public class JwtTokenProviderManager {
     public String getSubjectPayload(String token) {
         JWTClaimsSet claimsSet = getJWTClaimsSet(token);
         if (claimsSet == null) {
-            throw new SecurityException("Invalid token");
+            throw new AuthenticationException("Invalid token");
         }
         return claimsSet.getSubject();
     }
