@@ -12,5 +12,7 @@ public class ChatMessagePayload {
     private String sender;
     private String message;
     private MessageType chatType;
-    private String groupId;
+    private String roomId;
+    private Long timeStamp;
+    private STATUS status;
 }
