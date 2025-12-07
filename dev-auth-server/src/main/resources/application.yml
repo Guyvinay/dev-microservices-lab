@@ -1,122 +1,190 @@
+################################################################################
+# APPLICATION CONFIGURATION
+################################################################################
 spring:
-  # Liquibase properties
+  application:
+    name: dev-auth-server
+
+  ##############################################################################
+  # LIQUIBASE CONFIGURATION
+  ##############################################################################
   liquibase:
     enabled: true
     change-log: classpath:/db/changelog/dev-auth.changelog-master.xml
-    contexts: "!test"
-#    liquibase-schema: public
-#    database-change-log-table: DATABASECHANGELOG
-#    database-change-log-lock-table: DATABASECHANGELOGLOCK
+    contexts: "!test"       # Exclude test context
+    # liquibase-schema: public
+    # database-change-log-table: DATABASECHANGELOG
+    # database-change-log-lock-table: DATABASECHANGELOGLOCK
 
+
+  ##############################################################################
+  # KAFKA CONFIGURATION (Spring Kafka)
+  ##############################################################################
   kafka:
     bootstrap-servers: localhost:9092
+
     consumer:
       group-id: my-group
-      auto-offset-reset: earliest
+      auto-offset-reset: earliest  # reads from beginning if no offset
+
     producer:
       retries: 3
-      acks: all
+      acks: all                    # strongest delivery guarantee
       properties:
-        linger.ms: 5
-        enable.idempotence: true
+        linger.ms: 5               # batching for performance
+        enable.idempotence: true   # ensures exactly-once semantics
 
-  # Validate schema against hibernate models
+
+  ##############################################################################
+  # JPA / HIBERNATE CONFIGURATION
+  ##############################################################################
   jpa:
-    open-in-view: false
+    open-in-view: false             # recommended for stateless APIs
     hibernate:
-      ddl-auto: none #create | update | validate | none
-#      naming.physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-    properties.org.hibernate.envers.store_data_at_delete: true
+      ddl-auto: none                # validate | update | create-drop | none
+    properties:
+      org.hibernate.envers.store_data_at_delete: true  # keep audit logs for deleted rows
 
+
+
+  ##############################################################################
+  # OAUTH2 CLIENT REGISTRATION (GitHub & Google Login)
+  ##############################################################################
   security:
     oauth2:
       client:
         registration:
+
           github:
-            client-id: Ov23li30OfNzzSRFzDHs
-            client-secret: 41f772602859078e72fd41d4ccfd2b9aef93d750
+            client-id: ${ client-id }
+            client-secret: ${ secret }
             scope: read:user, user:email
-#            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-            redirect-uri: "https://7bc8cad45657.ngrok-free.app/dev-auth-server/login/oauth2/code/github"
+            redirect-uri: "https://7bc8cad45657.ngrok-free.app/dev-auth-server/login/oauth2/code/github" # "{baseUrl}/login/oauth2/code/{registrationId}"
             client-authentication-method: client_secret_post
             authorization-grant-type: authorization_code
             client-name: GitHub
-          google: # https://7bc8cad45657.ngrok-free.app/dev-auth-server/oauth2/authorize/google
-            client-id: 190624024371-5rnr5nhn766nk7okgev8vp126oqpd96d.apps.googleusercontent.com
-            client-secret: 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
+
+          google:
+            client-id: ${ client-id }
+            client-secret: ${ secret }
             scope: profile, email
-            redirect-uri: "https://f40d13f6fadf.ngrok-free.app/dev-auth-server/login/oauth2/code/google"
+            redirect-uri: "https://7bc8cad45657.ngrok-free.app/dev-auth-server/login/oauth2/code/google"
             authorization-grant-type: authorization_code
             client-name: Google
+
         provider:
+
           github:
             authorization-uri: https://github.com/login/oauth/authorize
             token-uri: https://github.com/login/oauth/access_token
             user-info-uri: https://api.github.com/user
             user-name-attribute: login
+
           google:
             authorization-uri: https://accounts.google.com/o/oauth2/auth
             token-uri: https://oauth2.googleapis.com/token
             user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
 
+
+
+  ##############################################################################
+  # MAIL CONFIGURATION (SMTP)
+  ##############################################################################
   mail:
-    host: smtp.gmail.com                 # Gmail SMTP server
-    port: 587                            # TLS/STARTTLS port
-    username: mrsinghvinay563@gmail.com # Gmail username
-    password: ${ password }            # Gmail App Password (from env/secret)
+    host: smtp.gmail.com
+    port: 587
+    username: mrsinghvinay563@gmail.com
+    password: ${ password }        # MUST be env/secret in production
     properties:
-      mail.debug: false                   # Enable SMTP debug logs (for development)
-      mail.smtp.auth: true               # Enable SMTP authentication
-      mail.smtp.starttls.enable: true    # Enable STARTTLS for secure connection
-      mail.smtp.connectiontimeout: 10000  # Max time (ms) to establish SMTP connection
-      mail.smtp.timeout: 15000            # Max time (ms) to wait for SMTP response
-      mail.smtp.writetimeout: 15000       # Max time (ms) to send message data
-      mail.smtp.pool: true               # Enable SMTP connection pooling (reuse connections)
-      mail.smtp.pool.size: 5             # Max concurrent connections in the pool
+      mail.debug: false
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.connectiontimeout: 10000
+      mail.smtp.timeout: 15000
+      mail.smtp.writetimeout: 15000
+      mail.smtp.pool: true
+      mail.smtp.pool.size: 5
 
 
+  ##############################################################################
+  # REDIS + CACHE CONFIGURATION (Lettuce)
+  ##############################################################################
   redis:
     host: localhost
     port: 6379
-    #    password: ${REDIS_PASSWORD:}    # use secrets manager / env var
+    # password: ${REDIS_PASSWORD:}  # Use secrets in production
     database: 100
+
     lettuce:
       pool:
         max-active: 20
         max-idle: 10
         min-idle: 2
-  cache:
-    type: redis
 
+  cache:
+    type: redis                       # Use Redis as cache backend
+
+
+
+################################################################################
+# APPLICATION LEVEL PROPERTIES
+################################################################################
 app:
   redis:
-    key-prefix: dev-auth # isolates keys across services
+    key-prefix: dev-auth              # separates keys per microservice
     cache:
-      default-ttl-minutes: 15   # default TTL if not overridden
+      default-ttl-minutes: 15         # default cache TTL
 
 
+
+################################################################################
+# SERVER CONFIGURATION
+################################################################################
 server:
   port: 8000
   address: 0.0.0.0
-  canonical.url: http://localhost:8000/dev-auth-server
-  servlet.context-path: /dev-auth-server
+  servlet:
+    context-path: /dev-auth-server
+
+  canonical:
+    url: http://localhost:8000/dev-auth-server
+
   name: localhost
 
+
+
+################################################################################
+# JWT SECURITY CONFIG
+################################################################################
 security:
   jwt:
-    secret: mySecretKeyForJwtToken
-    expiration: 3600000 # 1 hour in milliseconds
+    secret: mySecretKeyForJwtToken         # MUST be env/secret in production
+    expiration: 3600000                    # 1 hour (ms)
 
+
+
+################################################################################
+# ELASTICSEARCH (Custom index settings)
+################################################################################
 elastic:
   index:
     private: es_private_message_index
     group: es_group_message_index
     email: email_index
 
+
+
+################################################################################
+# KAFKA (Custom App Kafka — separate from spring.kafka)
+################################################################################
 kafka:
   bootstrap-servers: localhost:9092
 
 
+
+################################################################################
+# RABBITMQ (Custom Auth Rabbit Settings)
+################################################################################
 auth:
   rabbit:
     host: ${RABBIT_HOST:localhost}
@@ -124,11 +192,14 @@ auth:
     username: guest
     password: guest
     virtual-host: public
+
     management-base-url: ${RABBIT_MANAGEMENT_BASE_URL:http://localhost:15672/api}
     management-user: guest
     management-password: guest
+
     publisher-confirms: true
     publisher-returns: true
+
     exchanges:
       - name: tenant.events.exchange
         type: topic
@@ -139,19 +210,21 @@ auth:
         durable: true
 
 
-#logging:
-#  level:
-#    org.springframework.security.saml2: TRACE
-#    org.springframework.security: TRACE
-#    org.opensaml: DEBUG
+
+################################################################################
+# ACTUATOR + PROMETHEUS METRICS
+################################################################################
 management:
   endpoints:
     web:
       exposure:
         include: health, info, prometheus, metrics
+
   endpoint:
     prometheus:
       enabled: true
+
   metrics:
     tags:
-      application: ${spring.application.name}   # tag metrics with service name
+      application: ${spring.application.name}  # helpful for dashboards
+
