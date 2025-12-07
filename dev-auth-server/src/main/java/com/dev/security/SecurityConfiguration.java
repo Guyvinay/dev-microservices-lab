@@ -6,7 +6,6 @@ import com.dev.oauth2.service.CustomOAuth2UserService;
 import com.dev.security.details.CustomUserDetailsService;
 import com.dev.security.filter.JWTAuthenticationFilter;
 import com.dev.security.filter.JWTAuthorizationFilter;
-import com.dev.security.filter.RequestLoggingFilter;
 import com.dev.oauth2.handler.CustomAccessTokenEndpointHandler;
 import com.dev.security.provider.CustomAuthenticationEntryPoint;
 import com.dev.security.provider.CustomAuthenticationProvider;
@@ -43,7 +42,6 @@ public class SecurityConfiguration {
 
     // ====== Extra Config ======
     private final CustomCorsConfiguration corsConfiguration;
-    private final RequestLoggingFilter requestLoggingFilter;
 
     // ====== OAuth2 Components ======
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
@@ -77,7 +75,6 @@ public class SecurityConfiguration {
 
                 .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterAt(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(requestLoggingFilter, JWTAuthorizationFilter.class)
 
                 .oauth2Login(oauth2 -> oauth2 // Enables OAuth2 login
                         .tokenEndpoint(token -> token

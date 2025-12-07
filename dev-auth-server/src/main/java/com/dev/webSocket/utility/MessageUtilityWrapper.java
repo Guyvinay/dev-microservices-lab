@@ -43,8 +43,8 @@ public class MessageUtilityWrapper {
         // Handle Group Chat
         else if (chatMessage.getChatType() == MessageType.GROUP) {
             chatMessageDTO
-                    .roomId(chatMessage.getGroupId())
-                    .groupDetails(new GroupDetailsDTO(chatMessage.getGroupId(), chatMessage.getGroupId()))
+                    .roomId(chatMessage.getRoomId())
+                    .groupDetails(new GroupDetailsDTO(chatMessage.getRoomId(), chatMessage.getRoomId()))
 //                    .participants(chatMessage.getGroupParticipants()) // Set participants
 //                    .status(generateGroupStatus(chatMessage.getGroupParticipants())) // Status for each participant
             ;

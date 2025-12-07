@@ -1,6 +1,7 @@
 package com.dev.webSocket;
 
 import com.dev.dto.JwtTokenDto;
+import com.dev.utility.SecurityContextUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
@@ -34,12 +35,11 @@ public class CustomHandshakeInterceptor implements HandshakeInterceptor {
         // Retrieve authenticated user from the Spring Security context
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        // Ensure the user is authenticated
-        if (authentication != null && authentication.getDetails() instanceof JwtTokenDto) {
-            JwtTokenDto jwtTokenDto = (JwtTokenDto) authentication.getDetails();
-
+        JwtTokenDto jwtTokenDto = SecurityContextUtil.getJwtTokenDtoFromContext();
+        if(jwtTokenDto != null) {
             // Store username and additional user details in the WebSocket session attributes
             attributes.put("username", jwtTokenDto.getEmail());
+            attributes.put("tenantId", jwtTokenDto.getTenantId());
 
             return true; // Allow WebSocket connection
         }

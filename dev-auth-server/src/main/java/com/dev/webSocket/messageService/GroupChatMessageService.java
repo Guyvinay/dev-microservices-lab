@@ -2,7 +2,7 @@ package com.dev.webSocket.messageService;
 
 import com.dev.elastic.service.MessageElasticSyncService;
 import com.dev.webSocket.WebSocketSessionManager;
-import com.dev.webSocket.dto.ChatMessage;
+import com.dev.webSocket.dto.ChatMessagePayload;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
@@ -41,7 +41,7 @@ public class GroupChatMessageService {
      * @param chatMessage The chat message to be sent.
      * @throws IOException If an error occurs while sending the message.
      */
-    public void sendMessageToRoom(String roomId, ChatMessage chatMessage) throws IOException {
+    public void sendMessageToRoom(String roomId, ChatMessagePayload chatMessage) throws IOException {
 
         // Retrieve all active WebSocket sessions in the chat room
         Map<String, WebSocketSession> chatRoomSessions = sessionManager.getChatRoomSessions(roomId);

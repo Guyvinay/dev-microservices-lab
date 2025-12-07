@@ -102,27 +102,20 @@ public class WebSocketMessageHandler extends TextWebSocketHandler {
         String sender = (String) session.getAttributes().get("username");
         String uriPath = session.getUri().getPath();
 
-        // Deserialize the received message
-        ChatMessage chatMessage = objectMapper.readValue(message.getPayload(), ChatMessage.class);
-
         ChatMessagePayload messagePayload = objectMapper.readValue(message.getPayload(), ChatMessagePayload.class);
 
-        chatMessage.setTimeStamp(Instant.now().toEpochMilli());
-        if (chatMessage.getSender() == null) {
-            chatMessage.setSender(sender);
-            messagePayload.setSender(sender);
-        }
+        messagePayload.setTimeStamp(Instant.now().toEpochMilli());
+        messagePayload.setSender(sender);
 
         // Route the message based on chat type (private or group)
         if (uriPath.startsWith("/dev-auth-server/ws/chat/private")) {
-            chatMessage.setType(MessageType.PRIVATE);
             messagePayload.setChatType(MessageType.PRIVATE);
             privateChatMessageService.sendPrivateMessage(messagePayload);
         } else if (uriPath.startsWith("/dev-auth-server/ws/chat/group")) {
             String roomId = extractRoomId(uriPath);
-            chatMessage.setType(MessageType.GROUP);
-            chatMessage.setRoomId(roomId);
-            groupChatMessageService.sendMessageToRoom(roomId, chatMessage);
+            messagePayload.setChatType(MessageType.GROUP);
+            messagePayload.setRoomId(roomId);
+            groupChatMessageService.sendMessageToRoom(roomId, messagePayload);
         }
     }
 
