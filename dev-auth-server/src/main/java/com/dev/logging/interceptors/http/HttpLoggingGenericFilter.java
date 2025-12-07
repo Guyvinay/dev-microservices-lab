@@ -19,6 +19,7 @@ public class HttpLoggingGenericFilter extends OncePerRequestFilter {
         try {
             JwtTokenDto jwtTokenDto = SecurityContextUtil.getJwtTokenDtoFromContext();
             MDCLoggingUtility.appendVariablesToMDC(jwtTokenDto, request);
+            filterChain.doFilter(request, response);
         } finally {
             MDCLoggingUtility.removeVariablesFromMDCContext();
         }
