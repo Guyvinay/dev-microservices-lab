@@ -4,6 +4,7 @@ import com.dev.dto.JwtTokenDto;
 import com.dev.dto.UserProfileDetailsDto;
 import com.dev.dto.UserProfileResponseDTO;
 import com.dev.entity.UserProfileModel;
+import com.dev.security.details.UserBaseInfo;
 import com.dev.security.dto.JWTRefreshTokenDto;
 import org.springframework.stereotype.Service;
 
@@ -17,20 +18,14 @@ import java.util.List;
 public class SecurityUtils {
 
     public JwtTokenDto createJwtTokeDtoFromModel(UserProfileDetailsDto userProfile, int expiredIn) {
-        ZonedDateTime zdt = LocalDateTime.now().atZone(ZoneOffset.UTC);
-        Date createdDate = Date.from(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
-        Date expiaryDate = Date.from(zdt.plusMinutes(expiredIn).toInstant());
+        UserBaseInfo userBaseInfo = UserBaseInfo.builder()
+                .id(userProfile.getUserId())
+                .build();
 
         return new JwtTokenDto(
-                userProfile.getUserId(),
-                String.valueOf(userProfile.getOrgId()),
-                userProfile.getName(),
-                userProfile.getEmail(),
-                userProfile.getTenantId(),
-                createdDate,
-                expiaryDate,
-                userProfile.getRoleIds()
+                userBaseInfo,
+                System.currentTimeMillis(),
+                System.currentTimeMillis()
         );
     }
-
 }

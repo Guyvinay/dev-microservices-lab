@@ -40,12 +40,11 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         UserProfileModel userProfileModel = userProfileModelRepository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Username not found: " + username));
-
+        UserBaseInfo userBaseInfo = new UserBaseInfo();
         return new CustomUserDetails(
                 userProfileModel.getEmail(),
                 userProfileModel.getPassword(),
-                "organization",
-                "tenantId",
+                userBaseInfo,
                 Collections.emptyList()
         );
     }
@@ -59,12 +58,24 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         List<UserProfileRoleMapping> roles = roleMappingRepository.findByUserId(userProfileModel.getId());
         List<GrantedAuthority> roleId = roles.stream().map(role-> new SimpleGrantedAuthority(role.getRoleId().toString())).collect(Collectors.toList());
+        List<String> roleIds = roles.stream().map(role-> role.getRoleId().toString()).collect(Collectors.toList());
+
+        UserBaseInfo userBaseInfo = UserBaseInfo.builder()
+                .id(userProfileModel.getId())
+                .email(userProfileModel.getEmail())
+                .name(userProfileModel.getName())
+                .roleIds(roleIds)
+                .isActive(userProfileModel.isActive())
+                .createdAt(userProfileModel.getCreatedAt())
+                .updatedAt(userProfileModel.getUpdatedAt())
+                .orgId(userProfileTenantMapping.getOrganizationId().toString())
+                .tenantId(userProfileTenantMapping.getTenantId())
+                .build();
 
         return new CustomUserDetails(
                 userProfileModel.getEmail(),
                 userProfileModel.getPassword(),
-                String.valueOf(userProfileTenantMapping.getOrganizationId()),
-                userProfileTenantMapping.getTenantId(),
+                userBaseInfo,
                 roleId
         );
     }
@@ -73,12 +84,11 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         UserProfileModel userProfileModel = userProfileModelRepository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Email not found: " + username));
-
+        UserBaseInfo userBaseInfo = new UserBaseInfo();
         return new CustomUserDetails(
                 userProfileModel.getEmail(),
                 userProfileModel.getPassword(),
-                "organization",
-                "tenantId",
+                userBaseInfo,
                 Collections.emptyList()
         );
     }

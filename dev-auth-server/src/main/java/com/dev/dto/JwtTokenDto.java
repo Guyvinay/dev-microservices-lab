@@ -1,10 +1,7 @@
 package com.dev.dto;
 
+import com.dev.security.details.UserBaseInfo;
 import lombok.*;
-
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -13,14 +10,9 @@ import java.util.UUID;
 @Builder
 public class JwtTokenDto {
 
-    private UUID userId;
-    private String org;
-    private String name;
-    private String email;
-    private String tenantId;
-    private Date createdDate;
-    private Date expiryDate;
-    private List<String> roles;
+    private UserBaseInfo userBaseInfo;
+    private long createdAt;
+    private long expiresAt;
 
 }
 

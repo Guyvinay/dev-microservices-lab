@@ -38,8 +38,8 @@ public class UserProfileRoleServiceImpl implements UserProfileRoleService {
         role.setActive(true);
         role.setCreatedAt(Instant.now().toEpochMilli());
         role.setUpdatedAt(Instant.now().toEpochMilli());
-        role.setCreatedBy(jwtTokenDto.getEmail());
-        role.setUpdatedBy(jwtTokenDto.getEmail());
+        role.setCreatedBy(jwtTokenDto.getUserBaseInfo().getEmail());
+        role.setUpdatedBy(jwtTokenDto.getUserBaseInfo().getEmail());
 
         UserProfileRoleModel saved = roleRepository.save(role);
         return mapToDTO(saved);

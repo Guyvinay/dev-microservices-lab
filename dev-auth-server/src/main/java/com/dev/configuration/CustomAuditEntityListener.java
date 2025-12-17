@@ -35,7 +35,7 @@ public class CustomAuditEntityListener implements RevisionListener {
                 if (authentication.getDetails() instanceof JwtTokenDto) {
                     JwtTokenDto jwtTokenDto = (JwtTokenDto) authentication.getDetails();
                     if (jwtTokenDto != null) {
-                        auditRevisionEntity.setUserModified(jwtTokenDto.getEmail());
+                        auditRevisionEntity.setUserModified(jwtTokenDto.getUserBaseInfo().getEmail());
                     }
                 }
             } catch (Exception e) {

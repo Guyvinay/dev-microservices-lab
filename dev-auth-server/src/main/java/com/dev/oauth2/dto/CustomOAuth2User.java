@@ -45,6 +45,6 @@ public class CustomOAuth2User implements OAuth2User {
      */
     @Override
     public String getName() {
-        return (jwtTokenDto.getUserId() != null) ? jwtTokenDto.getUserId().toString() : "anonymous";
+        return (jwtTokenDto.getUserBaseInfo().getId() != null) ? jwtTokenDto.getUserBaseInfo().getId().toString() : "anonymous";
     }
 }

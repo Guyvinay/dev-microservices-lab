@@ -4,6 +4,7 @@ import com.dev.dto.JwtTokenDto;
 import com.dev.security.details.CustomAuthToken;
 import com.dev.security.details.CustomUserDetails;
 import com.dev.security.details.CustomUserDetailsService;
+import com.dev.security.details.UserBaseInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -12,11 +13,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -69,12 +69,11 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
                 userDetails.getPassword(),
                 userDetails.getAuthorities()
         );
-        List<String> roles = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+        UserBaseInfo userBaseInfo = userDetails.getUserBaseInfo();
         JwtTokenDto jwtTokenDto = JwtTokenDto.builder()
-                .email(userDetails.getUsername())
-                .tenantId(userDetails.getTenantId())
-                .org(userDetails.getOrgId())
-                .roles(roles)
+                .userBaseInfo(userBaseInfo)
+                .createdAt(System.currentTimeMillis())
+                .expiresAt(System.currentTimeMillis() + 600000)
                 .build();
         authenticationToken.setDetails(jwtTokenDto);
         return authenticationToken;

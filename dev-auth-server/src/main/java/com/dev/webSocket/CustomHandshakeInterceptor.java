@@ -36,8 +36,8 @@ public class CustomHandshakeInterceptor implements HandshakeInterceptor {
         JwtTokenDto jwtTokenDto = SecurityContextUtil.getJwtTokenDtoFromContext();
         if(jwtTokenDto != null) {
             // Store username and additional user details in the WebSocket session attributes
-            attributes.put("username", jwtTokenDto.getEmail());
-            attributes.put("tenantId", jwtTokenDto.getTenantId());
+            attributes.put("username", jwtTokenDto.getUserBaseInfo().getEmail());
+            attributes.put("tenantId", jwtTokenDto.getUserBaseInfo().getTenantId());
 
             return true; // Allow WebSocket connection
         }

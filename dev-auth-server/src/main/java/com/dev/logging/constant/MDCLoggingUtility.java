@@ -20,8 +20,8 @@ public class MDCLoggingUtility {
     public static final String TRACE_ID = "traceId";
 
     public static void appendVariablesToMDC(JwtTokenDto jwtTokenDto, HttpServletRequest request) {
-        MDC.put(TENANT_ID, jwtTokenDto.getTenantId());
-        MDC.put(USER_ID, ObjectUtils.isNotEmpty(jwtTokenDto.getUserId()) ? jwtTokenDto.getUserId().toString() : jwtTokenDto.getEmail());
+        MDC.put(TENANT_ID, jwtTokenDto.getUserBaseInfo().getTenantId());
+        MDC.put(USER_ID, ObjectUtils.isNotEmpty(jwtTokenDto.getUserBaseInfo().getId()) ? jwtTokenDto.getUserBaseInfo().getId().toString() : jwtTokenDto.getUserBaseInfo().getEmail());
 
         String traceId = request.getHeader(TRACE_ID);
 

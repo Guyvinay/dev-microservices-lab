@@ -70,10 +70,8 @@ public class AuthServiceImpl implements AuthService {
         int refreshExpiredIn = 2000000000;
         Map<String, String> tokensMap = new HashMap<>();
 
-        JwtTokenDto jwtTokenDto = createJwtTokeDto(tokenDto, jwtExpiredIn);
-        JWTRefreshTokenDto jwtRefreshTokenDto = createRefreshJwtTokeDto(tokenDto, refreshExpiredIn);
-        tokensMap.put(JWT_TOKEN, jwtTokenProviderManager.createJwtToken( new ObjectMapper().writeValueAsString(jwtTokenDto), jwtExpiredIn));
-        tokensMap.put(JWT_REFRESH_TOKEN, jwtTokenProviderManager.createJwtToken( new ObjectMapper().writeValueAsString(jwtRefreshTokenDto), refreshExpiredIn));
+        tokensMap.put(JWT_TOKEN, jwtTokenProviderManager.createJwtToken( new ObjectMapper().writeValueAsString(tokenDto), jwtExpiredIn));
+        tokensMap.put(JWT_REFRESH_TOKEN, jwtTokenProviderManager.createJwtToken( new ObjectMapper().writeValueAsString(tokenDto), refreshExpiredIn));
 
         return tokensMap;
     }
@@ -150,7 +148,7 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Token expired: " + Instant.ofEpochMilli(passwordResetToken.getExpiresAt()));
 
         // Compare raw token with stored hash
-            boolean matches = customBcryptEncoder.matches(dto.getToken(), passwordResetToken.getTokenHash());
+        boolean matches = customBcryptEncoder.matches(dto.getToken(), passwordResetToken.getTokenHash());
         if (!matches) throw new RuntimeException("Invalid token");
 
         UserProfileModel user = userProfileModelRepository.findByEmail(dto.getEmail())
@@ -165,38 +163,5 @@ public class AuthServiceImpl implements AuthService {
         passwordResetTokenRepository.save(passwordResetToken);
 
         return Map.of("status", "password reset successfully, you may login");
-    }
-
-    private JwtTokenDto createJwtTokeDto(JwtTokenDto userProfile, int expiredIn) {
-        ZonedDateTime zdt = LocalDateTime.now().atZone(ZoneOffset.UTC);
-        Date createdDate = Date.from(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
-        Date expiaryDate = Date.from(zdt.plusMinutes(expiredIn).toInstant());
-
-        return new JwtTokenDto(
-                userProfile.getUserId(),
-                userProfile.getOrg(),
-                userProfile.getName(),
-                userProfile.getEmail(),
-                userProfile.getTenantId(),
-                createdDate,
-                expiaryDate,
-                userProfile.getRoles()
-        );
-    }
-
-    private JWTRefreshTokenDto createRefreshJwtTokeDto(JwtTokenDto userProfile, int expiredIn) {
-        ZonedDateTime zdt = LocalDateTime.now().atZone(ZoneOffset.UTC);
-        Date createdDate = Date.from(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
-        Date expiaryDate = Date.from(zdt.plusMinutes(expiredIn).toInstant());
-        return new JWTRefreshTokenDto(
-                userProfile.getUserId(),
-                userProfile.getOrg(),
-                userProfile.getName(),
-                userProfile.getEmail(),
-                userProfile.getTenantId(),
-                createdDate,
-                expiaryDate,
-                userProfile.getRoles()
-        );
     }
 }
