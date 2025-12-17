@@ -5,6 +5,7 @@ import com.dev.security.details.CustomAuthToken;
 import com.dev.security.details.CustomUserDetails;
 import com.dev.security.details.CustomUserDetailsService;
 import com.dev.security.details.UserBaseInfo;
+import com.dev.security.utility.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -65,16 +66,13 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         }
 
         UsernamePasswordAuthenticationToken authenticationToken = new CustomAuthToken(
-                userDetails.getUsername(),
                 userDetails.getPassword(),
+                userDetails.getUsername(),
                 userDetails.getAuthorities()
         );
         UserBaseInfo userBaseInfo = userDetails.getUserBaseInfo();
-        JwtTokenDto jwtTokenDto = JwtTokenDto.builder()
-                .userBaseInfo(userBaseInfo)
-                .createdAt(System.currentTimeMillis())
-                .expiresAt(System.currentTimeMillis() + 600000)
-                .build();
+
+        JwtTokenDto jwtTokenDto = SecurityUtils.createToken(userBaseInfo, 200000);
         authenticationToken.setDetails(jwtTokenDto);
         return authenticationToken;
     }
