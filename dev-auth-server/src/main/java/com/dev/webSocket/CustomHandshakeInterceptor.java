@@ -32,8 +32,6 @@ public class CustomHandshakeInterceptor implements HandshakeInterceptor {
      */
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
-        // Retrieve authenticated user from the Spring Security context
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         JwtTokenDto jwtTokenDto = SecurityContextUtil.getJwtTokenDtoFromContext();
         if(jwtTokenDto != null) {

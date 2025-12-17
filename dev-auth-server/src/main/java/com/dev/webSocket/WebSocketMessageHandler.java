@@ -15,6 +15,8 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.Queue;
 
+import static com.dev.utility.StringLiterals.PRIVATE;
+
 /**
  * Handles WebSocket connections and messages for private and group chats.
  * <p>
@@ -131,8 +133,7 @@ public class WebSocketMessageHandler extends TextWebSocketHandler {
         // Retrieve username from session attributes
         String username = (String) session.getAttributes().get("username");
         if (username != null) {
-            webSocketSessionManager.removeUserFromChat("", username);
-            log.info("User disconnected: " + username);
+            webSocketSessionManager.removeUserFromChat(PRIVATE, username);
         }
     }
 

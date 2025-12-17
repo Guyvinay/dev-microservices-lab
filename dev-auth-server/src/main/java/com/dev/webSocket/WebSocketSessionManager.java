@@ -1,5 +1,6 @@
 package com.dev.webSocket;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -17,6 +18,7 @@ import static com.dev.utility.StringLiterals.PRIVATE;
  * </p>
  */
 
+@Slf4j
 @Component
 public class WebSocketSessionManager {
 
@@ -61,8 +63,10 @@ public class WebSocketSessionManager {
         Map<String, WebSocketSession> chatRoom = chatSessions.get(roomId);
         if (chatRoom != null) {
             chatRoom.remove(username);
+            log.info("User: {} removed from: {} session.", username, roomId);
             if (chatRoom.isEmpty()) {
                 chatSessions.remove(roomId);
+                log.info("Room: {} removed.", roomId);
             }
         }
     }
@@ -77,7 +81,7 @@ public class WebSocketSessionManager {
     public WebSocketSession getUserSession(String roomId, String username) {
         if (roomId != null && username != null) {
             Map<String, WebSocketSession> usersSession = chatSessions.get(roomId); // 'PRIVATE' | {roomId};
-            if (usersSession != null) {
+            if (usersSession != null && !usersSession.isEmpty()) {
                 return usersSession.get(username);
             }
         }
