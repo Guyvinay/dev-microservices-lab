@@ -1,6 +1,7 @@
 package com.dev.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,17 +14,14 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class JwtTokenDto {
 
-    private UUID userId;
-    private String org;
-    private String name;
-    private String email;
-    private String tenantId;
-    private Date createdDate;
-    private Date expiryDate;
-    private List<String> roles;
+    private UserBaseInfo userBaseInfo;
+    private long createdAt;
+    private long expiresAt;
 
 }
+
 
 

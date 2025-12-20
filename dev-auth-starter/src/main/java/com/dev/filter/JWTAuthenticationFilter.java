@@ -1,6 +1,9 @@
 package com.dev.filter;
 
+import com.dev.exception.AuthenticationException;
 import com.dev.provider.JwtTokenProviderManager;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.nimbusds.jose.JOSEException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.text.ParseException;
 
 @Component
 @Slf4j
@@ -41,39 +45,19 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         log.info("JWTAuthenticationFilter invoked for: {}", request.getRequestURI());
-
         String token = jwtTokenProvider.resolveToken(request);
-
-        if (token == null) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        try {
-            Authentication auth = jwtTokenProvider.getAuthentication(token);
-            if (auth != null) {
-                SecurityContextHolder.getContext().setAuthentication(auth);
+        if (token != null) {
+            try {
+                Authentication authentication = jwtTokenProvider.getAuthentication(token);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            } catch (JsonProcessingException | JOSEException | ParseException ex) {
+                String errMsg = "Exception in Authentication filter " + ex.getMessage();
+                SecurityContextHolder.clearContext();
+                throw new AuthenticationException(errMsg, ex);
             }
-            filterChain.doFilter(request, response);
-        } catch (Exception e) {
-            logger.error("Authentication failed:", e);
-            handleAuthenticationFailure(response);
-            resetAuthenticationAfterRequest();
-        } finally {
-            // Ensures security context is always cleared after request
-            resetAuthenticationAfterRequest();
         }
-    }
 
-    private void resetAuthenticationAfterRequest() {
-        SecurityContextHolder.clearContext();
-    }
-
-    private void handleAuthenticationFailure(HttpServletResponse response) throws IOException {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.setContentType("application/json");
-        response.getWriter().write("{\"error\": \"Unauthorized\", \"message\": \"Invalid or expired token\"}");
-        response.getWriter().flush();
+        filterChain.doFilter(request, response);
     }
 
     /**

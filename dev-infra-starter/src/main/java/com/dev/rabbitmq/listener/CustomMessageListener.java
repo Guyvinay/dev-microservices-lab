@@ -2,6 +2,7 @@ package com.dev.rabbitmq.listener;
 
 import com.dev.provider.JwtTokenProviderManager;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.nimbusds.jose.JOSEException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -9,6 +10,8 @@ import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageListener;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.text.ParseException;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -38,6 +41,9 @@ public class CustomMessageListener implements MessageListener {
         } catch (JsonProcessingException e) {
             log.error("Error while processing messageId={} : {}", messageId, e.getMessage(), e);
             throw new RuntimeException("Message processing failed", e);
+        } catch (ParseException | JOSEException e) {
+            log.error("Error while processing authenticating", e);
+            throw new RuntimeException(e);
         } finally {
             SecurityContextHolder.clearContext();
             log.debug("SecurityContext cleared after messageId={}", messageId);

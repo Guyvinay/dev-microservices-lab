@@ -1,15 +1,13 @@
 package com.dev;
 
 import com.dev.filter.JWTAuthenticationFilter;
-import com.dev.filter.RequestLoggingFilter;
-import jakarta.servlet.http.HttpServletResponse;
+import com.dev.provider.CustomAuthenticationEntryPoint;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 
 
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -18,17 +16,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 //@EnableWebSecurity(debug = true)
+@RequiredArgsConstructor
 public class AuthStaterSecurityConfiguration {
 
     private final JWTAuthenticationFilter jwtAuthenticationFilter;
     private final CustomCorsConfiguration corsConfiguration;
-    private final RequestLoggingFilter requestLoggingFilter;
-
-    public AuthStaterSecurityConfiguration(JWTAuthenticationFilter jwtAuthenticationFilter, CustomCorsConfiguration corsConfiguration, RequestLoggingFilter requestLoggingFilter) {
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-        this.corsConfiguration = corsConfiguration;
-        this.requestLoggingFilter = requestLoggingFilter;
-    }
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -46,9 +39,11 @@ public class AuthStaterSecurityConfiguration {
                             ).permitAll()
                             .anyRequest().authenticated();
                 })
+                .exceptionHandling((ex)-> ex
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                )
                 .csrf(AbstractHttpConfigurer::disable)
-                .addFilterAfter(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // Process JWT after username/password authentication
-                .addFilterBefore(requestLoggingFilter, UsernamePasswordAuthenticationFilter.class)  // Log before authentication
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // Process JWT after username/password authentication
                 .formLogin(AbstractHttpConfigurer::disable) // Disable default form login
                 .httpBasic(AbstractHttpConfigurer::disable); // Disable basic auth
 

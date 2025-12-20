@@ -1,6 +1,9 @@
 package com.dev.security.filter;
 
+import com.dev.exception.AuthenticationException;
 import com.dev.security.provider.JwtTokenProviderManager;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.nimbusds.jose.JOSEException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,6 +18,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 
 import java.io.IOException;
+import java.text.ParseException;
 
 @Component
 @Slf4j
@@ -53,25 +57,12 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
             filterChain.doFilter(request, response);
-        } catch (Exception e) {
-            logger.error("Authentication failed:", e);
-            handleAuthenticationFailure(response, e);
-            resetAuthenticationAfterRequest();
-        } finally {
-            // Ensures security context is always cleared after request
-            resetAuthenticationAfterRequest();
+        } catch (JsonProcessingException | JOSEException | ParseException e) {
+            String errMessage = "Exception in authorization filter " + e.getMessage();
+            logger.error(errMessage);
+            SecurityContextHolder.clearContext();
+            throw new AuthenticationException(errMessage, e);
         }
-    }
-
-    private void resetAuthenticationAfterRequest() {
-        SecurityContextHolder.clearContext();
-    }
-
-    private void handleAuthenticationFailure(HttpServletResponse response, Exception e) throws IOException {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.setContentType("application/json");
-        response.getWriter().write("{\"error\": \"Unauthorized\", \"message\": \"" + e.getMessage() + "\"}");
-        response.getWriter().flush();
     }
 
     /**

@@ -58,31 +58,12 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
             Authentication authentication = getAuthManager().authenticate(authToken);
             SecurityContextHolder.getContext().setAuthentication(authentication);
             log.info("Authentication successful for: {}", authentication.getPrincipal());
-            filterChain.doFilter(request, response);
         } catch (Exception e) {
-            log.error("Authentication failed: ", e);
-            resetAuthenticationAfterRequest();
-            handleAuthenticationFailure(response, e);
-//            response.getWriter().write(e.getLocalizedMessage());
-        } finally {
-            // Ensures security context is always cleared after request
-            resetAuthenticationAfterRequest();
+            String errMsg = "Exception in Authentication filter " + e.getMessage();
+            SecurityContextHolder.clearContext();
+            throw new AuthenticationException(errMsg, e);
         }
-    }
-
-    private void resetAuthenticationAfterRequest() {
-        SecurityContextHolder.clearContext();
-    }
-
-    private void handleAuthenticationFailure(HttpServletResponse response, Exception e) throws IOException {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.setContentType("application/json");
-//        String json = new ObjectMapper().writeValueAsString(Map.of(
-//                "error", "Unauthorized",
-//                "message", e.getMessage()
-//        ));
-        response.getWriter().write("{\"error\": \"Unauthorized\", \"message\": \"" + e.getMessage() + "\"}");
-        response.getWriter().flush();
+        filterChain.doFilter(request, response);
     }
 
     private CustomAuthToken getAuthTokenFromBasicAuth(HttpServletRequest request) {

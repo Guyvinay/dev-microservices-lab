@@ -15,11 +15,7 @@ public class CurrentTenantIdentifier {
                 .map(Authentication::getDetails)
                 .filter(details-> details instanceof JwtTokenDto)
                 .map(JwtTokenDto.class::cast)
-                .map(JwtTokenDto::getTenantId)
-                .orElseGet(()->  {
-                    return "public";
-
-                    // maybe throw exception if required later
-                });
+                .map((token)-> token.getUserBaseInfo().getTenantId())
+                .orElseGet(()-> "public");
     }
 }

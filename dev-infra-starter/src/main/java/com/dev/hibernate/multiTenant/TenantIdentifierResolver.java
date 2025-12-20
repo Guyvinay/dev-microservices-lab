@@ -22,7 +22,7 @@ public class TenantIdentifierResolver implements CurrentTenantIdentifierResolver
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if(authentication != null) {
             JwtTokenDto tokenDto = (JwtTokenDto) authentication.getDetails();
-            return tokenDto.getTenantId();
+            return tokenDto.getUserBaseInfo().getTenantId();
         }
         return DEFAULT_TENANT_ID;
     }

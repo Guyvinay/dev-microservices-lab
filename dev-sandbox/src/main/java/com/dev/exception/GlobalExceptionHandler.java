@@ -10,6 +10,8 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
@@ -17,67 +19,77 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
-@ControllerAdvice
 @Slf4j
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
-
+    /* =========================
+       404 – Resource Not Found
+       ========================= */
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<GeneralResponseDTO<Object>> handleResourceNotFound(ResourceNotFoundException ex) {
-        GeneralResponseDTO<Object> generalResponseDTO =  generalResponseDTO(ex, null, HttpStatus.INTERNAL_SERVER_ERROR);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(generalResponseDTO);
+    public ResponseEntity<GeneralResponseDTO<Object>> handleResourceNotFound(
+            ResourceNotFoundException ex
+    ) {
+        log.warn("Resource not found: {}", ex.getMessage());
+        return buildErrorResponse(ex, HttpStatus.NOT_FOUND);
     }
 
+    /* =========================
+       400 – Bad Request
+       ========================= */
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiResponse<String>> handleIllegalArgument(IllegalArgumentException ex) {
-        ApiResponse<String> response = new ApiResponse<>("400", ex.getMessage(), null);
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    public ResponseEntity<GeneralResponseDTO<Object>> handleIllegalArgument(
+            IllegalArgumentException ex
+    ) {
+        log.warn("Invalid argument: {}", ex.getMessage());
+        return buildErrorResponse(ex, HttpStatus.BAD_REQUEST);
     }
 
-
-  /*  @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ExceptionDto> methodArgumentNotValidException(MethodArgumentNotValidException ex, WebRequest wb) {
-
-        List<ObjectError> objectErrors = ex.getBindingResult().getAllErrors();
-//        List<String> errors = MethodArgumentNotValidException.errorsToStringList(objectErrors);
-
-        return new ResponseEntity<>(
-                new ExceptionDto(
-                        LocalDateTime.now(),
-                        String.join(", "),
-                        wb.getDescription(false)
-                ),
-                HttpStatus.BAD_REQUEST
-        );
-
-    }
-*/
+    /* =========================
+       404 – Invalid Endpoint
+       ========================= */
     @ExceptionHandler(NoHandlerFoundException.class)
-    public ResponseEntity<ExceptionDto> noHandlerFoundException(NoHandlerFoundException ex, WebRequest wb){
-        return new ResponseEntity<ExceptionDto>(
-                new ExceptionDto(
-                        LocalDateTime.now(),
-                        "There is no handler for this endpoint: " + wb.getDescription(false),
-                        ex.getMessage()
-                ),
-                HttpStatus.BAD_REQUEST
-        );
+    public ResponseEntity<GeneralResponseDTO<Object>> handleNoHandlerFound(
+            NoHandlerFoundException ex,
+            WebRequest request
+    ) {
+        log.warn("No handler found: {}", ex.getRequestURL());
+
+        String message = "No handler found for endpoint: " + ex.getRequestURL();
+        return buildErrorResponse(message, HttpStatus.NOT_FOUND);
     }
 
-//    @ExceptionHandler(Exception.class)
-    public ResponseEntity<GeneralResponseDTO<Object>> globalExceptionHandler(Exception ex, WebRequest wb){
-
-        GeneralResponseDTO<Object> generalResponseDTO =  generalResponseDTO(ex, null, HttpStatus.INTERNAL_SERVER_ERROR);
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(generalResponseDTO);
+    /* =========================
+       500 – Internal Server Error
+       ========================= */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<GeneralResponseDTO<Object>> handleGenericException(
+            Exception ex
+    ) {
+        log.error("Unhandled exception", ex);
+        return buildErrorResponse(ex, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    private GeneralResponseDTO<Object> generalResponseDTO(Exception e, String errorMessage, HttpStatus status) {
-        GeneralResponseDTO<Object> generalResponseDTO = new GeneralResponseDTO<>();
-        generalResponseDTO.setSuccess(false);
-        generalResponseDTO.setStatus(status.value());
-        generalResponseDTO.setErrorMsg(StringUtils.isNotBlank(errorMessage)? errorMessage: e.getMessage());
-        return generalResponseDTO;
+    /* =========================
+       Common Response Builders
+       ========================= */
+    private ResponseEntity<GeneralResponseDTO<Object>> buildErrorResponse(
+            Exception ex,
+            HttpStatus status
+    ) {
+        return buildErrorResponse(ex.getMessage(), status);
+    }
+
+    private ResponseEntity<GeneralResponseDTO<Object>> buildErrorResponse(
+            String message,
+            HttpStatus status
+    ) {
+        GeneralResponseDTO<Object> response = GeneralResponseDTO.builder()
+                .success(false)
+                .status(status.value())
+                .errorMsg(message)
+                .build();
+
+        return ResponseEntity.status(status).body(response);
     }
 }

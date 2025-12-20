@@ -45,7 +45,7 @@ public class OAuth2UserProfileServiceImpl implements OAuth2UserProfileService {
         Optional<UserProfileModel> userProfile =  userProfileModelRepository.findByEmail(userProfileModel.getEmail());
         if (userProfile.isPresent()) {
             UserProfileModel profileModel = userProfile.get();
-            UserProfileTenantMapping userProfileTenantMapping = userProfileTenantMappingRepository.findByUserId(userProfileModel.getId()).getFirst();
+            UserProfileTenantMapping userProfileTenantMapping = userProfileTenantMappingRepository.findByUserId(profileModel.getId()).getFirst();
             List<String> roleIds = roleMappingRepository.findByUserId(profileModel.getId()).stream().map((role)-> String.valueOf(role.getRoleId())).collect(Collectors.toList());
             String userId = String.valueOf(profileModel.getId());
             Optional<OAuthProvider> oAuthProviderOptional = oAuthProviderRepository.findByUserIdAndProviderId(userId, providerId);
