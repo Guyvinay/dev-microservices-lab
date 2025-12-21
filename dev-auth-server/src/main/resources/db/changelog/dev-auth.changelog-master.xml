@@ -6,5 +6,6 @@
 
     <include file="db/changelog/dev-auth.changelog-01.xml"/>
     <include file="db/changelog/dev-auth.changelog-audit.xml"/>
+    <include file="db/changelog/dev-auth-bootstrap-default-data.xml"/>
 
 </databaseChangeLog>
