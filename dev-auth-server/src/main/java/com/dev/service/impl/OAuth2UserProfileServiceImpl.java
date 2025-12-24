@@ -3,16 +3,20 @@ package com.dev.service.impl;
 import com.dev.dto.UserProfileDetailsDto;
 import com.dev.entity.OrganizationTenantMapping;
 import com.dev.entity.UserProfileModel;
+import com.dev.entity.UserProfileRoleMapping;
+import com.dev.entity.UserProfileRoleModel;
 import com.dev.entity.UserProfileTenantMapping;
 import com.dev.oauth2.dto.OAuthProvider;
 import com.dev.repository.OAuthProviderRepository;
 import com.dev.repository.OrganizationTenantMappingRepository;
 import com.dev.repository.UserProfileModelRepository;
 import com.dev.repository.UserProfileRoleMappingRepository;
+import com.dev.repository.UserProfileRoleModelRepository;
 import com.dev.repository.UserProfileTenantMappingRepository;
 import com.dev.service.OAuth2UserProfileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +24,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static com.dev.utility.DefaultConstants.DEFAULT_ROLE;
+import static com.dev.utility.DefaultConstants.PUBLIC_TENANT;
 
 @Service
 @Slf4j
@@ -31,6 +38,8 @@ public class OAuth2UserProfileServiceImpl implements OAuth2UserProfileService {
     private final UserProfileTenantMappingRepository userProfileTenantMappingRepository;
     private final OrganizationTenantMappingRepository tenantMappingRepository;
     private final UserProfileRoleMappingRepository roleMappingRepository;
+    private final UserProfileRoleModelRepository roleModelRepository;
+
 
     /**
      * @param provider 
@@ -41,54 +50,110 @@ public class OAuth2UserProfileServiceImpl implements OAuth2UserProfileService {
     @Override
     @Transactional
     public UserProfileDetailsDto processOAuthPostLogin(String provider, String providerId, UserProfileModel userProfileModel) {
-        UserProfileDetailsDto profileDetailsDto = null;
-        Optional<UserProfileModel> userProfile =  userProfileModelRepository.findByEmail(userProfileModel.getEmail());
-        if (userProfile.isPresent()) {
-            UserProfileModel profileModel = userProfile.get();
-            UserProfileTenantMapping userProfileTenantMapping = userProfileTenantMappingRepository.findByUserId(profileModel.getId()).getFirst();
-            List<String> roleIds = roleMappingRepository.findByUserId(profileModel.getId()).stream().map((role)-> String.valueOf(role.getRoleId())).collect(Collectors.toList());
-            String userId = String.valueOf(profileModel.getId());
-            Optional<OAuthProvider> oAuthProviderOptional = oAuthProviderRepository.findByUserIdAndProviderId(userId, providerId);
-            if(oAuthProviderOptional.isEmpty()) {
-                OAuthProvider oAuthProvider = OAuthProvider.builder()
-                        .userId(userId)
-                        .provider(provider)
-                        .providerId(providerId)
-                        .build();
-                OAuthProvider savedOAuth = oAuthProviderRepository.save(oAuthProvider);
-                log.info("OAuth saved for user: {}, with id: {}, providerName: {}, provideId: {} ", userId, savedOAuth.getId(), provider, providerId);
-            }
-            profileDetailsDto = new UserProfileDetailsDto(profileModel);
-            profileDetailsDto.setOrgId(userProfileTenantMapping.getOrganizationId());
-            profileDetailsDto.setTenantId(userProfileTenantMapping.getTenantId());
-            profileDetailsDto.setRoleIds(roleIds);
-            return profileDetailsDto;
+
+        UserProfileModel user = findOrCreateUser(userProfileModel);
+
+        UserProfileTenantMapping tenantMapping = ensureTenantMapping(user);
+
+        ensureDefaultRole(user, tenantMapping.getTenantId());
+
+        ensureOAuthProviderLink(user, provider, providerId);
+
+        return buildUserProfileDetails(user, tenantMapping);
+    }
+
+    private UserProfileModel findOrCreateUser(UserProfileModel incomingProfile) {
+        return userProfileModelRepository.findByEmail(incomingProfile.getEmail())
+                .orElseGet(() -> {
+                    UserProfileModel saved = userProfileModelRepository.save(incomingProfile);
+                    log.info("New user created with email={}", saved.getEmail());
+                    return saved;
+                });
+    }
+
+    private UserProfileTenantMapping ensureTenantMapping(UserProfileModel user) {
+
+        return userProfileTenantMappingRepository.findByUserId(user.getId())
+                .stream()
+                .findFirst()
+                .orElseGet(() -> {
+                    OrganizationTenantMapping publicTenant =
+                            tenantMappingRepository.findById(PUBLIC_TENANT)
+                                    .orElseThrow(() -> new IllegalStateException(
+                                            "Public tenant does not exist"));
+
+                    UserProfileTenantMapping mapping = new UserProfileTenantMapping();
+                    mapping.setUserId(user.getId());
+                    mapping.setTenantId(publicTenant.getTenantId());
+                    mapping.setOrganizationId(publicTenant.getOrgId());
+
+                    log.info("Tenant mapping created for userId={}", user.getId());
+                    return userProfileTenantMappingRepository.save(mapping);
+                });
+    }
+    private void ensureDefaultRole(UserProfileModel user, String tenantId) {
+
+        boolean hasRoles = roleMappingRepository.existsByUserId(user.getId());
+        if (hasRoles) {
+            return;
         }
 
-        UserProfileModel savedUserProfileModel = userProfileModelRepository.save(userProfileModel);
+        UserProfileRoleModel role = roleModelRepository
+                .findByRoleNameAndTenantId(DEFAULT_ROLE, tenantId)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Default role USER not configured for tenant " + tenantId));
 
-        OrganizationTenantMapping tenantMapping = tenantMappingRepository.findByTenantName("public")
-                .orElseThrow(()-> new RuntimeException("Public tenant not exists, please contact admin."));
+        UserProfileRoleMapping roleMapping = new UserProfileRoleMapping();
+        roleMapping.setUserId(user.getId());
+        roleMapping.setRoleId(role.getRoleId());
+        roleMapping.setTenantId(tenantId);
+        roleMapping.setDefaultRole(true);
 
-        UserProfileTenantMapping userProfileTenantMapping = new UserProfileTenantMapping();
-        userProfileTenantMapping.setUserId(savedUserProfileModel.getId());
-        userProfileTenantMapping.setTenantId(tenantMapping.getTenantId());
-        userProfileTenantMapping.setOrganizationId(tenantMapping.getOrgId());
+        roleMappingRepository.save(roleMapping);
+        log.info("Default USER role assigned to userId={}", user.getId());
+    }
 
-        userProfileTenantMappingRepository.save(userProfileTenantMapping);
+    private void ensureOAuthProviderLink(
+            UserProfileModel user,
+            String provider,
+            String providerId) {
 
-        OAuthProvider oAuthProvider = OAuthProvider.builder()
-                .userId(String.valueOf(savedUserProfileModel.getId()))
+        Optional<OAuthProvider> existing =
+                oAuthProviderRepository.findByProviderAndProviderId(provider, providerId);
+
+        if (existing.isPresent()) {
+            if (!existing.get().getUserId().equals(String.valueOf(user.getId()))) {
+                throw new IllegalStateException(
+                        "OAuth provider already linked to another user");
+            }
+            return;
+        }
+
+        OAuthProvider oauth = OAuthProvider.builder()
+                .userId(String.valueOf(user.getId()))
                 .provider(provider)
                 .providerId(providerId)
                 .build();
 
-        OAuthProvider savedOAuth = oAuthProviderRepository.save(oAuthProvider);
-        log.info("OAuth and user profile saved, user: {}, with id: {}, providerName: {}, providerId: {}", savedUserProfileModel.getId(), savedOAuth.getId(), providerId, provider);
-        profileDetailsDto = new UserProfileDetailsDto(savedUserProfileModel);
-        profileDetailsDto.setTenantId(userProfileTenantMapping.getTenantId());
-        profileDetailsDto.setOrgId(userProfileTenantMapping.getOrganizationId());
-
-        return profileDetailsDto;
+        oAuthProviderRepository.save(oauth);
+        log.info("OAuth linked: userId={}, provider={}", user.getId(), provider);
     }
+
+    private UserProfileDetailsDto buildUserProfileDetails(
+            UserProfileModel user,
+            UserProfileTenantMapping tenantMapping) {
+
+        List<String> roleIds = roleMappingRepository.findByUserId(user.getId())
+                .stream()
+                .map(role -> String.valueOf(role.getRoleId()))
+                .toList();
+
+        UserProfileDetailsDto dto = new UserProfileDetailsDto(user);
+        dto.setTenantId(tenantMapping.getTenantId());
+        dto.setOrgId(tenantMapping.getOrganizationId());
+        dto.setRoleIds(roleIds);
+
+        return dto;
+    }
+
 }

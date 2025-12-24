@@ -3,6 +3,7 @@ import com.dev.entity.UserProfileRoleModel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Repository interface for performing CRUD operations on UserProfileRoleInfoModel.
@@ -21,6 +22,8 @@ public interface UserProfileRoleModelRepository extends JpaRepository<UserProfil
 
     // Find roles by tenant
     List<UserProfileRoleModel> findByTenantId(String tenantId);
+
+    Optional<UserProfileRoleModel> findByRoleNameAndTenantId(String roleName, String tenantId);
 
     // Check if role exists by name and tenant
     boolean existsByRoleNameAndTenantId(String roleName, String tenantId);

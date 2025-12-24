@@ -34,6 +34,8 @@
             <columnExists tableName="ORG_TENANT_MAPPING" columnName="ORG_ID"/>
             <columnExists tableName="ORG_TENANT_MAPPING" columnName="TENANT_NAME"/>
             <columnExists tableName="ORG_TENANT_MAPPING" columnName="TENANT_ACTIVE"/>
+            <columnExists tableName="ORG_TENANT_MAPPING" columnName="CREATED_AT"/>
+            <columnExists tableName="ORG_TENANT_MAPPING" columnName="UPDATED_AT"/>
 
             <sqlCheck expectedResult="0">
                 SELECT COUNT(*) FROM ORG_TENANT_MAPPING WHERE TENANT_ID = 'public'
@@ -47,6 +49,7 @@
             <column name="TENANT_NAME" value="Public Tenant"/>
             <column name="TENANT_ACTIVE" valueBoolean="true"/>
             <column name="CREATED_AT" valueComputed="EXTRACT(EPOCH FROM now()) * 1000"/>
+            <column name="UPDATED_AT" valueComputed="EXTRACT(EPOCH FROM now()) * 1000"/>
         </insert>
     </changeSet>
 

@@ -4,9 +4,12 @@ import com.dev.dto.JwtTokenDto;
 import com.dev.dto.UserProfileDetailsDto;
 import com.dev.entity.UserProfileModel;
 import com.dev.oauth2.dto.CustomOAuth2User;
+import com.dev.oauth2.dto.OAuth2UserInfo;
+import com.dev.oauth2.factory.OAuth2UserInfoFactory;
 import com.dev.security.utility.SecurityUtils;
 import com.dev.service.OAuth2UserProfileService;
 import com.dev.service.UserProfileService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -14,24 +17,21 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.time.Instant;
 import java.util.Map;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
-    private final UserProfileService userProfileService;
     private final OAuth2UserProfileService oAuth2UserProfileService;
     private final SecurityUtils securityUtils;
-
-
-    public CustomOAuth2UserService(UserProfileService userProfileService, OAuth2UserProfileService oAuth2UserProfileService, SecurityUtils securityUtils) {
-        this.userProfileService = userProfileService;
-        this.oAuth2UserProfileService = oAuth2UserProfileService;
-        this.securityUtils = securityUtils;
-    }
+    private final OAuth2UserService<OAuth2UserRequest, OAuth2User> delegate =
+            new DefaultOAuth2UserService();
+    private final OAuth2UserInfoFactory userInfoFactory;
 
     /**
      * @param userRequest 
@@ -40,36 +40,56 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
      */
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        OAuth2User oauth2User = new DefaultOAuth2UserService().loadUser(userRequest);
+        OAuth2User oauth2User = delegate.loadUser(userRequest);
 
         // Extract user details
-        Map<String, Object> attributes = oauth2User.getAttributes();
-        log.info("attributes: {}", attributes.size());
         String provider = userRequest.getClientRegistration().getRegistrationId();
-        String providerId = String.valueOf(attributes.get("id"));
-        if(provider.equalsIgnoreCase("google")) {
-            providerId = String.valueOf(attributes.get("sub"));
-        }
-        String name = String.valueOf(attributes.get("name"));
-        String email = String.valueOf(attributes.get("email"));
+        Map<String, Object> attributes = oauth2User.getAttributes();
 
-        log.info("provider: {}, providerId: {}, name: {}, email: {}", provider, providerId, name, email);
+        OAuth2UserInfo userInfo =
+                userInfoFactory.getUserInfo(provider, attributes);
 
-        UserProfileModel userProfileModel = UserProfileModel.builder()
-                .name(name)
-                .email(email)
-                .isActive(true)
-                .createdAt(Instant.now().toEpochMilli())
-                .updatedAt(Instant.now().toEpochMilli())
-                .build();
+        validateOAuth2User(userInfo, provider);
+        UserProfileModel profileModel = buildUserProfile(userInfo);
 
-        UserProfileDetailsDto profileModel = oAuth2UserProfileService.processOAuthPostLogin(provider, providerId,  userProfileModel);
-        log.info("User profile processed: {}", profileModel.getUserId());
+        UserProfileDetailsDto profileDetails =
+                oAuth2UserProfileService.processOAuthPostLogin(
+                        provider,
+                        userInfo.getProviderId(),
+                        profileModel
+                );
 
-        JwtTokenDto jwtTokenDto = securityUtils.createJwtTokeDtoFromModel(profileModel, 2000000000);
+        log.info("attributes: {}", attributes.size());
 
-        CustomOAuth2User customOAuth2User = new CustomOAuth2User(jwtTokenDto, attributes, oauth2User.getAuthorities());
+        JwtTokenDto jwtTokenDto = securityUtils.createJwtTokeDtoFromModel(profileDetails, 2000000000);
 
-        return customOAuth2User;
+        return new CustomOAuth2User(jwtTokenDto, attributes, oauth2User.getAuthorities());
     }
+
+    private UserProfileModel buildUserProfile(OAuth2UserInfo userInfo) {
+
+        long now = Instant.now().toEpochMilli();
+
+        return UserProfileModel.builder()
+                .name(userInfo.getName())
+                .email(userInfo.getEmail())
+                .isActive(true)
+                .createdAt(now)
+                .updatedAt(now)
+                .build();
+    }
+
+    private void validateOAuth2User(OAuth2UserInfo userInfo, String provider) {
+
+        if (!StringUtils.hasText(userInfo.getProviderId())) {
+            throw new OAuth2AuthenticationException(
+                    "Missing providerId from " + provider);
+        }
+
+        if (!StringUtils.hasText(userInfo.getEmail())) {
+            throw new OAuth2AuthenticationException(
+                    "Email not provided by " + provider);
+        }
+    }
+
 }

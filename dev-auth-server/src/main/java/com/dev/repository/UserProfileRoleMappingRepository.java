@@ -20,4 +20,6 @@ public interface UserProfileRoleMappingRepository extends JpaRepository<UserProf
 
     // Find by user + role
     Optional<UserProfileRoleMapping> findByUserIdAndRoleId(UUID userId, Long roleId);
+
+    boolean existsByUserId(UUID id);
 }
