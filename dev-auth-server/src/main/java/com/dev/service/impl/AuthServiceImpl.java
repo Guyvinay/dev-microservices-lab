@@ -1,6 +1,9 @@
 package com.dev.service.impl;
 
 import com.dev.bulk.email.service.EmailSendService;
+import com.dev.entity.JWTRefreshTokenEntity;
+import com.dev.exception.AuthenticationException;
+import com.dev.repository.JWTRefreshTokenRepository;
 import com.dev.security.dto.AccessRefreshTokenDto;
 import com.dev.security.dto.JwtTokenDto;
 import com.dev.dto.RequestPasswordResetDto;
@@ -11,20 +14,17 @@ import com.dev.entity.UserProfileModel;
 import com.dev.exception.PasswordResetException;
 import com.dev.repository.PasswordResetTokenRepository;
 import com.dev.repository.UserProfileModelRepository;
-import com.dev.security.details.CustomAuthToken;
-import com.dev.security.dto.TokenType;
 import com.dev.security.provider.CustomBcryptEncoder;
 import com.dev.security.provider.JwtTokenProviderManager;
 import com.dev.service.AuthService;
 import com.dev.service.UserProfileService;
+import com.dev.utility.SecurityContextUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.nimbusds.jose.JOSEException;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -32,12 +32,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
-import static com.dev.security.utility.SecurityConstants.JWT_REFRESH_TOKEN;
-import static com.dev.security.utility.SecurityConstants.JWT_ACCESS_TOKEN;
 import static com.dev.utility.DefaultConstants.TOKEN_EXPIRY_MINUTES;
 
 @Slf4j
@@ -51,37 +47,102 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final EmailSendService emailSendService;
     private final UserProfileModelRepository userProfileModelRepository;
+    private final JWTRefreshTokenRepository jwtRefreshTokenRepository;
+
 
     @Value("${security.jwt.refresh-expiry-minutes}")
     private int refreshExpiryMinutes;
+    @Value("${security.jwt.access-expiry-minutes}")
+    private int accessExpiryMinutes;
 
     /**
      * @return
      */
     @Override
     public AccessRefreshTokenDto login() throws JsonProcessingException, JOSEException {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        JwtTokenDto tokenDto = SecurityContextUtil.getJwtTokenDtoFromContext();
 
-        CustomAuthToken authToken = (CustomAuthToken) authentication;
-        JwtTokenDto tokenDto = (JwtTokenDto) authToken.getDetails();
+        JwtTokenDto accessDto =
+                jwtTokenProviderManager.createAccessTokenDto(
+                        tokenDto,
+                        accessExpiryMinutes
+                );
 
+        JwtTokenDto refreshDto =
+                jwtTokenProviderManager.createRefreshTokenDtoForLogin(
+                        tokenDto,
+                        refreshExpiryMinutes
+                );
+        storeRefreshToken(refreshDto);
         return new AccessRefreshTokenDto(
-                jwtTokenProviderManager.createJwtToken(tokenDto),
-                jwtTokenProviderManager.createJwtToken(createRefreshJwtTokenDTO(tokenDto))
+                jwtTokenProviderManager.createJwtToken(accessDto),
+                jwtTokenProviderManager.createJwtToken(refreshDto)
         );
     }
 
     @Override
     public AccessRefreshTokenDto refresh() throws JOSEException, JsonProcessingException {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        JwtTokenDto tokenDto = SecurityContextUtil.getJwtTokenDtoFromContext();
+        JwtTokenDto newAccessDto =
+                jwtTokenProviderManager.createAccessTokenDto(
+                        tokenDto,
+                        accessExpiryMinutes
+                );
 
-        CustomAuthToken authToken = (CustomAuthToken) authentication;
-        JwtTokenDto tokenDto = (JwtTokenDto) authToken.getDetails();
+        JwtTokenDto newRefreshDto =
+                jwtTokenProviderManager.createRefreshTokenDtoForRefresh(
+                        tokenDto
+                );
+
+        rotateToken(tokenDto.getJwtId(), newRefreshDto.getJwtId());
+
+        storeRefreshToken(newRefreshDto);
 
         return new AccessRefreshTokenDto(
-                jwtTokenProviderManager.createJwtToken(tokenDto),
-                jwtTokenProviderManager.createJwtToken(createRefreshJwtTokenDTO(tokenDto))
+                jwtTokenProviderManager.createJwtToken(newAccessDto),
+                jwtTokenProviderManager.createJwtToken(newRefreshDto)
         );
+    }
+
+    public void storeRefreshToken(JwtTokenDto dto) {
+        JWTRefreshTokenEntity entity = JWTRefreshTokenEntity.builder()
+                .jti(dto.getJwtId())
+                .userId(dto.getUserBaseInfo().getId())
+                .expiresAt(dto.getExpiresAt())
+                .createdAt(dto.getCreatedAt())
+                .revoked(false)
+                .build();
+
+        jwtRefreshTokenRepository.save(entity);
+    }
+
+    public JWTRefreshTokenEntity validateAndGet(UUID jti) {
+        JWTRefreshTokenEntity token = jwtRefreshTokenRepository.findById(jti)
+                .orElseThrow(() ->
+                        new AuthenticationException("Invalid refresh token"));
+
+        if (token.isRevoked()) {
+            throw new AuthenticationException("Refresh token reused");
+        }
+
+        if (Instant.now().toEpochMilli() > token.getExpiresAt()) {
+            throw new AuthenticationException("Refresh token expired");
+        }
+
+        return token;
+    }
+
+    public void rotateToken(
+            UUID oldJti,
+            UUID newJti
+    ) {
+        JWTRefreshTokenEntity oldToken = validateAndGet(oldJti);
+
+        oldToken.setRevoked(true);
+        oldToken.setRevokedAt(Instant.now().toEpochMilli());
+        oldToken.setReplacedByJti(newJti);
+
+        jwtRefreshTokenRepository.save(oldToken);
     }
 
     @Override

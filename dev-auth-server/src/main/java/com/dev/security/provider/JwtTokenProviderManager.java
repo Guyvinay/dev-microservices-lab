@@ -263,4 +263,69 @@ public class JwtTokenProviderManager {
                 .expiresAt(expiresAt)
                 .build();
     }
+
+
+    /**
+     * Create ACCESS token DTO
+     */
+    public JwtTokenDto createAccessTokenDto(
+            JwtTokenDto source,
+            long accessValidity
+    ) {
+        Instant now = Instant.now();
+
+        return JwtTokenDto.builder()
+                .jwtId(UUID.randomUUID())
+                .tokenType(TokenType.ACCESS)
+                .userBaseInfo(source.getUserBaseInfo())
+                .createdAt(now.toEpochMilli())
+                .expiresAt(
+                        now.plus(Duration.ofMinutes(accessValidity)).toEpochMilli()
+                )
+                .build();
+    }
+
+    /**
+     * Create REFRESH token DTO on LOGIN
+     * (full lifetime)
+     */
+    public JwtTokenDto createRefreshTokenDtoForLogin(
+            JwtTokenDto source,
+            long refreshValidity
+    ) {
+        Instant now = Instant.now();
+
+        return JwtTokenDto.builder()
+                .jwtId(UUID.randomUUID())
+                .tokenType(TokenType.REFRESH)
+                .userBaseInfo(source.getUserBaseInfo())
+                .createdAt(now.toEpochMilli())
+                .expiresAt(
+                        now.plus(Duration.ofMinutes(refreshValidity)).toEpochMilli()
+                )
+                .build();
+    }
+
+    /**
+     * Create REFRESH token DTO on REFRESH
+     * (preserve absolute expiry)
+     */
+    public JwtTokenDto createRefreshTokenDtoForRefresh(
+            JwtTokenDto source
+    ) {
+        Instant now = Instant.now();
+        Instant absoluteExpiry = Instant.ofEpochMilli(source.getExpiresAt());
+
+        if (now.isAfter(absoluteExpiry)) {
+            throw new AuthenticationException("Refresh token expired");
+        }
+
+        return JwtTokenDto.builder()
+                .jwtId(UUID.randomUUID())
+                .tokenType(TokenType.REFRESH)
+                .userBaseInfo(source.getUserBaseInfo())
+                .createdAt(now.toEpochMilli())
+                .expiresAt(absoluteExpiry.toEpochMilli())
+                .build();
+    }
 }
