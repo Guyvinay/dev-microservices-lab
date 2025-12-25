@@ -6,7 +6,7 @@ import com.dev.entity.UserProfileModel;
 import com.dev.oauth2.dto.CustomOAuth2User;
 import com.dev.oauth2.dto.OAuth2UserInfo;
 import com.dev.oauth2.factory.OAuth2UserInfoFactory;
-import com.dev.security.utility.SecurityUtils;
+import com.dev.security.provider.JwtTokenProviderManager;
 import com.dev.service.OAuth2UserProfileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,8 +31,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     private final OAuth2UserService<OAuth2UserRequest, OAuth2User> delegate =
             new DefaultOAuth2UserService();
     private final OAuth2UserInfoFactory userInfoFactory;
-
-    @Value("${security.jwt.access-expiry-minutes}")
+    private final JwtTokenProviderManager jwtTokenProviderManager;    @Value("${security.jwt.access-expiry-minutes}")
     private int accessExpiryMinutes;
 
     /**
@@ -63,7 +62,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         log.info("attributes: {}", attributes.size());
 
-        JwtTokenDto jwtTokenDto = SecurityUtils.createJwtTokeDtoFromModel(profileDetails, accessExpiryMinutes);
+        JwtTokenDto jwtTokenDto = jwtTokenProviderManager.createJwtTokeDtoFromModel(profileDetails, accessExpiryMinutes);
 
         return new CustomOAuth2User(jwtTokenDto, attributes, oauth2User.getAuthorities());
     }

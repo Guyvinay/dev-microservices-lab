@@ -144,9 +144,13 @@ public class AuthServiceImpl implements AuthService {
 
     private JwtTokenDto createRefreshJwtTokenDTO(JwtTokenDto tokenDto) {
         long expiresAt = tokenDto.getCreatedAt() + Duration.ofMinutes(refreshExpiryMinutes).toMillis();
-        tokenDto.setTokenType(TokenType.REFRESH);
-        tokenDto.setExpiresAt(expiresAt);
-        return tokenDto;
+        return JwtTokenDto.builder()
+                .jwtId(tokenDto.getJwtId())
+                .userBaseInfo(tokenDto.getUserBaseInfo())
+                .tokenType(tokenDto.getTokenType())
+                .createdAt(tokenDto.getCreatedAt())
+                .expiresAt(expiresAt)
+                .build();
     }
 
     private void enforceResetCooldown(String email) {

@@ -6,7 +6,7 @@ import com.dev.security.details.CustomUserDetails;
 import com.dev.security.details.CustomUserDetailsService;
 import com.dev.security.details.UserBaseInfo;
 import com.dev.security.dto.TokenType;
-import com.dev.security.utility.SecurityUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,18 +20,15 @@ import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     private final CustomUserDetailsService userDetailsService;
     private final CustomBcryptEncoder customBcryptEncoder;
+    private final JwtTokenProviderManager jwtTokenProviderManager;
 
     @Value("${security.jwt.access-expiry-minutes}")
     private int accessExpiryMinutes;
-
-    public CustomAuthenticationProvider(CustomUserDetailsService userDetailsService, CustomBcryptEncoder customBcryptEncoder) {
-        this.userDetailsService = userDetailsService;
-        this.customBcryptEncoder = customBcryptEncoder;
-    }
 
     /**
      * Performs authentication with the same contract as
@@ -72,7 +69,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         );
         UserBaseInfo userBaseInfo = userDetails.getUserBaseInfo();
 
-        JwtTokenDto jwtTokenDto = SecurityUtils.createToken(userBaseInfo, TokenType.ACCESS, accessExpiryMinutes);
+        JwtTokenDto jwtTokenDto = jwtTokenProviderManager.createTokenDTOFromUserBaseInfo(userBaseInfo, TokenType.ACCESS, accessExpiryMinutes);
         authenticationToken.setDetails(jwtTokenDto);
         return authenticationToken;
     }
