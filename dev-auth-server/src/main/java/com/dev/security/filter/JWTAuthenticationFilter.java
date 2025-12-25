@@ -12,6 +12,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -32,13 +34,12 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
     private AuthenticationManager getAuthManager() throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
-    /**
-     * @param request
-     * @param response
-     * @param filterChain
-     * @throws ServletException
-     * @throws IOException
-     */
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return !("/dev-auth-server/api/auth/login".equals(request.getRequestURI()));
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String username = request.getParameter(USERNAME);
@@ -88,9 +89,4 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
         return new CustomAuthToken(username, password);
     }
 
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        String path = request.getRequestURI();
-        return !path.equals("/dev-auth-server/api/auth/login");  // Skip JWT processing for endpoint other that /login
-    }
 }

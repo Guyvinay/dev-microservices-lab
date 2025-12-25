@@ -1,6 +1,6 @@
 package com.dev.configuration;
 
-import com.dev.dto.JwtTokenDto;
+import com.dev.security.dto.JwtTokenDto;
 import com.dev.entity.AuthAuditRevisionEntity;
 import org.hibernate.envers.RevisionListener;
 import org.springframework.security.core.Authentication;

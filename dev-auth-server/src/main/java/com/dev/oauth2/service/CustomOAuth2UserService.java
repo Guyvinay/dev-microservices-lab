@@ -1,6 +1,6 @@
 package com.dev.oauth2.service;
 
-import com.dev.dto.JwtTokenDto;
+import com.dev.security.dto.JwtTokenDto;
 import com.dev.dto.UserProfileDetailsDto;
 import com.dev.entity.UserProfileModel;
 import com.dev.oauth2.dto.CustomOAuth2User;
@@ -8,9 +8,9 @@ import com.dev.oauth2.dto.OAuth2UserInfo;
 import com.dev.oauth2.factory.OAuth2UserInfoFactory;
 import com.dev.security.utility.SecurityUtils;
 import com.dev.service.OAuth2UserProfileService;
-import com.dev.service.UserProfileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
@@ -28,10 +28,12 @@ import java.util.Map;
 public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
     private final OAuth2UserProfileService oAuth2UserProfileService;
-    private final SecurityUtils securityUtils;
     private final OAuth2UserService<OAuth2UserRequest, OAuth2User> delegate =
             new DefaultOAuth2UserService();
     private final OAuth2UserInfoFactory userInfoFactory;
+
+    @Value("${security.jwt.access-expiry-minutes}")
+    private int accessExpiryMinutes;
 
     /**
      * @param userRequest 
@@ -61,7 +63,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         log.info("attributes: {}", attributes.size());
 
-        JwtTokenDto jwtTokenDto = securityUtils.createJwtTokeDtoFromModel(profileDetails, 2000000000);
+        JwtTokenDto jwtTokenDto = SecurityUtils.createJwtTokeDtoFromModel(profileDetails, accessExpiryMinutes);
 
         return new CustomOAuth2User(jwtTokenDto, attributes, oauth2User.getAuthorities());
     }

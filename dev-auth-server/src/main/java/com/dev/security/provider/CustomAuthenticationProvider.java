@@ -1,23 +1,21 @@
 package com.dev.security.provider;
 
-import com.dev.dto.JwtTokenDto;
+import com.dev.security.dto.JwtTokenDto;
 import com.dev.security.details.CustomAuthToken;
 import com.dev.security.details.CustomUserDetails;
 import com.dev.security.details.CustomUserDetailsService;
 import com.dev.security.details.UserBaseInfo;
+import com.dev.security.dto.TokenType;
 import com.dev.security.utility.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 
 @Service
@@ -26,6 +24,9 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     private final CustomUserDetailsService userDetailsService;
     private final CustomBcryptEncoder customBcryptEncoder;
+
+    @Value("${security.jwt.access-expiry-minutes}")
+    private int accessExpiryMinutes;
 
     public CustomAuthenticationProvider(CustomUserDetailsService userDetailsService, CustomBcryptEncoder customBcryptEncoder) {
         this.userDetailsService = userDetailsService;
@@ -72,7 +73,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         );
         UserBaseInfo userBaseInfo = userDetails.getUserBaseInfo();
 
-        JwtTokenDto jwtTokenDto = SecurityUtils.createToken(userBaseInfo, 200000);
+        JwtTokenDto jwtTokenDto = SecurityUtils.createToken(userBaseInfo, TokenType.ACCESS, accessExpiryMinutes);
         authenticationToken.setDetails(jwtTokenDto);
         return authenticationToken;
     }

@@ -1,5 +1,6 @@
 package com.dev.grpc.interceptor;
 
+import com.dev.security.dto.TokenType;
 import com.dev.security.provider.JwtTokenProviderManager;
 import io.grpc.*;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +25,7 @@ public class GrpcServerInterceptor implements ServerInterceptor {
         try {
             call.setCompression("gzip");
             // Get payload from token
-            String payload = jwtTokenHelper.getSubjectPayload(requestHeaders.get(JWT_TOKEN));
+            String payload = jwtTokenHelper.getSubjectPayload(requestHeaders.get(JWT_TOKEN), TokenType.ACCESS);
 
             // Set the Private JWT Token into GRPC context
             Context grpcCtx = Context.current().withValue(JWT_TOKEN_CTX, payload);

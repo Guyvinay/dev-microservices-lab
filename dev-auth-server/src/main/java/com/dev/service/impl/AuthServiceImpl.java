@@ -1,7 +1,8 @@
 package com.dev.service.impl;
 
 import com.dev.bulk.email.service.EmailSendService;
-import com.dev.dto.JwtTokenDto;
+import com.dev.security.dto.AccessRefreshTokenDto;
+import com.dev.security.dto.JwtTokenDto;
 import com.dev.dto.RequestPasswordResetDto;
 import com.dev.dto.ResetPasswordDto;
 import com.dev.dto.UserProfileResponseDTO;
@@ -11,36 +12,29 @@ import com.dev.exception.PasswordResetException;
 import com.dev.repository.PasswordResetTokenRepository;
 import com.dev.repository.UserProfileModelRepository;
 import com.dev.security.details.CustomAuthToken;
-import com.dev.security.dto.JWTRefreshTokenDto;
+import com.dev.security.dto.TokenType;
 import com.dev.security.provider.CustomBcryptEncoder;
 import com.dev.security.provider.JwtTokenProviderManager;
 import com.dev.service.AuthService;
 import com.dev.service.UserProfileService;
-import com.dev.service.UserProfileTenantService;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import static com.dev.security.SecurityConstants.JWT_REFRESH_TOKEN;
 import static com.dev.security.SecurityConstants.JWT_TOKEN;
@@ -58,6 +52,9 @@ public class AuthServiceImpl implements AuthService {
     private final EmailSendService emailSendService;
     private final UserProfileModelRepository userProfileModelRepository;
 
+    @Value("${security.jwt.refresh-expiry-minutes}")
+    private int refreshExpiryMinutes;
+
     /**
      * @return
      */
@@ -68,14 +65,29 @@ public class AuthServiceImpl implements AuthService {
         CustomAuthToken authToken = (CustomAuthToken) authentication;
         JwtTokenDto tokenDto = (JwtTokenDto) authToken.getDetails();
 
-        int jwtExpiredIn = 2000000000;
-        int refreshExpiredIn = 2000000000;
         Map<String, String> tokensMap = new HashMap<>();
 
-        tokensMap.put(JWT_TOKEN, jwtTokenProviderManager.createJwtToken(new ObjectMapper().writeValueAsString(tokenDto), jwtExpiredIn));
-        tokensMap.put(JWT_REFRESH_TOKEN, jwtTokenProviderManager.createJwtToken(new ObjectMapper().writeValueAsString(tokenDto), refreshExpiredIn));
+        tokensMap.put(JWT_TOKEN, jwtTokenProviderManager.createJwtToken(tokenDto));
+        tokensMap.put(JWT_REFRESH_TOKEN, jwtTokenProviderManager.createJwtToken(createRefreshJwtTokenDTO(tokenDto)));
 
         return tokensMap;
+    }
+
+    private JwtTokenDto createRefreshJwtTokenDTO(JwtTokenDto tokenDto) {
+        long expiresAt = tokenDto.getCreatedAt() + Duration.ofMinutes(refreshExpiryMinutes).toMillis();
+        tokenDto.setTokenType(TokenType.REFRESH);
+        tokenDto.setExpiresAt(expiresAt);
+        return tokenDto;
+    }
+
+    @Override
+    public AccessRefreshTokenDto refresh() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        CustomAuthToken authToken = (CustomAuthToken) authentication;
+        JwtTokenDto tokenDto = (JwtTokenDto) authToken.getDetails();
+
+        return new AccessRefreshTokenDto();
     }
 
     @Override
@@ -148,13 +160,13 @@ public class AuthServiceImpl implements AuthService {
 
         passwordResetTokenRepository
                 .findFirstByEmailAndUsedFalseOrderByCreatedAtDesc(email)
-//                .ifPresent(token -> {
-//                    long now = Instant.now().toEpochMilli();
-//                    if (token.getExpiresAt() > now) {
-//                        throw new PasswordResetException(
-//                                "Password reset already requested. Please try again later.");
-//                    }
-//                })
+                .ifPresent(token -> {
+                    long now = Instant.now().toEpochMilli();
+                    if (token.getExpiresAt() > now) {
+                        throw new PasswordResetException(
+                                "Password reset already requested. Please try again later.");
+                    }
+                })
         ;
     }
 

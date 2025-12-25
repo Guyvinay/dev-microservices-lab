@@ -2,6 +2,7 @@ package com.dev.service;
 
 import com.dev.dto.RequestPasswordResetDto;
 import com.dev.dto.ResetPasswordDto;
+import com.dev.security.dto.AccessRefreshTokenDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.nimbusds.jose.JOSEException;
 import jakarta.mail.MessagingException;
@@ -19,4 +20,5 @@ public interface AuthService {
 
     Map<String, String> resetPassword(@Valid ResetPasswordDto dto);
 
+    AccessRefreshTokenDto refresh();
 }

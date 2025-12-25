@@ -1,6 +1,6 @@
 package com.dev.logging.interceptors.http;
 
-import com.dev.dto.JwtTokenDto;
+import com.dev.security.dto.JwtTokenDto;
 import com.dev.logging.constant.MDCLoggingUtility;
 import com.dev.utility.SecurityContextUtil;
 import jakarta.servlet.FilterChain;

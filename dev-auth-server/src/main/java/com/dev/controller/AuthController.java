@@ -3,6 +3,7 @@ package com.dev.controller;
 import com.dev.dto.LoginRequestDTO;
 import com.dev.dto.RequestPasswordResetDto;
 import com.dev.dto.ResetPasswordDto;
+import com.dev.security.dto.AccessRefreshTokenDto;
 import com.dev.service.AuthService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.nimbusds.jose.JOSEException;
@@ -57,6 +58,11 @@ public class AuthController {
     @GetMapping("/login")
     public ResponseEntity<Map<String, String>> login() throws JsonProcessingException, JOSEException {
         return ResponseEntity.ok(authService.login());
+    }
+
+    @GetMapping("/refresh")
+    public ResponseEntity<AccessRefreshTokenDto> refresh() throws JsonProcessingException, JOSEException {
+        return ResponseEntity.ok(authService.refresh());
     }
 
     @GetMapping("/request-password-reset")

@@ -1,7 +1,9 @@
-package com.dev.dto;
+package com.dev.security.dto;
 
 import com.dev.security.details.UserBaseInfo;
 import lombok.*;
+
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -10,6 +12,8 @@ import lombok.*;
 @Builder
 public class JwtTokenDto {
 
+    private UUID jwtId;
+    private TokenType tokenType;
     private UserBaseInfo userBaseInfo;
     private long createdAt;
     private long expiresAt;

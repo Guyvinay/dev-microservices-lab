@@ -1,7 +1,7 @@
 package com.dev.service.impl;
 
 import com.dev.dto.CreateRoleRequest;
-import com.dev.dto.JwtTokenDto;
+import com.dev.security.dto.JwtTokenDto;
 import com.dev.dto.RoleDTO;
 import com.dev.entity.UserProfileRoleModel;
 import com.dev.exception.ResourceNotFoundException;

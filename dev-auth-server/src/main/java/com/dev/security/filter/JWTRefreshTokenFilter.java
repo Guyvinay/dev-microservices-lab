@@ -18,38 +18,33 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.List;
 
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class JWTAuthorizationFilter extends OncePerRequestFilter {
+public class JWTRefreshTokenFilter extends OncePerRequestFilter {
 
     private final JwtTokenProviderManager jwtTokenProvider;
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        String uri = request.getRequestURI();
-
-        // Skip login and refresh
-        return "/dev-auth-server/api/auth/login".equals(uri) ||
-                "/dev-auth-server/api/auth/refresh".equals(uri);
+        return !("/dev-auth-server/api/auth/refresh".equals(request.getRequestURI()));
     }
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        String token = jwtTokenProvider.resolveToken(request);
+        String refreshToken = jwtTokenProvider.resolveToken(request);
 
-        if (token == null) {
+        if (refreshToken == null) {
             filterChain.doFilter(request, response);
             return;
         }
         try {
-            Authentication auth = jwtTokenProvider.getAuthentication(token, TokenType.ACCESS);
+            Authentication auth = jwtTokenProvider.getAuthentication(refreshToken, TokenType.REFRESH);
             if (auth != null) {
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
