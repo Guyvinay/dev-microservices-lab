@@ -158,9 +158,12 @@ server:
 ################################################################################
 security:
   jwt:
-    secret: mySecretKeyForJwtToken         # MUST be env/secret in production
-    expiration: 3600000                    # 1 hour (ms)
-
+    issuer: dev-auth-server
+    audience:
+      - dev-sandbox
+      - dev-integration
+    access-expiry-minutes: 1440 # 1 day
+    refresh-expiry-minutes: 10080 # 7 days
 
 
 ################################################################################

@@ -8,17 +8,16 @@ import com.nimbusds.jose.JOSEException;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 
-import java.util.Map;
-
 public interface AuthService {
 
-    Map<String, String> login() throws JsonProcessingException, JOSEException;
+    AccessRefreshTokenDto login() throws JsonProcessingException, JOSEException;
 
-    Map<String, String> requestPasswordReset(String url, RequestPasswordResetDto resetDto) throws MessagingException;
+    AccessRefreshTokenDto refresh() throws JOSEException, JsonProcessingException;
 
-    Map<String, String> validateResetPassword(String email, String token);
+    String requestPasswordReset(String url, RequestPasswordResetDto resetDto) throws MessagingException;
 
-    Map<String, String> resetPassword(@Valid ResetPasswordDto dto);
+    String validateResetPassword(String email, String token);
 
-    AccessRefreshTokenDto refresh();
+    String resetPassword(@Valid ResetPasswordDto dto);
+
 }

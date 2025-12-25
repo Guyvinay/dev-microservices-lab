@@ -4,9 +4,13 @@ import com.dev.security.dto.JwtTokenDto;
 import com.dev.dto.UserProfileDetailsDto;
 import com.dev.security.details.UserBaseInfo;
 import com.dev.security.dto.TokenType;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 @Service

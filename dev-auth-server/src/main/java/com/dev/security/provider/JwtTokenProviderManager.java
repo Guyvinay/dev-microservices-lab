@@ -3,7 +3,6 @@ package com.dev.security.provider;
 import com.dev.security.dto.JwtTokenDto;
 import com.dev.exception.AuthenticationException;
 import com.dev.exception.JWTTokenException;
-import com.dev.security.SecurityConstants;
 import com.dev.security.details.CustomAuthToken;
 import com.dev.security.dto.TokenType;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -16,7 +15,6 @@ import com.nimbusds.jwt.SignedJWT;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -27,61 +25,39 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.util.*;
 
+import static com.dev.security.utility.SecurityConstants.AUDIENCE;
+import static com.dev.security.utility.SecurityConstants.AUTHORIZATION;
+import static com.dev.security.utility.SecurityConstants.AUTHZ;
+import static com.dev.security.utility.SecurityConstants.AUTH_TYPE;
+import static com.dev.security.utility.SecurityConstants.CLOCK_SKEW_SECONDS;
+import static com.dev.security.utility.SecurityConstants.ISSUER;
+import static com.dev.security.utility.SecurityConstants.MAX_TOKEN_SIZE;
+import static com.dev.security.utility.SecurityConstants.PERMISSION;
+import static com.dev.security.utility.SecurityConstants.SIGNING_SECRET_KEY;
+
 @Slf4j
 @Component
 public class JwtTokenProviderManager {
 
     private JWSSigner reqSigner;
     private JWSVerifier jwsVerifier;
-    private final String ISSUER = "dev-auth-server";
-    private final List<String> AUDIENCE = Arrays.asList("dev-sandbox", "dev-integration", "dev-auth-server");
-    private final List<String> AUTHZ = Arrays.asList("ADMIN", "USER", "MANAGER");
-    private final String PERMISSION = "permission";
-    private final String AUTH_TYPE = "type";
-    private static final int MAX_TOKEN_SIZE = 4096;
-    private static final long CLOCK_SKEW_SECONDS = 30;
 
     private final ObjectMapper OM = new ObjectMapper();
 
-    @Autowired
-    private SecurityConstants securityConstants;
-
     @PostConstruct
     protected void postConstruct() throws JOSEException {
-        String secretKey = securityConstants.getSigningSecretKey();
-        reqSigner = new MACSigner(secretKey.getBytes());
-        jwsVerifier = new MACVerifier(secretKey.getBytes());
+        reqSigner = new MACSigner(SIGNING_SECRET_KEY.getBytes());
+        jwsVerifier = new MACVerifier(SIGNING_SECRET_KEY.getBytes());
     }
 
     public String createJwtToken(
             JwtTokenDto jwtTokenDto
     ) throws JOSEException, JsonProcessingException {
 
-        // Validate required fields
-        if (jwtTokenDto.getCreatedAt() <= 0) {
-            throw new IllegalArgumentException("createdAt must be set");
-        }
-
-        if (jwtTokenDto.getExpiresAt() <= jwtTokenDto.getCreatedAt()) {
-            throw new IllegalArgumentException("expiresAt must be greater than createdAt");
-        }
-
-        if (jwtTokenDto.getTokenType() == null) {
-            throw new IllegalArgumentException("tokenType must be set");
-        }
-
-        // ️Ensure JWT ID
-        if (jwtTokenDto.getJwtId() == null) {
-            jwtTokenDto.setJwtId(UUID.randomUUID());
-        }
+        validateCreateJwtToken(jwtTokenDto);
 
         Instant issuedAt = Instant.ofEpochMilli(jwtTokenDto.getCreatedAt());
         Instant expiresAt = Instant.ofEpochMilli(jwtTokenDto.getExpiresAt());
-
-        // 1️Ensure required fields
-        if (jwtTokenDto.getJwtId() == null) {
-            jwtTokenDto.setJwtId(UUID.randomUUID());
-        }
 
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
                 .jwtID(jwtTokenDto.getJwtId().toString())
@@ -101,6 +77,26 @@ public class JwtTokenProviderManager {
         return signedJWT.serialize();
     }
 
+    private static void validateCreateJwtToken(JwtTokenDto jwtTokenDto) {
+        // Validate required fields
+        if (jwtTokenDto.getCreatedAt() <= 0) {
+            throw new IllegalArgumentException("createdAt must be set");
+        }
+
+        if (jwtTokenDto.getExpiresAt() <= jwtTokenDto.getCreatedAt()) {
+            throw new IllegalArgumentException("expiresAt must be greater than createdAt");
+        }
+
+        if (jwtTokenDto.getTokenType() == null) {
+            throw new IllegalArgumentException("tokenType must be set");
+        }
+
+        // ️Ensure JWT ID
+        if (jwtTokenDto.getJwtId() == null) {
+            jwtTokenDto.setJwtId(UUID.randomUUID());
+        }
+    }
+
     private JWSHeader buildJwsHeader() {
         return new JWSHeader.Builder(JWSAlgorithm.HS256)
                 .type(JOSEObjectType.JWT)
@@ -108,7 +104,7 @@ public class JwtTokenProviderManager {
     }
 
     public String resolveToken(HttpServletRequest httpServletRequest) {
-        String bearerToken = httpServletRequest.getHeader(SecurityConstants.AUTHORIZATION);
+        String bearerToken = httpServletRequest.getHeader(AUTHORIZATION);
         if (Objects.nonNull(bearerToken) && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }

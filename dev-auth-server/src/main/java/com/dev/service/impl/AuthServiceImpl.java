@@ -36,8 +36,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import static com.dev.security.SecurityConstants.JWT_REFRESH_TOKEN;
-import static com.dev.security.SecurityConstants.JWT_TOKEN;
+import static com.dev.security.utility.SecurityConstants.JWT_REFRESH_TOKEN;
+import static com.dev.security.utility.SecurityConstants.JWT_ACCESS_TOKEN;
 import static com.dev.utility.DefaultConstants.TOKEN_EXPIRY_MINUTES;
 
 @Slf4j
@@ -59,39 +59,33 @@ public class AuthServiceImpl implements AuthService {
      * @return
      */
     @Override
-    public Map<String, String> login() throws JsonProcessingException, JOSEException {
+    public AccessRefreshTokenDto login() throws JsonProcessingException, JOSEException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         CustomAuthToken authToken = (CustomAuthToken) authentication;
         JwtTokenDto tokenDto = (JwtTokenDto) authToken.getDetails();
 
-        Map<String, String> tokensMap = new HashMap<>();
-
-        tokensMap.put(JWT_TOKEN, jwtTokenProviderManager.createJwtToken(tokenDto));
-        tokensMap.put(JWT_REFRESH_TOKEN, jwtTokenProviderManager.createJwtToken(createRefreshJwtTokenDTO(tokenDto)));
-
-        return tokensMap;
-    }
-
-    private JwtTokenDto createRefreshJwtTokenDTO(JwtTokenDto tokenDto) {
-        long expiresAt = tokenDto.getCreatedAt() + Duration.ofMinutes(refreshExpiryMinutes).toMillis();
-        tokenDto.setTokenType(TokenType.REFRESH);
-        tokenDto.setExpiresAt(expiresAt);
-        return tokenDto;
+        return new AccessRefreshTokenDto(
+                jwtTokenProviderManager.createJwtToken(tokenDto),
+                jwtTokenProviderManager.createJwtToken(createRefreshJwtTokenDTO(tokenDto))
+        );
     }
 
     @Override
-    public AccessRefreshTokenDto refresh() {
+    public AccessRefreshTokenDto refresh() throws JOSEException, JsonProcessingException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         CustomAuthToken authToken = (CustomAuthToken) authentication;
         JwtTokenDto tokenDto = (JwtTokenDto) authToken.getDetails();
 
-        return new AccessRefreshTokenDto();
+        return new AccessRefreshTokenDto(
+                jwtTokenProviderManager.createJwtToken(tokenDto),
+                jwtTokenProviderManager.createJwtToken(createRefreshJwtTokenDTO(tokenDto))
+        );
     }
 
     @Override
-    public Map<String, String> requestPasswordReset(String url, RequestPasswordResetDto resetDto) throws MessagingException {
+    public String requestPasswordReset(String url, RequestPasswordResetDto resetDto) throws MessagingException {
         UserProfileResponseDTO userProfileResponseDTO = userProfileService.getUserByEmail(resetDto.getEmail()); // silent check
 
         enforceResetCooldown(resetDto.getEmail());
@@ -109,13 +103,13 @@ public class AuthServiceImpl implements AuthService {
 
         passwordResetTokenRepository.save(token);
 
-        return genericResponse();
+        return "A password reset link has been sent.";
     }
 
 
     @Override
     @Transactional
-    public Map<String, String> resetPassword(ResetPasswordDto dto) {
+    public String resetPassword(ResetPasswordDto dto) {
 
         PasswordResetToken token = getLatestValidToken(dto.getEmail());
 
@@ -134,27 +128,26 @@ public class AuthServiceImpl implements AuthService {
 
         invalidateToken(token);
 
-        return Map.of("message", "Password reset successfully. You may now login.");
+        return "Password reset successfully. You may now login.";
     }
 
     @Override
-    public Map<String, String> validateResetPassword(String email, String token) {
+    public String validateResetPassword(String email, String token) {
         PasswordResetToken resetToken = getLatestValidToken(email);
 
         validateToken(resetToken, token);
 
         resetToken.setReadyToUse(true);
         passwordResetTokenRepository.save(resetToken);
-        return Map.of("message", "Token validated. You may now reset your password.");
+        return "Token validated. You may now reset your password.";
     }
 
-    private Map<String, String> genericResponse() {
-        return Map.of(
-                "message",
-                "If an account exists for this email, a password reset link has been sent."
-        );
+    private JwtTokenDto createRefreshJwtTokenDTO(JwtTokenDto tokenDto) {
+        long expiresAt = tokenDto.getCreatedAt() + Duration.ofMinutes(refreshExpiryMinutes).toMillis();
+        tokenDto.setTokenType(TokenType.REFRESH);
+        tokenDto.setExpiresAt(expiresAt);
+        return tokenDto;
     }
-
 
     private void enforceResetCooldown(String email) {
 
@@ -193,7 +186,7 @@ public class AuthServiceImpl implements AuthService {
 
     private String buildResetLink(String baseUrl, String email, String token) {
         return UriComponentsBuilder.fromHttpUrl(baseUrl)
-                .path("/dev-auth-server/api/auth/validate-reset-password")
+                .path("/api/auth/validate-reset-password")
                 .queryParam("email", email)
                 .queryParam("token", token)
                 .toUriString();

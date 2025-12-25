@@ -59,7 +59,6 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
         log.info("Authenticating user: {}.", username);
 
-//        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
         CustomUserDetails userDetails = (CustomUserDetails) userDetailsService.loadUserByUsernameTenantAndOrg(username);
 
         if (!customBcryptEncoder.matches(password, userDetails.getPassword())) {
