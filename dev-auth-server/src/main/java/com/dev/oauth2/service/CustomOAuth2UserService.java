@@ -1,6 +1,6 @@
 package com.dev.oauth2.service;
 
-import com.dev.security.dto.JwtTokenDto;
+import com.dev.security.dto.AccessJwtToken;
 import com.dev.dto.UserProfileDetailsDto;
 import com.dev.entity.UserProfileModel;
 import com.dev.oauth2.dto.CustomOAuth2User;
@@ -62,9 +62,9 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         log.info("attributes: {}", attributes.size());
 
-        JwtTokenDto jwtTokenDto = jwtTokenProviderManager.createJwtTokeDtoFromModel(profileDetails, accessExpiryMinutes);
+        AccessJwtToken accessJwtToken = jwtTokenProviderManager.createJwtTokeDtoFromModel(profileDetails, accessExpiryMinutes);
 
-        return new CustomOAuth2User(jwtTokenDto, attributes, oauth2User.getAuthorities());
+        return new CustomOAuth2User(accessJwtToken, attributes, oauth2User.getAuthorities());
     }
 
     private UserProfileModel buildUserProfile(OAuth2UserInfo userInfo) {

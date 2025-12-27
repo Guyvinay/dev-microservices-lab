@@ -2,7 +2,7 @@ package com.dev.grpc.interceptor;
 
 import com.dev.exception.AuthenticationException;
 import com.dev.grpc.constants.GRPCConstant;
-import com.dev.security.dto.JwtTokenDto;
+import com.dev.security.dto.AccessJwtToken;
 import com.dev.security.dto.TokenType;
 import com.dev.security.provider.JwtTokenProviderManager;
 import io.grpc.*;
@@ -29,9 +29,9 @@ public class GrpcServerInterceptor implements ServerInterceptor {
             }
             log.info("GrpcServerInterceptor: JWT Token received from grpc request");
             // Get jwtTokenDto from token
-            JwtTokenDto jwtTokenDto = jwtTokenHelper.getJwtTokenDTOFromToken(authHeader, TokenType.ACCESS);
+            AccessJwtToken accessJwtToken = jwtTokenHelper.getJwtTokenDTOFromToken(authHeader, TokenType.ACCESS);
 
-            Context grpcCtx = Context.current().withValue(GRPCConstant.JWT_CONTEXT, jwtTokenDto);
+            Context grpcCtx = Context.current().withValue(GRPCConstant.JWT_CONTEXT, accessJwtToken);
 
             // Chain
             return Contexts.interceptCall(grpcCtx, call, requestHeaders, next);

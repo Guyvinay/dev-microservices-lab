@@ -1,6 +1,6 @@
 package com.dev.oauth2.handler;
 
-import com.dev.security.dto.JwtTokenDto;
+import com.dev.security.dto.AccessJwtToken;
 import com.dev.oauth2.dto.CustomOAuth2User;
 import com.dev.security.details.CustomAuthToken;
 import com.dev.security.provider.JwtTokenProviderManager;
@@ -32,18 +32,18 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         CustomOAuth2User customUser = (CustomOAuth2User) authentication.getPrincipal();
-        JwtTokenDto jwtTokenDto = customUser.getJwtTokenDto();
-        CustomAuthToken customAuthToken = new CustomAuthToken(jwtTokenDto.getUserBaseInfo().getEmail(), null, customUser.getAuthorities());
-        customAuthToken.setDetails(jwtTokenDto);
+        AccessJwtToken accessJwtToken = customUser.getAccessJwtToken();
+        CustomAuthToken customAuthToken = new CustomAuthToken(accessJwtToken.getUserBaseInfo().getEmail(), null, customUser.getAuthorities());
+        customAuthToken.setDetails(accessJwtToken);
         SecurityContextHolder.getContext().setAuthentication(customAuthToken);
         String token;
         try {
-            token = jwtTokenProviderManager.createJwtToken(jwtTokenDto);
+            token = jwtTokenProviderManager.createJwtToken(accessJwtToken);
         } catch (JOSEException e) {
             throw new RuntimeException(e);
         }
 
-        log.info("OAuth2 Authentication successful: {}", jwtTokenDto);
+        log.info("OAuth2 Authentication successful: {}", accessJwtToken);
 
         // Redirect with JWT token
         response.setContentType("application/json");

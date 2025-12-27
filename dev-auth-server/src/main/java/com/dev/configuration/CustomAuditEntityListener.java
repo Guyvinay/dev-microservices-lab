@@ -1,6 +1,6 @@
 package com.dev.configuration;
 
-import com.dev.security.dto.JwtTokenDto;
+import com.dev.security.dto.AccessJwtToken;
 import com.dev.entity.AuthAuditRevisionEntity;
 import org.hibernate.envers.RevisionListener;
 import org.springframework.security.core.Authentication;
@@ -32,10 +32,10 @@ public class CustomAuditEntityListener implements RevisionListener {
 
         if (authentication != null) {
             try {
-                if (authentication.getDetails() instanceof JwtTokenDto) {
-                    JwtTokenDto jwtTokenDto = (JwtTokenDto) authentication.getDetails();
-                    if (jwtTokenDto != null && jwtTokenDto.getUserBaseInfo() != null) {
-                        auditRevisionEntity.setUserModified(jwtTokenDto.getUserBaseInfo().getEmail());
+                if (authentication.getDetails() instanceof AccessJwtToken) {
+                    AccessJwtToken accessJwtToken = (AccessJwtToken) authentication.getDetails();
+                    if (accessJwtToken != null && accessJwtToken.getUserBaseInfo() != null) {
+                        auditRevisionEntity.setUserModified(accessJwtToken.getUserBaseInfo().getEmail());
                     }
                 }
             } catch (Exception e) {

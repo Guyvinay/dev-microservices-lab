@@ -1,9 +1,12 @@
 package com.dev.provider;
 
 import com.dev.details.CustomAuthToken;
-import com.dev.dto.JwtTokenDto;
+import com.dev.details.ServiceAuthToken;
+import com.dev.details.ServicePrincipal;
+import com.dev.dto.AccessJwtToken;
+import com.dev.dto.JwtToken;
+import com.dev.dto.ServiceJwtToken;
 import com.dev.dto.TokenType;
-import com.dev.dto.UserBaseInfo;
 import com.dev.exception.AuthenticationException;
 import com.dev.exception.JWTTokenException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -23,7 +26,6 @@ import org.springframework.util.StringUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 
@@ -53,49 +55,80 @@ public class JwtTokenProviderManager {
     }
 
     public String createJwtToken(
-            JwtTokenDto jwtTokenDto
+            JwtToken jwtToken
     ) throws JOSEException, JsonProcessingException {
 
-        validateCreateJwtToken(jwtTokenDto);
+        validateCreateJwtToken(jwtToken);
 
-        Instant issuedAt = Instant.ofEpochMilli(jwtTokenDto.getCreatedAt());
-        Instant expiresAt = Instant.ofEpochMilli(jwtTokenDto.getExpiresAt());
+        Instant issuedAt = Instant.ofEpochMilli(jwtToken.getCreatedAt());
+        Instant expiresAt = Instant.ofEpochMilli(jwtToken.getExpiresAt());
 
-        JWTClaimsSet claims = new JWTClaimsSet.Builder()
-                .jwtID(jwtTokenDto.getJwtId().toString())
-                .subject(OM.writeValueAsString(jwtTokenDto))
+        JWTClaimsSet.Builder claimsBuilder = new JWTClaimsSet.Builder()
+                .jwtID(jwtToken.getJwtId().toString())
+                .subject(OM.writeValueAsString(jwtToken))
                 .issuer(ISSUER)
                 .audience(AUDIENCE)
                 .issueTime(Date.from(issuedAt))
                 .notBeforeTime(Date.from(issuedAt))
                 .expirationTime(Date.from(expiresAt))
-                .claim(AUTH_TYPE, jwtTokenDto.getTokenType().name())
-                .claim(PERMISSION, AUTHZ)
-                .build();
+                .claim(AUTH_TYPE, jwtToken.getTokenType().name())
+                ;
 
-        SignedJWT signedJWT = new SignedJWT(buildJwsHeader(), claims);
+        enrichClaims(claimsBuilder, jwtToken);
+
+        SignedJWT signedJWT = new SignedJWT(buildJwsHeader(), claimsBuilder.build());
         signedJWT.sign(reqSigner);
 
         return signedJWT.serialize();
     }
 
-    private static void validateCreateJwtToken(JwtTokenDto jwtTokenDto) {
+    private void enrichClaims(JWTClaimsSet.Builder builder, JwtToken payload) {
+
+        if (payload instanceof AccessJwtToken user) {
+            builder
+                    .claim("userId", user.getUserBaseInfo().getId())
+                    .claim("tenantId", user.getUserBaseInfo().getTenantId())
+                    .claim("roles", user.getUserBaseInfo().getRoleIds());
+        }
+
+        if (payload instanceof ServiceJwtToken service) {
+            builder
+                    .claim("service", service.getServiceName())
+                    .claim("scopes", service.getScopes());
+        }
+    }
+
+    private void validateServiceClaims(JWTClaimsSet claims) throws ParseException {
+
+        String serviceName = claims.getStringClaim("service");
+
+        if (!StringUtils.hasText(serviceName)) {
+            throw new AuthenticationException("Missing service identity");
+        }
+
+        List<String> scopes = (List<String>) claims.getClaim("scopes");
+        if (CollectionUtils.isEmpty(scopes)) {
+            throw new AuthenticationException("Missing service scopes");
+        }
+    }
+
+    private static void validateCreateJwtToken(JwtToken jwtToken) {
         // Validate required fields
-        if (jwtTokenDto.getCreatedAt() <= 0) {
+        if (jwtToken.getCreatedAt() <= 0) {
             throw new IllegalArgumentException("createdAt must be set");
         }
 
-        if (jwtTokenDto.getExpiresAt() <= jwtTokenDto.getCreatedAt()) {
+        if (jwtToken.getExpiresAt() <= jwtToken.getCreatedAt()) {
             throw new IllegalArgumentException("expiresAt must be greater than createdAt");
         }
 
-        if (jwtTokenDto.getTokenType() == null) {
+        if (jwtToken.getTokenType() == null) {
             throw new IllegalArgumentException("tokenType must be set");
         }
 
         // ️Ensure JWT ID
-        if (jwtTokenDto.getJwtId() == null) {
-            jwtTokenDto.setJwtId(UUID.randomUUID());
+        if (jwtToken.getJwtId() == null) {
+            jwtToken.setJwtId(UUID.randomUUID());
         }
     }
 
@@ -126,6 +159,11 @@ public class JwtTokenProviderManager {
         validateIssuer(claims);
         validateAudience(claims);
         validateTokenType(claims, access);
+
+        if (access == TokenType.SERVICE) {
+            validateServiceClaims(claims);
+        }
+
         return claims;
     }
     private void validateTokenType(
@@ -209,105 +247,20 @@ public class JwtTokenProviderManager {
     }
 
     public Authentication getAuthentication(String token, TokenType access) throws JsonProcessingException, JOSEException, ParseException {
-        JwtTokenDto jwtToken = OM.readValue(getSubjectPayload(token, access), JwtTokenDto.class);
+        AccessJwtToken jwtToken = OM.readValue(getSubjectPayload(token, access), AccessJwtToken.class);
         CustomAuthToken customAuthToken = new CustomAuthToken(jwtToken.getUserBaseInfo().getEmail(), null, Collections.emptyList());
         customAuthToken.setDetails(jwtToken); // set jwtToken payload as user details ...
         return customAuthToken;
     }
 
-    /**
-     * Creates a JwtTokenDto with dynamic expiration time.
-     *
-     * @param userBaseInfo user information to embed
-     * @param expiryMinutes token validity in minutes
-     * @return JwtTokenDto
-     */
-    public JwtTokenDto createTokenDTOFromUserBaseInfo(
-            UserBaseInfo userBaseInfo,
-            TokenType tokenType,
-            long expiryMinutes
-    ) {
-        if (userBaseInfo == null) {
-            throw new IllegalArgumentException("UserBaseInfo must not be null");
-        }
-        if (expiryMinutes <= 0) {
-            throw new IllegalArgumentException("Expiry minutes must be greater than zero");
-        }
+    public Authentication getServiceAuthentication(String token) throws ParseException, JOSEException, JsonProcessingException {
+        ServiceJwtToken serviceJwtToken = OM.readValue(getSubjectPayload(token, TokenType.SERVICE), ServiceJwtToken.class);
 
-        long now = System.currentTimeMillis();
-        long expiresAt = now + Duration.ofMinutes(expiryMinutes).toMillis();
+        ServicePrincipal principal = new ServicePrincipal(serviceJwtToken.getServiceName(), serviceJwtToken.getScopes());
+        ServiceAuthToken serviceAuthToken = new ServiceAuthToken(principal);
+        serviceAuthToken.setDetails(serviceJwtToken);
 
-        return JwtTokenDto.builder()
-                .jwtId(UUID.randomUUID())
-                .tokenType(tokenType)
-                .userBaseInfo(userBaseInfo)
-                .createdAt(now)
-                .expiresAt(expiresAt)
-                .build();
+        return serviceAuthToken;
     }
 
-
-    /**
-     * Create ACCESS token DTO
-     */
-    public JwtTokenDto createAccessTokenDto(
-            JwtTokenDto source,
-            long accessValidity
-    ) {
-        Instant now = Instant.now();
-
-        return JwtTokenDto.builder()
-                .jwtId(UUID.randomUUID())
-                .tokenType(TokenType.ACCESS)
-                .userBaseInfo(source.getUserBaseInfo())
-                .createdAt(now.toEpochMilli())
-                .expiresAt(
-                        now.plus(Duration.ofMinutes(accessValidity)).toEpochMilli()
-                )
-                .build();
-    }
-
-    /**
-     * Create REFRESH token DTO on LOGIN
-     * (full lifetime)
-     */
-    public JwtTokenDto createRefreshTokenDtoForLogin(
-            JwtTokenDto source,
-            long refreshValidity
-    ) {
-        Instant now = Instant.now();
-
-        return JwtTokenDto.builder()
-                .jwtId(UUID.randomUUID())
-                .tokenType(TokenType.REFRESH)
-                .userBaseInfo(source.getUserBaseInfo())
-                .createdAt(now.toEpochMilli())
-                .expiresAt(
-                        now.plus(Duration.ofMinutes(refreshValidity)).toEpochMilli()
-                )
-                .build();
-    }
-
-    /**
-     * Create REFRESH token DTO on REFRESH
-     * (preserve absolute expiry)
-     */
-    public JwtTokenDto createRefreshTokenDtoForRefresh(
-            JwtTokenDto source
-    ) {
-        Instant now = Instant.now();
-        Instant absoluteExpiry = Instant.ofEpochMilli(source.getExpiresAt());
-
-        if (now.isAfter(absoluteExpiry)) {
-            throw new AuthenticationException("Refresh token expired");
-        }
-
-        return JwtTokenDto.builder()
-                .jwtId(UUID.randomUUID())
-                .tokenType(TokenType.REFRESH)
-                .userBaseInfo(source.getUserBaseInfo())
-                .createdAt(now.toEpochMilli())
-                .expiresAt(absoluteExpiry.toEpochMilli())
-                .build();
-    }
 }

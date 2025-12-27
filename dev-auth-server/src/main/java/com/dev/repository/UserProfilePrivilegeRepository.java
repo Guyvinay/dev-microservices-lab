@@ -6,6 +6,8 @@ import com.dev.entity.enums.Action;
 import com.dev.entity.enums.Area;
 import com.dev.entity.enums.Privilege;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
@@ -49,4 +51,16 @@ public interface UserProfilePrivilegeRepository extends JpaRepository<UserProfil
     );
 
     boolean existsByRoleId(Long roleId);
+    @Query("""
+        select count(p) > 0
+        from UserProfilePrivilegeModel p
+        where p.roleId in :roleIds
+          and p.privilege = :privilege
+          and p.action = :action
+    """)
+    boolean existsByRoleIdsAndPrivilegeAndAction(
+            @Param("roleIds") List<Long> roleIds,
+            @Param("privilege") Privilege privilege,
+            @Param("action") Action action
+    );
 }

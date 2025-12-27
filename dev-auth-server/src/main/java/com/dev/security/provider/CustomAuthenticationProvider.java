@@ -1,6 +1,6 @@
 package com.dev.security.provider;
 
-import com.dev.security.dto.JwtTokenDto;
+import com.dev.security.dto.AccessJwtToken;
 import com.dev.security.details.CustomAuthToken;
 import com.dev.security.details.CustomUserDetails;
 import com.dev.security.details.CustomUserDetailsService;
@@ -69,8 +69,8 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         );
         UserBaseInfo userBaseInfo = userDetails.getUserBaseInfo();
 
-        JwtTokenDto jwtTokenDto = jwtTokenProviderManager.createTokenDTOFromUserBaseInfo(userBaseInfo, TokenType.ACCESS, accessExpiryMinutes);
-        authenticationToken.setDetails(jwtTokenDto);
+        AccessJwtToken accessJwtToken = jwtTokenProviderManager.createTokenDTOFromUserBaseInfo(userBaseInfo, TokenType.ACCESS, accessExpiryMinutes);
+        authenticationToken.setDetails(accessJwtToken);
         return authenticationToken;
     }
 

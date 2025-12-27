@@ -1,14 +1,10 @@
 package com.dev.hibernate.multiTenant;
 
-import com.dev.dto.JwtTokenDto;
 import com.dev.utility.AuthContextUtil;
-import org.apache.commons.lang3.StringUtils;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Map;
 

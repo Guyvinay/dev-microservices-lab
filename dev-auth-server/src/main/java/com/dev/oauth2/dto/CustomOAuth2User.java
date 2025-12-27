@@ -1,6 +1,6 @@
 package com.dev.oauth2.dto;
 
-import com.dev.security.dto.JwtTokenDto;
+import com.dev.security.dto.AccessJwtToken;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,7 +17,7 @@ import java.util.Map;
 @NoArgsConstructor
 public class CustomOAuth2User implements OAuth2User {
 
-    private JwtTokenDto jwtTokenDto;
+    private AccessJwtToken accessJwtToken;
     private Map<String, Object> attributes;
     private Collection<? extends GrantedAuthority> authorities;
 
@@ -45,6 +45,6 @@ public class CustomOAuth2User implements OAuth2User {
      */
     @Override
     public String getName() {
-        return (jwtTokenDto.getUserBaseInfo().getId() != null) ? jwtTokenDto.getUserBaseInfo().getId().toString() : "anonymous";
+        return (accessJwtToken.getUserBaseInfo().getId() != null) ? accessJwtToken.getUserBaseInfo().getId().toString() : "anonymous";
     }
 }

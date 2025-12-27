@@ -1,24 +1,23 @@
-package com.dev.dto;
+package com.dev.security.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
+import java.util.List;
 import java.util.UUID;
 
-@Getter
-@Setter
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class JwtTokenDto {
+public class ServiceJwtToken implements JwtToken {
 
     private UUID jwtId;
     private TokenType tokenType;
-    private UserBaseInfo userBaseInfo;
+    private String serviceName;
+    private List<String> scopes;
     private long createdAt;
     private long expiresAt;
-
 }

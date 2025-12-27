@@ -89,12 +89,10 @@ public class TenantRabbitListenerBinding {
 
         log.info("Onboarding {} tenants with listeners: {}", knownTenants.size(), knownTenants);
         knownTenants.forEach(this::onBoardTenant);
-        this.onBoardTenant("public");
-
         log.info("TenantRabbitListener initialization completed successfully");
     }
 
-    private void onBoardTenant(String tenantId) {
+    public void onBoardTenant(String tenantId) {
         ANNOTATED_BEAN_DEFINITIONS.forEach((beanName, beanDefinition)-> {
             log.info("Onboarding tenant: {}, beanName: {}", tenantId, beanName);
             registerListenerForTenant(beanName, beanDefinition, tenantId);

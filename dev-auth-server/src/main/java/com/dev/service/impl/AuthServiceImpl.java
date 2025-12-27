@@ -5,7 +5,7 @@ import com.dev.entity.JWTRefreshTokenEntity;
 import com.dev.exception.AuthenticationException;
 import com.dev.repository.JWTRefreshTokenRepository;
 import com.dev.security.dto.AccessRefreshTokenDto;
-import com.dev.security.dto.JwtTokenDto;
+import com.dev.security.dto.AccessJwtToken;
 import com.dev.dto.RequestPasswordResetDto;
 import com.dev.dto.ResetPasswordDto;
 import com.dev.dto.UserProfileResponseDTO;
@@ -60,15 +60,15 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public AccessRefreshTokenDto login() throws JsonProcessingException, JOSEException {
-        JwtTokenDto tokenDto = AuthContextUtil.getJwtToken();
+        AccessJwtToken tokenDto = AuthContextUtil.getJwtToken();
 
-        JwtTokenDto accessDto =
+        AccessJwtToken accessDto =
                 jwtTokenProviderManager.createAccessTokenDto(
                         tokenDto,
                         accessExpiryMinutes
                 );
 
-        JwtTokenDto refreshDto =
+        AccessJwtToken refreshDto =
                 jwtTokenProviderManager.createRefreshTokenDtoForLogin(
                         tokenDto,
                         refreshExpiryMinutes
@@ -82,14 +82,14 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AccessRefreshTokenDto refresh() throws JOSEException, JsonProcessingException {
-        JwtTokenDto tokenDto = AuthContextUtil.getJwtToken();
-        JwtTokenDto newAccessDto =
+        AccessJwtToken tokenDto = AuthContextUtil.getJwtToken();
+        AccessJwtToken newAccessDto =
                 jwtTokenProviderManager.createAccessTokenDto(
                         tokenDto,
                         accessExpiryMinutes
                 );
 
-        JwtTokenDto newRefreshDto =
+        AccessJwtToken newRefreshDto =
                 jwtTokenProviderManager.createRefreshTokenDtoForRefresh(
                         tokenDto
                 );
@@ -104,7 +104,7 @@ public class AuthServiceImpl implements AuthService {
         );
     }
 
-    public void storeRefreshToken(JwtTokenDto dto) {
+    public void storeRefreshToken(AccessJwtToken dto) {
         JWTRefreshTokenEntity entity = JWTRefreshTokenEntity.builder()
                 .jti(dto.getJwtId())
                 .userId(dto.getUserBaseInfo().getId())
@@ -203,9 +203,9 @@ public class AuthServiceImpl implements AuthService {
         return "Token validated. You may now reset your password.";
     }
 
-    private JwtTokenDto createRefreshJwtTokenDTO(JwtTokenDto tokenDto) {
+    private AccessJwtToken createRefreshJwtTokenDTO(AccessJwtToken tokenDto) {
         long expiresAt = tokenDto.getCreatedAt() + Duration.ofMinutes(refreshExpiryMinutes).toMillis();
-        return JwtTokenDto.builder()
+        return AccessJwtToken.builder()
                 .jwtId(tokenDto.getJwtId())
                 .userBaseInfo(tokenDto.getUserBaseInfo())
                 .tokenType(tokenDto.getTokenType())

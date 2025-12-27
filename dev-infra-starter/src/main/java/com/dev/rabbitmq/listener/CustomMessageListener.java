@@ -35,7 +35,7 @@ public class CustomMessageListener implements MessageListener {
         String token = authorization.startsWith("Bearer ") ? authorization.substring(7) : authorization;
 
         try {
-            Authentication authentication = jwtTokenProviderManager.getAuthentication(token, TokenType.ACCESS);
+            Authentication authentication = jwtTokenProviderManager.getServiceAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(authentication);
             listenerBean.onMessage(message);
             log.info("Message processed successfully. messageId={}", messageId);
@@ -45,6 +45,8 @@ public class CustomMessageListener implements MessageListener {
         } catch (ParseException | JOSEException e) {
             log.error("Error while processing authenticating", e);
             throw new RuntimeException(e);
+        } catch (Exception e) {
+            log.error("Error while processing authenticating", e);
         } finally {
             SecurityContextHolder.clearContext();
             log.debug("SecurityContext cleared after messageId={}", messageId);
