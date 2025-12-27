@@ -1,10 +1,9 @@
 package com.dev.oauth2.handler;
 
-import com.dev.dto.JwtTokenDto;
+import com.dev.security.dto.JwtTokenDto;
 import com.dev.oauth2.dto.CustomOAuth2User;
 import com.dev.security.details.CustomAuthToken;
 import com.dev.security.provider.JwtTokenProviderManager;
-import com.dev.security.utility.SecurityUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,12 +33,12 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         CustomOAuth2User customUser = (CustomOAuth2User) authentication.getPrincipal();
         JwtTokenDto jwtTokenDto = customUser.getJwtTokenDto();
-        CustomAuthToken customAuthToken = new CustomAuthToken(jwtTokenDto.getEmail(), null, customUser.getAuthorities());
+        CustomAuthToken customAuthToken = new CustomAuthToken(jwtTokenDto.getUserBaseInfo().getEmail(), null, customUser.getAuthorities());
         customAuthToken.setDetails(jwtTokenDto);
         SecurityContextHolder.getContext().setAuthentication(customAuthToken);
         String token;
         try {
-            token = jwtTokenProviderManager.createJwtToken(objectMapper.writeValueAsString(jwtTokenDto), 2000000000);
+            token = jwtTokenProviderManager.createJwtToken(jwtTokenDto);
         } catch (JOSEException e) {
             throw new RuntimeException(e);
         }

@@ -1,35 +1,34 @@
 package com.dev.security.provider;
 
-import com.dev.dto.JwtTokenDto;
+import com.dev.security.dto.JwtTokenDto;
 import com.dev.security.details.CustomAuthToken;
 import com.dev.security.details.CustomUserDetails;
 import com.dev.security.details.CustomUserDetailsService;
+import com.dev.security.details.UserBaseInfo;
+import com.dev.security.dto.TokenType;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     private final CustomUserDetailsService userDetailsService;
     private final CustomBcryptEncoder customBcryptEncoder;
+    private final JwtTokenProviderManager jwtTokenProviderManager;
 
-    public CustomAuthenticationProvider(CustomUserDetailsService userDetailsService, CustomBcryptEncoder customBcryptEncoder) {
-        this.userDetailsService = userDetailsService;
-        this.customBcryptEncoder = customBcryptEncoder;
-    }
+    @Value("${security.jwt.access-expiry-minutes}")
+    private int accessExpiryMinutes;
 
     /**
      * Performs authentication with the same contract as
@@ -57,7 +56,6 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
         log.info("Authenticating user: {}.", username);
 
-//        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
         CustomUserDetails userDetails = (CustomUserDetails) userDetailsService.loadUserByUsernameTenantAndOrg(username);
 
         if (!customBcryptEncoder.matches(password, userDetails.getPassword())) {
@@ -65,17 +63,13 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         }
 
         UsernamePasswordAuthenticationToken authenticationToken = new CustomAuthToken(
-                userDetails.getUsername(),
                 userDetails.getPassword(),
+                userDetails.getUsername(),
                 userDetails.getAuthorities()
         );
-        List<String> roles = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
-        JwtTokenDto jwtTokenDto = JwtTokenDto.builder()
-                .email(userDetails.getUsername())
-                .tenantId(userDetails.getTenantId())
-                .org(userDetails.getOrgId())
-                .roles(roles)
-                .build();
+        UserBaseInfo userBaseInfo = userDetails.getUserBaseInfo();
+
+        JwtTokenDto jwtTokenDto = jwtTokenProviderManager.createTokenDTOFromUserBaseInfo(userBaseInfo, TokenType.ACCESS, accessExpiryMinutes);
         authenticationToken.setDetails(jwtTokenDto);
         return authenticationToken;
     }

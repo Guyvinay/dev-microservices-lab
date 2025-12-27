@@ -13,7 +13,7 @@ public class CustomEntityListener implements RevisionListener {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if(authentication != null) {
             JwtTokenDto tokenDto = (JwtTokenDto) authentication.getDetails();
-            auditRevisionEntity.setModifiedBy(tokenDto.getTenantId());
+            auditRevisionEntity.setModifiedBy(tokenDto.getUserBaseInfo().getId().toString());
         }
     }
 }

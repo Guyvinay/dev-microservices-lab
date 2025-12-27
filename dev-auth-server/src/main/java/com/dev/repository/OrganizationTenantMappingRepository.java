@@ -11,5 +11,7 @@ public interface OrganizationTenantMappingRepository extends JpaRepository<Organ
 
     Optional<OrganizationTenantMapping> findByTenantName(String tenantName);
 
+    Optional<OrganizationTenantMapping> findByTenantId(String tenantName);
+
     boolean existsByTenantName(String tenantName);
 }

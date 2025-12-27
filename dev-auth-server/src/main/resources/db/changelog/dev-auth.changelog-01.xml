@@ -245,5 +245,25 @@
 
     </changeSet>
 
+    <changeSet id="2025.12.25-19:48" author="vinay">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="JWT_REFRESH_TOKENS"/>
+            </not>
+        </preConditions>
+        <createTable tableName="JWT_REFRESH_TOKENS">
+            <column name="jti" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="user_id" type="UUID"/>
+            <column name="revoked" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="replaced_by_jti" type="UUID"/>
+            <column name="expires_at" type="BIGINT"/>
+            <column name="created_at" type="BIGINT"/>
+            <column name="revoked_at" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+
 
 </databaseChangeLog>

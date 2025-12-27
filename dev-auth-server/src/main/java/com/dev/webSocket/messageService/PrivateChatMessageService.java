@@ -14,7 +14,7 @@ import org.springframework.web.socket.WebSocketSession;
 
 import java.io.IOException;
 
-import static com.dev.utility.StringLiterals.PRIVATE;
+import static com.dev.utility.DefaultConstants.PRIVATE;
 
 /**
  * Service for handling private chat messages in a WebSocket-based chat system.

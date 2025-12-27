@@ -7,7 +7,7 @@ import org.springframework.web.socket.WebSocketSession;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.dev.utility.StringLiterals.PRIVATE;
+import static com.dev.utility.DefaultConstants.PRIVATE;
 
 /**
  * Manages WebSocket sessions for private and group chats.

@@ -15,7 +15,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.Queue;
 
-import static com.dev.utility.StringLiterals.PRIVATE;
+import static com.dev.utility.DefaultConstants.PRIVATE;
 
 /**
  * Handles WebSocket connections and messages for private and group chats.

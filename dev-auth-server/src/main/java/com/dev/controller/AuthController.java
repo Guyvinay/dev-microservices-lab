@@ -3,6 +3,8 @@ package com.dev.controller;
 import com.dev.dto.LoginRequestDTO;
 import com.dev.dto.RequestPasswordResetDto;
 import com.dev.dto.ResetPasswordDto;
+import com.dev.dto.exception.GeneralResponseDTO;
+import com.dev.security.dto.AccessRefreshTokenDto;
 import com.dev.service.AuthService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.nimbusds.jose.JOSEException;
@@ -55,40 +57,59 @@ public class AuthController {
                     content = @Content(mediaType = "application/json"))
     })
     @GetMapping("/login")
-    public ResponseEntity<Map<String, String>> login() throws JsonProcessingException, JOSEException {
+    public ResponseEntity<AccessRefreshTokenDto> login() throws JsonProcessingException, JOSEException {
         return ResponseEntity.ok(authService.login());
     }
 
+    @GetMapping("/refresh")
+    public ResponseEntity<AccessRefreshTokenDto> refresh() throws JsonProcessingException, JOSEException {
+        return ResponseEntity.ok(authService.refresh());
+    }
+
     @GetMapping("/request-password-reset")
-    public ResponseEntity<Map<String, String>> requestPasswordReset(
+    public ResponseEntity<GeneralResponseDTO<String>> requestPasswordReset(
             @RequestParam(name = "email") String email,
             HttpServletRequest request
     ) throws MessagingException {
         String url = getBaseUrl(request);
         RequestPasswordResetDto requestPasswordResetDto = new RequestPasswordResetDto(email);
-        return ResponseEntity.ok(authService.requestPasswordReset(url, requestPasswordResetDto));
+        return ResponseEntity.ok(
+                GeneralResponseDTO.ok(
+                        authService.requestPasswordReset(url, requestPasswordResetDto)
+                )
+        );
     }
 
     @GetMapping("/validate-reset-password")
-    public ResponseEntity<Map<String, String>> validateResetPassword(
+    public ResponseEntity<GeneralResponseDTO<String>> validateResetPassword(
             @RequestParam(name = "email") String email,
             @RequestParam(name = "token") String token
     ) {
-        return ResponseEntity.ok(authService.validateResetPassword(email, token));
+        return ResponseEntity.ok(
+                GeneralResponseDTO.ok(
+                        authService.validateResetPassword(email, token)
+                )
+        );
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<Map<String, String>> reset(
+    public ResponseEntity<GeneralResponseDTO<String>> reset(
             @RequestBody @Valid ResetPasswordDto dto
     ) {
-        return ResponseEntity.ok(authService.resetPassword(dto));
+        return ResponseEntity.ok(
+                GeneralResponseDTO.ok(
+                        authService.resetPassword(dto)
+                )
+        );
     }
 
     private String getBaseUrl(HttpServletRequest request) {
+
         String scheme = request.getScheme();             // http
         String host = request.getServerName();           // localhost or domain
+        String contextPath = request.getContextPath();
         int port = request.getServerPort();              // 8000
         String portPart = (port == 80 || port == 443) ? "" : ":" + port;
-        return scheme + "://" + host + portPart;        // e.g. http://localhost:8000
+        return scheme + "://" + host + portPart + contextPath;        // e.g. http://localhost:8000
     }
 }

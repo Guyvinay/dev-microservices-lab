@@ -33,7 +33,7 @@ public class LiquibaseService {
     @Value("${liquibase.master.file.path}")
     private String changelog;
 
-    @Value("${liquibase.ignore.schema:pg_catalog,public,information_schema}")
+    @Value("${liquibase.ignore.schema:pg_catalog,information_schema}")
     private String excludeSchema;
 
 
@@ -41,7 +41,7 @@ public class LiquibaseService {
 
     public List<String> getExcludeSchema(){
         return StringUtils.isNotBlank(excludeSchema) ? Arrays.asList(excludeSchema.split(","))
-                : Arrays.asList("pg_catalog","public","information_schema");
+                : Arrays.asList("pg_catalog","information_schema");
     }
 
     @PostConstruct

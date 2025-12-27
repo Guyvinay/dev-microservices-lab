@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.dev.utility.StringLiterals.ADMINISTRATOR;
+import static com.dev.utility.DefaultConstants.ADMINISTRATOR;
 
 @Service
 @RequiredArgsConstructor
@@ -30,13 +30,9 @@ import static com.dev.utility.StringLiterals.ADMINISTRATOR;
 public class OrganizationServiceImpl implements OrganizationService {
 
     private final OrganizationModelRepository organizationRepository;
-    private final OrganizationTenantMappingRepository organizationTenantMappingRepository;
     private final OrganizationTenantService organizationTenantService;
     private final ModelMapper modelMapper;
-    private final CustomBcryptEncoder customBcryptEncoder;
-    private final UserProfileModelRepository userProfileModelRepository;
     private final UserProfileService userProfileService;
-    private final UserProfileTenantMappingRepository userProfileTenantMappingRepository;
     private final UserProfileRoleModelRepository userProfileRoleModelRepository;
     private final UserProfileRoleMappingRepository userProfileRoleMappingRepository;
     private final UserProfileTenantService userProfileTenantService;
@@ -227,10 +223,6 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     public void deleteOrganization(UUID orgId) {
-        int a = 3;
-        int b = 4;
-
-
         OrganizationModel organization = organizationRepository.findById(orgId)
                 .orElseThrow(() -> new ResourceNotFoundException("Organization not found."));
         organizationRepository.delete(organization);

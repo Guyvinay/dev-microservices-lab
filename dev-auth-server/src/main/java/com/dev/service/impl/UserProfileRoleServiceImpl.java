@@ -1,7 +1,7 @@
 package com.dev.service.impl;
 
 import com.dev.dto.CreateRoleRequest;
-import com.dev.dto.JwtTokenDto;
+import com.dev.security.dto.JwtTokenDto;
 import com.dev.dto.RoleDTO;
 import com.dev.entity.UserProfileRoleModel;
 import com.dev.exception.ResourceNotFoundException;
@@ -38,8 +38,8 @@ public class UserProfileRoleServiceImpl implements UserProfileRoleService {
         role.setActive(true);
         role.setCreatedAt(Instant.now().toEpochMilli());
         role.setUpdatedAt(Instant.now().toEpochMilli());
-        role.setCreatedBy(jwtTokenDto.getEmail());
-        role.setUpdatedBy(jwtTokenDto.getEmail());
+        role.setCreatedBy(jwtTokenDto.getUserBaseInfo().getEmail());
+        role.setUpdatedBy(jwtTokenDto.getUserBaseInfo().getEmail());
 
         UserProfileRoleModel saved = roleRepository.save(role);
         return mapToDTO(saved);

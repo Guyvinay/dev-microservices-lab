@@ -7,6 +7,7 @@ import com.dev.security.details.CustomUserDetailsService;
 import com.dev.security.filter.JWTAuthenticationFilter;
 import com.dev.security.filter.JWTAuthorizationFilter;
 import com.dev.oauth2.handler.CustomAccessTokenEndpointHandler;
+import com.dev.security.filter.JWTRefreshTokenFilter;
 import com.dev.security.provider.CustomAuthenticationEntryPoint;
 import com.dev.security.provider.CustomAuthenticationProvider;
 import com.dev.security.provider.CustomBcryptEncoder;
@@ -39,6 +40,7 @@ public class SecurityConfiguration {
     // ====== JWT Filters ======
     private final JWTAuthenticationFilter jwtAuthenticationFilter;   // Login filter
     private final JWTAuthorizationFilter jwtAuthorizationFilter;     // Token validator
+    private final JWTRefreshTokenFilter jwtRefreshTokenFilter;     // Token validator
 
     // ====== Extra Config ======
     private final CustomCorsConfiguration corsConfiguration;
@@ -74,8 +76,8 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
 
                 .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterAt(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtRefreshTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth2 -> oauth2 // Enables OAuth2 login
                         .tokenEndpoint(token -> token
                                 .accessTokenResponseClient(customAccessTokenEndpointHandler)

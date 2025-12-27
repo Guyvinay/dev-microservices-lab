@@ -2,19 +2,16 @@ package com.dev.grpc.interceptor;
 
 import com.dev.dto.JwtTokenDto;
 import com.dev.provider.JwtTokenProviderManager;
+import com.dev.utility.AuthContextUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
 import io.grpc.*;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 
-import static com.dev.grpc.constant.GRPCConstant.JWT_TOKEN;
+import static com.dev.grpc.constant.GRPCConstant.AUTHORIZATION;
 
 public class GrpcClientInterceptor implements ClientInterceptor {
 
     private final JwtTokenProviderManager jwtTokenProviderManager;
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     public GrpcClientInterceptor(JwtTokenProviderManager jwtTokenProviderManager1) {
         this.jwtTokenProviderManager = jwtTokenProviderManager1;
@@ -25,17 +22,13 @@ public class GrpcClientInterceptor implements ClientInterceptor {
         return new ForwardingClientCall.SimpleForwardingClientCall<>(channel.newCall(methodDescriptor, callOptions)) {
             @Override
             public void start(Listener<RespT> responseListener, Metadata headers) {
-                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-                JwtTokenDto tokenDto = new JwtTokenDto();
-                if(auth != null) {
-                    tokenDto = (JwtTokenDto) auth.getDetails();
-                }
+                JwtTokenDto tokenDto = AuthContextUtil.getJwtToken();
 
                 try {
-                    String token = jwtTokenProviderManager.createJwtToken(OBJECT_MAPPER.writeValueAsString(tokenDto), 2);
+                    String token = jwtTokenProviderManager.createJwtToken(tokenDto);
 
-                    // Custom header laga do yaha
-                    headers.put(JWT_TOKEN, token);
+                    // Custom header
+                    headers.put(AUTHORIZATION, token);
 
                 } catch (JOSEException | JsonProcessingException e) {
                     throw new RuntimeException(e);

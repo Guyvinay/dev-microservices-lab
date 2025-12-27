@@ -1,6 +1,6 @@
 package com.dev.oauth2.dto;
 
-import com.dev.dto.JwtTokenDto;
+import com.dev.security.dto.JwtTokenDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -45,6 +45,6 @@ public class CustomOAuth2User implements OAuth2User {
      */
     @Override
     public String getName() {
-        return (jwtTokenDto.getUserId() != null) ? jwtTokenDto.getUserId().toString() : "anonymous";
+        return (jwtTokenDto.getUserBaseInfo().getId() != null) ? jwtTokenDto.getUserBaseInfo().getId().toString() : "anonymous";
     }
 }

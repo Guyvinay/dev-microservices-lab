@@ -59,7 +59,7 @@ spring:
             client-id: ${ client-id }
             client-secret: ${ secret }
             scope: read:user, user:email
-            redirect-uri: "https://7bc8cad45657.ngrok-free.app/dev-auth-server/login/oauth2/code/github" # "{baseUrl}/login/oauth2/code/{registrationId}"
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}" # "{baseUrl}/login/oauth2/code/{registrationId}"
             client-authentication-method: client_secret_post
             authorization-grant-type: authorization_code
             client-name: GitHub
@@ -68,7 +68,7 @@ spring:
             client-id: ${ client-id }
             client-secret: ${ secret }
             scope: profile, email
-            redirect-uri: "https://7bc8cad45657.ngrok-free.app/dev-auth-server/login/oauth2/code/google"
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
             authorization-grant-type: authorization_code
             client-name: Google
 
@@ -158,9 +158,12 @@ server:
 ################################################################################
 security:
   jwt:
-    secret: mySecretKeyForJwtToken         # MUST be env/secret in production
-    expiration: 3600000                    # 1 hour (ms)
-
+    issuer: dev-auth-server
+    audience:
+      - dev-sandbox
+      - dev-integration
+    access-expiry-minutes: 1440 # 1 day
+    refresh-expiry-minutes: 10080 # 7 days
 
 
 ################################################################################
@@ -228,3 +231,28 @@ management:
     tags:
       application: ${spring.application.name}  # helpful for dashboards
 
+
+bootstrap:
+  enabled: true
+
+  organization:
+    name: SYSTEM
+    email: system@platform.local
+
+  tenant:
+    id: public
+    name: Public Tenant
+
+  roles:
+    - name: ADMIN
+      admin: true
+      description: System Administrator
+
+    - name: USER
+      admin: false
+      description: Normal User
+
+  admin-user:
+    email: admin@system.local
+    name: System Admin
+    password: ${ADMIN_PASSWORD:Admin@123}

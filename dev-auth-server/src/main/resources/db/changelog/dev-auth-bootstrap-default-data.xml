@@ -1,0 +1,188 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="2025:12:21-00:01-system-org" author="vinay.singh">
+        <preConditions onFail="MARK_RAN" onError="HALT">
+            <tableExists tableName="ORGANIZATION_INFO_MODEL"/>
+
+            <columnExists tableName="ORGANIZATION_INFO_MODEL" columnName="ORG_ID"/>
+            <columnExists tableName="ORGANIZATION_INFO_MODEL" columnName="ORG_NAME"/>
+            <columnExists tableName="ORGANIZATION_INFO_MODEL" columnName="ORG_EMAIL"/>
+            <columnExists tableName="ORGANIZATION_INFO_MODEL" columnName="CREATED_AT"/>
+
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM ORGANIZATION_INFO_MODEL WHERE ORG_NAME = 'SYSTEM'
+            </sqlCheck>
+        </preConditions>
+
+        <insert tableName="ORGANIZATION_INFO_MODEL">
+            <column name="ORG_ID" valueComputed="gen_random_uuid()"/>
+            <column name="ORG_NAME" value="SYSTEM"/>
+            <column name="ORG_EMAIL" value="mrsinghvinay563@gmail.com"/>
+            <column name="CREATED_AT" valueComputed="EXTRACT(EPOCH FROM now()) * 1000"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2025:12:21-00:02-public-tenant" author="vinay.singh">
+        <preConditions onFail="MARK_RAN" onError="HALT">
+            <tableExists tableName="ORG_TENANT_MAPPING"/>
+
+            <columnExists tableName="ORG_TENANT_MAPPING" columnName="TENANT_ID"/>
+            <columnExists tableName="ORG_TENANT_MAPPING" columnName="ORG_ID"/>
+            <columnExists tableName="ORG_TENANT_MAPPING" columnName="TENANT_NAME"/>
+            <columnExists tableName="ORG_TENANT_MAPPING" columnName="TENANT_ACTIVE"/>
+            <columnExists tableName="ORG_TENANT_MAPPING" columnName="CREATED_AT"/>
+            <columnExists tableName="ORG_TENANT_MAPPING" columnName="UPDATED_AT"/>
+
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM ORG_TENANT_MAPPING WHERE TENANT_ID = 'public'
+            </sqlCheck>
+        </preConditions>
+
+        <insert tableName="ORG_TENANT_MAPPING">
+            <column name="TENANT_ID" value="public"/>
+            <column name="ORG_ID"
+                    valueComputed="(SELECT ORG_ID FROM ORGANIZATION_INFO_MODEL WHERE ORG_NAME='SYSTEM')"/>
+            <column name="TENANT_NAME" value="Public Tenant"/>
+            <column name="TENANT_ACTIVE" valueBoolean="true"/>
+            <column name="CREATED_AT" valueComputed="EXTRACT(EPOCH FROM now()) * 1000"/>
+            <column name="UPDATED_AT" valueComputed="EXTRACT(EPOCH FROM now()) * 1000"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2025:12:21-00:03-admin-role" author="vinay.singh">
+        <preConditions onFail="MARK_RAN" onError="HALT">
+            <tableExists tableName="USER_PROFILE_ROLE_INFO_MODEL"/>
+
+            <columnExists tableName="USER_PROFILE_ROLE_INFO_MODEL" columnName="ROLE_NAME"/>
+            <columnExists tableName="USER_PROFILE_ROLE_INFO_MODEL" columnName="TENANT_ID"/>
+            <columnExists tableName="USER_PROFILE_ROLE_INFO_MODEL" columnName="IS_ADMIN"/>
+            <columnExists tableName="USER_PROFILE_ROLE_INFO_MODEL" columnName="STATUS"/>
+
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM USER_PROFILE_ROLE_INFO_MODEL
+                WHERE ROLE_NAME = 'ADMIN' AND TENANT_ID = 'public'
+            </sqlCheck>
+        </preConditions>
+
+        <insert tableName="USER_PROFILE_ROLE_INFO_MODEL">
+            <column name="ROLE_NAME" value="ADMIN"/>
+            <column name="STATUS" valueBoolean="true"/>
+            <column name="TENANT_ID" value="public"/>
+            <column name="IS_ADMIN" valueBoolean="true"/>
+            <column name="DESCRIPTION" value="System Administrator"/>
+            <column name="CREATED_AT" valueComputed="EXTRACT(EPOCH FROM now()) * 1000"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2025:09:58-00:04-admin-role" author="vinay.singh">
+        <preConditions onFail="MARK_RAN" onError="HALT">
+            <tableExists tableName="USER_PROFILE_ROLE_INFO_MODEL"/>
+
+            <columnExists tableName="USER_PROFILE_ROLE_INFO_MODEL" columnName="ROLE_NAME"/>
+            <columnExists tableName="USER_PROFILE_ROLE_INFO_MODEL" columnName="TENANT_ID"/>
+            <columnExists tableName="USER_PROFILE_ROLE_INFO_MODEL" columnName="IS_ADMIN"/>
+            <columnExists tableName="USER_PROFILE_ROLE_INFO_MODEL" columnName="STATUS"/>
+
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM USER_PROFILE_ROLE_INFO_MODEL
+                WHERE ROLE_NAME = 'USER' AND TENANT_ID = 'public'
+            </sqlCheck>
+        </preConditions>
+
+        <insert tableName="USER_PROFILE_ROLE_INFO_MODEL">
+            <column name="ROLE_NAME" value="USER"/>
+            <column name="STATUS" valueBoolean="true"/>
+            <column name="TENANT_ID" value="public"/>
+            <column name="IS_ADMIN" valueBoolean="false"/>
+            <column name="DESCRIPTION" value="User role"/>
+            <column name="CREATED_AT" valueComputed="EXTRACT(EPOCH FROM now()) * 1000"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2025:12:21-00:04-admin-user" author="vinay.singh">
+        <preConditions onFail="MARK_RAN" onError="HALT">
+            <tableExists tableName="USER_PROFILE_MODEL"/>
+
+            <columnExists tableName="USER_PROFILE_MODEL" columnName="EMAIL"/>
+            <columnExists tableName="USER_PROFILE_MODEL" columnName="PASSWORD"/>
+            <columnExists tableName="USER_PROFILE_MODEL" columnName="IS_ACTIVE"/>
+
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM USER_PROFILE_MODEL
+                WHERE EMAIL = 'mrsinghvinay563@gmail.com'
+            </sqlCheck>
+        </preConditions>
+
+        <insert tableName="USER_PROFILE_MODEL">
+            <column name="ID" valueComputed="gen_random_uuid()"/>
+            <column name="EMAIL" value="mrsinghvinay563@gmail.com"/>
+            <column name="NAME" value="System Admin"/>
+            <column name="PASSWORD"
+                    value="$2a$10$REPLACE_WITH_BCRYPT_HASH"/>
+            <column name="IS_ACTIVE" valueBoolean="true"/>
+            <column name="CREATED_AT" valueComputed="EXTRACT(EPOCH FROM now()) * 1000"/>
+            <column name="UPDATED_AT" valueComputed="EXTRACT(EPOCH FROM now()) * 1000"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2025:12:21-00:05-admin-user-tenant" author="vinay.singh">
+        <preConditions onFail="MARK_RAN" onError="HALT">
+            <tableExists tableName="USER_TENANT_MAPPING"/>
+
+            <columnExists tableName="USER_TENANT_MAPPING" columnName="TENANT_ID"/>
+            <columnExists tableName="USER_TENANT_MAPPING" columnName="USER_ID"/>
+
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM USER_TENANT_MAPPING
+                WHERE TENANT_ID='public'
+                AND USER_ID = (
+                SELECT ID FROM USER_PROFILE_MODEL
+                WHERE EMAIL='mrsinghvinay563@gmail.com'
+                )
+            </sqlCheck>
+        </preConditions>
+
+        <insert tableName="USER_TENANT_MAPPING">
+            <column name="ID" valueComputed="gen_random_uuid()"/>
+            <column name="TENANT_ID" value="public"/>
+            <column name="USER_ID"
+                    valueComputed="(SELECT ID FROM USER_PROFILE_MODEL WHERE EMAIL='mrsinghvinay563@gmail.com')"/>
+            <column name="ORGANIZATION_ID"
+                    valueComputed="(SELECT ORG_ID FROM ORGANIZATION_INFO_MODEL WHERE ORG_NAME='SYSTEM')"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2025:12:21-00:06-admin-role-mapping" author="vinay.singh">
+        <preConditions onFail="MARK_RAN" onError="HALT">
+            <tableExists tableName="USER_PROFILE_ROLE_MAPPING"/>
+
+            <columnExists tableName="USER_PROFILE_ROLE_MAPPING" columnName="ROLE_ID"/>
+            <columnExists tableName="USER_PROFILE_ROLE_MAPPING" columnName="USER_ID"/>
+            <columnExists tableName="USER_PROFILE_ROLE_MAPPING" columnName="TENANT_ID"/>
+
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM USER_PROFILE_ROLE_MAPPING
+                WHERE TENANT_ID='public'
+                AND USER_ID = (
+                SELECT ID FROM USER_PROFILE_MODEL
+                WHERE EMAIL='mrsinghvinay563@gmail.com'
+                )
+            </sqlCheck>
+        </preConditions>
+
+        <insert tableName="USER_PROFILE_ROLE_MAPPING">
+            <column name="ID" valueComputed="gen_random_uuid()"/>
+            <column name="ROLE_ID"
+                    valueComputed="(SELECT ROLE_ID FROM USER_PROFILE_ROLE_INFO_MODEL WHERE ROLE_NAME='ADMIN' AND TENANT_ID='public')"/>
+            <column name="TENANT_ID" value="public"/>
+            <column name="USER_ID"
+                    valueComputed="(SELECT ID FROM USER_PROFILE_MODEL WHERE EMAIL='mrsinghvinay563@gmail.com')"/>
+            <column name="IS_DEFAULT" valueBoolean="true"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

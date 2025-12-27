@@ -68,7 +68,7 @@ public class EmailService {
                 if(StringUtils.isNotBlank(company)) emailDocument.setCompany(company);
                 Map<String, String> templateVariable = Map.of(
                         "name", emailDocument.getRecipientName(),
-                        "compnay", emailDocument.getCompany()
+                        "company", emailDocument.getCompany()
                 );
                 emailDocument.setEmailTemplate(prepareEmailTemplate(templateVariable));
                 emailDocument.setTemplateVariables(templateVariable);

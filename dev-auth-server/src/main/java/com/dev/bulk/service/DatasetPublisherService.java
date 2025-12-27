@@ -1,7 +1,7 @@
 package com.dev.bulk.service;
 
 import com.dev.dto.DatasetUploadedEvent;
-import com.dev.utility.SecurityContextUtil;
+import com.dev.utility.AuthContextUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -34,7 +34,7 @@ public class DatasetPublisherService {
     public void publishDataset() throws Exception {
         String filePath = "/home/guyvinay/dev/repo/assets/123456_ds_001.csv";
         Path file = Path.of(filePath);
-        String tenantId = SecurityContextUtil.getTenantId();
+        String tenantId = AuthContextUtil.getTenantId();
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         authentication.getDetails();
         try (

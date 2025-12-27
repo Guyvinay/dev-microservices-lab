@@ -3,7 +3,7 @@ package com.dev.bulk.email.service;
 import com.dev.bulk.email.dto.EmailDocument;
 import com.dev.elastic.client.EsRestHighLevelClient;
 import com.dev.utility.ElasticUtility;
-import com.dev.utility.SecurityContextUtil;
+import com.dev.utility.AuthContextUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -254,7 +254,7 @@ public class EmailElasticService {
     }
 
     private String indexName(String indexName) {
-        String tenantId = SecurityContextUtil.getTenantId();
+        String tenantId = AuthContextUtil.getTenantId();
         return tenantId +"_" + indexName;
     }
 

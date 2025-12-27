@@ -14,7 +14,6 @@ import com.dev.security.provider.CustomBcryptEncoder;
 import com.dev.service.UserProfileService;
 import com.dev.service.UserProfileTenantService;
 import com.dev.utility.EntityDtoMapper;
-import com.dev.utility.SecurityContextUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

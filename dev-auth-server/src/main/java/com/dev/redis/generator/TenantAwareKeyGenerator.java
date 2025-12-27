@@ -2,7 +2,7 @@
 
 package com.dev.redis.generator;
 
-import com.dev.utility.SecurityContextUtil;
+import com.dev.utility.AuthContextUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.interceptor.KeyGenerator;
@@ -17,7 +17,7 @@ public class TenantAwareKeyGenerator implements KeyGenerator {
 
     @Override
     public Object generate(Object target, Method method, Object... params) {
-        String tenantId = SecurityContextUtil.getTenantId();
+        String tenantId = AuthContextUtil.getTenantId();
         String entity = method.getAnnotation(Cacheable.class).cacheNames()[0];
         String paramKey = String.join(":", Arrays.stream(params).map(String::valueOf).toArray(String[]::new));
         String key = String.format("%s:%s:%s", tenantId, entity, paramKey);
