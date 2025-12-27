@@ -48,9 +48,9 @@ public class UserProfilePrivilegeModel {
     @ApiModelProperty(name = "assignedAt", value = "Timestamp when the privilege was assigned", example = "1705741200000")
     private Long assignedAt;
 
-    @Column(name = "ASSIGNED_BY", nullable = false)
+    @Column(name = "ASSIGNED_BY")
     @ApiModelProperty(name = "assignedBy", value = "User ID who assigned this privilege", example = "1001")
-    private Long assignedBy;
+    private UUID assignedBy;
 
     public UserProfilePrivilegeModel() {
         this.assignedAt = Instant.now().toEpochMilli();

@@ -31,10 +31,10 @@ public class OrganizationModel {
     private String orgEmail;
 
     @Column(name = "CREATED_AT")
-    private long createdAt;
+    private Long createdAt;
 
     @Column(name = "UPDATED_AT")
-    private long updatedAt;
+    private Long updatedAt;
 
     @Column(name = "CREATED_BY")
     private String createdBy;

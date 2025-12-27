@@ -23,7 +23,15 @@ public class UserController {
     private UserAuditService userAuditService;
 
     @GetMapping
-    @Requires(privilege = "privilege", actions = {"actions1", "actions2", "actions3", "actions4"})
+    @Requires(
+            privilege = "MANAGE_USERS",
+            actions = {
+                    "VIEW_USERS",
+                    "CREATE_USER",
+                    "UPDATE_USER",
+                    "DELETE_USER"
+            }
+    )
     public ApiResponse<List<UserDTO>> getAllUsers() {
         List<UserDTO> users = userService.findAll();
         return new ApiResponse<>("200", "Users retrieved successfully", users);

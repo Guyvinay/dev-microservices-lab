@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -17,6 +19,6 @@ public class PrivilegeAssignmentRequest {
     private Privilege privilege;
     private Action action;
     private Area area;
-    private Long assignedBy;
+    private UUID assignedBy;
 }
 

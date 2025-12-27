@@ -1,6 +1,6 @@
 package com.dev.webSocket;
 
-import com.dev.security.dto.JwtTokenDto;
+import com.dev.security.dto.AccessJwtToken;
 import com.dev.utility.AuthContextUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.ServerHttpRequest;
@@ -31,11 +31,11 @@ public class CustomHandshakeInterceptor implements HandshakeInterceptor {
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
 
-        JwtTokenDto jwtTokenDto = AuthContextUtil.getJwtToken();
-        if(jwtTokenDto != null) {
+        AccessJwtToken accessJwtToken = AuthContextUtil.getJwtToken();
+        if(accessJwtToken != null) {
             // Store username and additional user details in the WebSocket session attributes
-            attributes.put("username", jwtTokenDto.getUserBaseInfo().getEmail());
-            attributes.put("tenantId", jwtTokenDto.getUserBaseInfo().getTenantId());
+            attributes.put("username", accessJwtToken.getUserBaseInfo().getEmail());
+            attributes.put("tenantId", accessJwtToken.getUserBaseInfo().getTenantId());
 
             return true; // Allow WebSocket connection
         }

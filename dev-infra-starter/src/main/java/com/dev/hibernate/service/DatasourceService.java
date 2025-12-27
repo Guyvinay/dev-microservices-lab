@@ -33,7 +33,7 @@ public class DatasourceService {
     @Value("${liquibase.master.file.path}")
     private String changelog;
 
-    @Value("${liquibase.ignore.schema:pg_catalog,public,information_schema}")
+    @Value("${liquibase.ignore.schema:pg_catalog,information_schema}")
     private String excludeSchema;
 
     public void executeLiquibase(String tenantId) throws LiquibaseException {

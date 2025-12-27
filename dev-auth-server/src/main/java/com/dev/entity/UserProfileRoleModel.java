@@ -17,7 +17,7 @@ public class UserProfileRoleModel {
     @Column(name = "ROLE_ID")
     private Long roleId;
 
-    @Column(name = "ROLE_NAME", length = 100, nullable = false)
+    @Column(name = "ROLE_NAME", length = 100, nullable = false, unique = true)
     private String roleName;
 
     @Column(name = "STATUS", nullable = false)

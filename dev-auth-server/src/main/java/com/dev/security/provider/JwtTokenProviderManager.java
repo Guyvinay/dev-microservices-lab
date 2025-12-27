@@ -1,11 +1,14 @@
 package com.dev.security.provider;
 
 import com.dev.dto.UserProfileDetailsDto;
+import com.dev.security.details.ServicePrincipal;
 import com.dev.security.details.UserBaseInfo;
-import com.dev.security.dto.JwtTokenDto;
+import com.dev.security.dto.AccessJwtToken;
 import com.dev.exception.AuthenticationException;
 import com.dev.exception.JWTTokenException;
 import com.dev.security.details.CustomAuthToken;
+import com.dev.security.dto.JwtToken;
+import com.dev.security.dto.ServiceJwtToken;
 import com.dev.security.dto.TokenType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,12 +33,10 @@ import java.util.*;
 
 import static com.dev.security.utility.SecurityConstants.AUDIENCE;
 import static com.dev.security.utility.SecurityConstants.AUTHORIZATION;
-import static com.dev.security.utility.SecurityConstants.AUTHZ;
 import static com.dev.security.utility.SecurityConstants.AUTH_TYPE;
 import static com.dev.security.utility.SecurityConstants.CLOCK_SKEW_SECONDS;
 import static com.dev.security.utility.SecurityConstants.ISSUER;
 import static com.dev.security.utility.SecurityConstants.MAX_TOKEN_SIZE;
-import static com.dev.security.utility.SecurityConstants.PERMISSION;
 import static com.dev.security.utility.SecurityConstants.SIGNING_SECRET_KEY;
 
 @Slf4j
@@ -54,49 +55,80 @@ public class JwtTokenProviderManager {
     }
 
     public String createJwtToken(
-            JwtTokenDto jwtTokenDto
+            JwtToken jwtToken
     ) throws JOSEException, JsonProcessingException {
 
-        validateCreateJwtToken(jwtTokenDto);
+        validateCreateJwtToken(jwtToken);
 
-        Instant issuedAt = Instant.ofEpochMilli(jwtTokenDto.getCreatedAt());
-        Instant expiresAt = Instant.ofEpochMilli(jwtTokenDto.getExpiresAt());
+        Instant issuedAt = Instant.ofEpochMilli(jwtToken.getCreatedAt());
+        Instant expiresAt = Instant.ofEpochMilli(jwtToken.getExpiresAt());
 
-        JWTClaimsSet claims = new JWTClaimsSet.Builder()
-                .jwtID(jwtTokenDto.getJwtId().toString())
-                .subject(OM.writeValueAsString(jwtTokenDto))
+        JWTClaimsSet.Builder claimsBuilder = new JWTClaimsSet.Builder()
+                .jwtID(jwtToken.getJwtId().toString())
+                .subject(OM.writeValueAsString(jwtToken))
                 .issuer(ISSUER)
                 .audience(AUDIENCE)
                 .issueTime(Date.from(issuedAt))
                 .notBeforeTime(Date.from(issuedAt))
                 .expirationTime(Date.from(expiresAt))
-                .claim(AUTH_TYPE, jwtTokenDto.getTokenType().name())
-                .claim(PERMISSION, AUTHZ)
-                .build();
+                .claim(AUTH_TYPE, jwtToken.getTokenType().name())
+                ;
 
-        SignedJWT signedJWT = new SignedJWT(buildJwsHeader(), claims);
+        enrichClaims(claimsBuilder, jwtToken);
+
+        SignedJWT signedJWT = new SignedJWT(buildJwsHeader(), claimsBuilder.build());
         signedJWT.sign(reqSigner);
 
         return signedJWT.serialize();
     }
 
-    private static void validateCreateJwtToken(JwtTokenDto jwtTokenDto) {
+    private void enrichClaims(JWTClaimsSet.Builder builder, JwtToken payload) {
+
+        if (payload instanceof AccessJwtToken user) {
+            builder
+                    .claim("userId", user.getUserBaseInfo().getId())
+                    .claim("tenantId", user.getUserBaseInfo().getTenantId())
+                    .claim("roles", user.getUserBaseInfo().getRoleIds());
+        }
+
+        if (payload instanceof ServiceJwtToken service) {
+            builder
+                    .claim("service", service.getServiceName())
+                    .claim("scopes", service.getScopes());
+        }
+    }
+
+    private void validateServiceClaims(JWTClaimsSet claims) throws ParseException {
+
+        String serviceName = claims.getStringClaim("service");
+
+        if (!StringUtils.hasText(serviceName)) {
+            throw new AuthenticationException("Missing service identity");
+        }
+
+//        List<String> scopes = (List<String>) claims.getClaim("scopes");
+//        if (CollectionUtils.isEmpty(scopes)) {
+//            throw new AuthenticationException("Missing service scopes");
+//        }
+    }
+
+    private static void validateCreateJwtToken(JwtToken jwtToken) {
         // Validate required fields
-        if (jwtTokenDto.getCreatedAt() <= 0) {
+        if (jwtToken.getCreatedAt() <= 0) {
             throw new IllegalArgumentException("createdAt must be set");
         }
 
-        if (jwtTokenDto.getExpiresAt() <= jwtTokenDto.getCreatedAt()) {
+        if (jwtToken.getExpiresAt() <= jwtToken.getCreatedAt()) {
             throw new IllegalArgumentException("expiresAt must be greater than createdAt");
         }
 
-        if (jwtTokenDto.getTokenType() == null) {
+        if (jwtToken.getTokenType() == null) {
             throw new IllegalArgumentException("tokenType must be set");
         }
 
         // ️Ensure JWT ID
-        if (jwtTokenDto.getJwtId() == null) {
-            jwtTokenDto.setJwtId(UUID.randomUUID());
+        if (jwtToken.getJwtId() == null) {
+            jwtToken.setJwtId(UUID.randomUUID());
         }
     }
 
@@ -127,6 +159,11 @@ public class JwtTokenProviderManager {
         validateIssuer(claims);
         validateAudience(claims);
         validateTokenType(claims, access);
+
+        if (access == TokenType.SERVICE) {
+            validateServiceClaims(claims);
+        }
+
         return claims;
     }
     private void validateTokenType(
@@ -210,18 +247,29 @@ public class JwtTokenProviderManager {
     }
 
     public Authentication getAuthentication(String token, TokenType access) throws JsonProcessingException, JOSEException, ParseException {
-        JwtTokenDto jwtToken = OM.readValue(getSubjectPayload(token, access), JwtTokenDto.class);
+        AccessJwtToken jwtToken = OM.readValue(getSubjectPayload(token, access), AccessJwtToken.class);
+
         CustomAuthToken customAuthToken = new CustomAuthToken(jwtToken.getUserBaseInfo().getEmail(), null, Collections.emptyList());
         customAuthToken.setDetails(jwtToken); // set jwtToken payload as user details ...
         return customAuthToken;
     }
 
-    public JwtTokenDto getJwtTokenDTOFromToken(String token, TokenType access) throws JsonProcessingException, JOSEException, ParseException {
-        return OM.readValue(getSubjectPayload(token, access), JwtTokenDto.class);
+    public Authentication getServiceAuthentication(String token) throws ParseException, JOSEException, JsonProcessingException {
+        ServiceJwtToken serviceJwtToken = OM.readValue(getSubjectPayload(token, TokenType.SERVICE), ServiceJwtToken.class);
+
+        ServicePrincipal principal = new ServicePrincipal(serviceJwtToken.getServiceName(), serviceJwtToken.getScopes());
+        ServiceAuthToken serviceAuthToken = new ServiceAuthToken(principal);
+        serviceAuthToken.setDetails(serviceJwtToken);
+
+        return serviceAuthToken;
+    }
+
+    public AccessJwtToken getJwtTokenDTOFromToken(String token, TokenType access) throws JsonProcessingException, JOSEException, ParseException {
+        return OM.readValue(getSubjectPayload(token, access), AccessJwtToken.class);
     }
 
 
-    public JwtTokenDto createJwtTokeDtoFromModel(UserProfileDetailsDto userProfile, int expiredIn) {
+    public AccessJwtToken createJwtTokeDtoFromModel(UserProfileDetailsDto userProfile, int expiredIn) {
         return createTokenDTOFromUserBaseInfo(mapToUserBaseInfo(userProfile), TokenType.ACCESS, expiredIn);
     }
 
@@ -244,7 +292,7 @@ public class JwtTokenProviderManager {
      * @param expiryMinutes token validity in minutes
      * @return JwtTokenDto
      */
-    public JwtTokenDto createTokenDTOFromUserBaseInfo(
+    public AccessJwtToken createTokenDTOFromUserBaseInfo(
             UserBaseInfo userBaseInfo,
             TokenType tokenType,
             long expiryMinutes
@@ -259,7 +307,7 @@ public class JwtTokenProviderManager {
         long now = System.currentTimeMillis();
         long expiresAt = now + Duration.ofMinutes(expiryMinutes).toMillis();
 
-        return JwtTokenDto.builder()
+        return AccessJwtToken.builder()
                 .jwtId(UUID.randomUUID())
                 .tokenType(tokenType)
                 .userBaseInfo(userBaseInfo)
@@ -272,13 +320,13 @@ public class JwtTokenProviderManager {
     /**
      * Create ACCESS token DTO
      */
-    public JwtTokenDto createAccessTokenDto(
-            JwtTokenDto source,
+    public AccessJwtToken createAccessTokenDto(
+            AccessJwtToken source,
             long accessValidity
     ) {
         Instant now = Instant.now();
 
-        return JwtTokenDto.builder()
+        return AccessJwtToken.builder()
                 .jwtId(UUID.randomUUID())
                 .tokenType(TokenType.ACCESS)
                 .userBaseInfo(source.getUserBaseInfo())
@@ -293,13 +341,13 @@ public class JwtTokenProviderManager {
      * Create REFRESH token DTO on LOGIN
      * (full lifetime)
      */
-    public JwtTokenDto createRefreshTokenDtoForLogin(
-            JwtTokenDto source,
+    public AccessJwtToken createRefreshTokenDtoForLogin(
+            AccessJwtToken source,
             long refreshValidity
     ) {
         Instant now = Instant.now();
 
-        return JwtTokenDto.builder()
+        return AccessJwtToken.builder()
                 .jwtId(UUID.randomUUID())
                 .tokenType(TokenType.REFRESH)
                 .userBaseInfo(source.getUserBaseInfo())
@@ -314,8 +362,8 @@ public class JwtTokenProviderManager {
      * Create REFRESH token DTO on REFRESH
      * (preserve absolute expiry)
      */
-    public JwtTokenDto createRefreshTokenDtoForRefresh(
-            JwtTokenDto source
+    public AccessJwtToken createRefreshTokenDtoForRefresh(
+            AccessJwtToken source
     ) {
         Instant now = Instant.now();
         Instant absoluteExpiry = Instant.ofEpochMilli(source.getExpiresAt());
@@ -324,7 +372,7 @@ public class JwtTokenProviderManager {
             throw new AuthenticationException("Refresh token expired");
         }
 
-        return JwtTokenDto.builder()
+        return AccessJwtToken.builder()
                 .jwtId(UUID.randomUUID())
                 .tokenType(TokenType.REFRESH)
                 .userBaseInfo(source.getUserBaseInfo())

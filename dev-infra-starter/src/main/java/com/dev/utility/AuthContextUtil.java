@@ -2,7 +2,8 @@
 
 package com.dev.utility;
 
-import com.dev.dto.JwtTokenDto;
+import com.dev.dto.AccessJwtToken;
+import com.dev.dto.AccessJwtToken;
 import com.dev.exception.AuthenticationException;
 import com.dev.grpc.constant.GRPCConstant;
 import org.apache.commons.lang3.StringUtils;
@@ -18,9 +19,9 @@ public class AuthContextUtil {
      * Jwt Token from gRPC context if found otherwise
      * From SecurityContextHolder.
      * ========================= */
-    public static JwtTokenDto getJwtToken() {
+    public static AccessJwtToken getJwtToken() {
         // gRPC context (only present during gRPC calls)
-        JwtTokenDto grpcJwt = GRPCConstant.JWT_CONTEXT.get();
+        AccessJwtToken grpcJwt = GRPCConstant.JWT_CONTEXT.get();
         if (grpcJwt != null) {
             return grpcJwt;
         }
@@ -30,7 +31,7 @@ public class AuthContextUtil {
     }
 
     public static UUID getUserId() {
-        JwtTokenDto jwt = getJwtToken();
+        AccessJwtToken jwt = getJwtToken();
         UUID userId = jwt.getUserBaseInfo().getId();
 
         if (userId == null) {
@@ -40,7 +41,7 @@ public class AuthContextUtil {
     }
 
     public static String getTenantId() {
-        JwtTokenDto jwt = getJwtToken();
+        AccessJwtToken jwt = getJwtToken();
         String tenantId = jwt.getUserBaseInfo().getTenantId();
 
         if (tenantId == null || tenantId.isBlank()) {
@@ -50,7 +51,7 @@ public class AuthContextUtil {
     }
 
     public static String getOrgId() {
-        JwtTokenDto jwt = getJwtToken();
+        AccessJwtToken jwt = getJwtToken();
         String orgId = jwt.getUserBaseInfo().getOrgId();
 
         if (orgId == null || orgId.isBlank()) {
@@ -60,7 +61,7 @@ public class AuthContextUtil {
     }
 
     public static List<String> getRoles() {
-        JwtTokenDto jwt = getJwtToken();
+        AccessJwtToken jwt = getJwtToken();
         return jwt.getUserBaseInfo().getRoleIds();
     }
 
@@ -77,7 +78,7 @@ public class AuthContextUtil {
         return StringUtils.isNotBlank(tenantId) ? tenantId : defaultTenant;
     }
 
-    private static JwtTokenDto getJwtFromSecurityContext() {
+    private static AccessJwtToken getJwtFromSecurityContext() {
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
 
@@ -86,12 +87,25 @@ public class AuthContextUtil {
         }
 
         Object details = authentication.getDetails();
-        if (!(details instanceof JwtTokenDto jwtTokenDto)) {
+        if (!(details instanceof AccessJwtToken AccessJwtToken)) {
             throw new AuthenticationException(
-                    "Authentication details do not contain JwtTokenDto"
+                    "Authentication details do not contain AccessJwtToken"
             );
         }
 
-        return jwtTokenDto;
+        return AccessJwtToken;
+    }
+
+
+    public static AccessJwtToken getJwtFromSecurityContextOrNull() {
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null) return null;
+
+        Object details = authentication.getDetails();
+        if (!(details instanceof AccessJwtToken AccessJwtToken)) return null;
+
+        return AccessJwtToken;
     }
 }

@@ -1,7 +1,10 @@
-package com.dev.security.dto;
+package com.dev.dto;
 
-import com.dev.security.details.UserBaseInfo;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.UUID;
 
@@ -10,7 +13,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class JwtTokenDto {
+public class AccessJwtToken implements JwtToken {
 
     private UUID jwtId;
     private TokenType tokenType;
@@ -19,5 +22,3 @@ public class JwtTokenDto {
     private long expiresAt;
 
 }
-
-

@@ -1,6 +1,6 @@
 package com.dev.logging.interceptors.http;
 
-import com.dev.security.dto.JwtTokenDto;
+import com.dev.security.dto.AccessJwtToken;
 import com.dev.logging.constant.MDCLoggingUtility;
 import com.dev.utility.AuthContextUtil;
 import jakarta.servlet.FilterChain;
@@ -17,8 +17,8 @@ public class HttpLoggingGenericFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
-            JwtTokenDto jwtTokenDto = AuthContextUtil.getJwtToken();
-            MDCLoggingUtility.appendVariablesToMDC(jwtTokenDto, request);
+            AccessJwtToken accessJwtToken = AuthContextUtil.getJwtFromSecurityContextOrNull();
+            MDCLoggingUtility.appendVariablesToMDC(accessJwtToken, request);
             filterChain.doFilter(request, response);
         } finally {
             MDCLoggingUtility.removeVariablesFromMDCContext();

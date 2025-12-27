@@ -16,7 +16,7 @@ public class GlobalExceptionHandler {
        ========================= */
     @ExceptionHandler(InvalidInputException.class)
     public ResponseEntity<GeneralResponseDTO<Object>> handleInvalidInput(InvalidInputException ex) {
-        log.warn("Invalid input: {}", ex.getMessage());
+        log.error("Invalid input: {}", ex.getMessage(), ex);
         return buildErrorResponse(ex, HttpStatus.BAD_REQUEST);
     }
 
@@ -25,13 +25,13 @@ public class GlobalExceptionHandler {
        ========================= */
     @ExceptionHandler(JWTTokenException.class)
     public ResponseEntity<GeneralResponseDTO<Object>> handleJwtTokenException(JWTTokenException ex) {
-        log.warn("JWT error: {}", ex.getMessage());
+        log.error("JWT error: {}", ex.getMessage(), ex);
         return buildErrorResponse(ex, HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<GeneralResponseDTO<Object>> handleAuthenticationException(AuthenticationException ex) {
-        log.warn("Authentication failure: {}", ex.getMessage());
+        log.error("Authentication failure: {}", ex.getMessage(), ex);
         return buildErrorResponse(ex, HttpStatus.UNAUTHORIZED);
     }
 
@@ -40,7 +40,7 @@ public class GlobalExceptionHandler {
        ========================= */
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<GeneralResponseDTO<Object>> handleUserNotFound(UserNotFoundException ex) {
-        log.warn("User not found: {}", ex.getMessage());
+        log.error("User not found: {}", ex.getMessage(), ex);
         return buildErrorResponse(ex, HttpStatus.NOT_FOUND);
     }
 
@@ -49,7 +49,7 @@ public class GlobalExceptionHandler {
        ========================= */
     @ExceptionHandler(DuplicateResourceException.class)
     public ResponseEntity<GeneralResponseDTO<Object>> handleDuplicateResource(DuplicateResourceException ex) {
-        log.warn("Duplicate resource: {}", ex.getMessage());
+        log.error("Duplicate resource: {}", ex.getMessage(), ex);
         return buildErrorResponse(ex, HttpStatus.CONFLICT);
     }
 

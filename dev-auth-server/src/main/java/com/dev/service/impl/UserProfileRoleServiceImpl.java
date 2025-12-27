@@ -1,7 +1,7 @@
 package com.dev.service.impl;
 
 import com.dev.dto.CreateRoleRequest;
-import com.dev.security.dto.JwtTokenDto;
+import com.dev.security.dto.AccessJwtToken;
 import com.dev.dto.RoleDTO;
 import com.dev.entity.UserProfileRoleModel;
 import com.dev.exception.ResourceNotFoundException;
@@ -27,7 +27,7 @@ public class UserProfileRoleServiceImpl implements UserProfileRoleService {
         if (roleRepository.existsByRoleNameAndTenantId(request.getRoleName(), request.getTenantId())) {
             throw new IllegalArgumentException("Role already exists for this tenant");
         }
-        JwtTokenDto jwtTokenDto = (JwtTokenDto) SecurityContextHolder.getContext().getAuthentication().getDetails();
+        AccessJwtToken accessJwtToken = (AccessJwtToken) SecurityContextHolder.getContext().getAuthentication().getDetails();
         UserProfileRoleModel role = new UserProfileRoleModel();
         long roleId = AuthUtility.generateRandomNumber(8);
         role.setRoleId(roleId);
@@ -38,8 +38,8 @@ public class UserProfileRoleServiceImpl implements UserProfileRoleService {
         role.setActive(true);
         role.setCreatedAt(Instant.now().toEpochMilli());
         role.setUpdatedAt(Instant.now().toEpochMilli());
-        role.setCreatedBy(jwtTokenDto.getUserBaseInfo().getEmail());
-        role.setUpdatedBy(jwtTokenDto.getUserBaseInfo().getEmail());
+        role.setCreatedBy(accessJwtToken.getUserBaseInfo().getEmail());
+        role.setUpdatedBy(accessJwtToken.getUserBaseInfo().getEmail());
 
         UserProfileRoleModel saved = roleRepository.save(role);
         return mapToDTO(saved);

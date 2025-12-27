@@ -1,5 +1,10 @@
 package com.dev.rabbitmq.publisher;
 
+import com.dev.security.dto.ServiceJwtToken;
+import com.dev.security.dto.TokenType;
+import com.dev.security.provider.JwtTokenProviderManager;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.nimbusds.jose.JOSEException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -11,6 +16,8 @@ import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -18,6 +25,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ReliableTenantPublisher {
     private final RabbitTemplate rabbitTemplate;
+    private final JwtTokenProviderManager jwtTokenProviderManager;
 
     public void publishTenantCreated(String tenantId) {
         String correlationId = UUID.randomUUID().toString();
@@ -48,11 +56,24 @@ public class ReliableTenantPublisher {
         }
     }
 
-    private static MessageProperties getMessageProperties(String correlationId) {
+    private MessageProperties getMessageProperties(String correlationId) throws JOSEException, JsonProcessingException {
         MessageProperties props = new MessageProperties();
         props.setContentType(MessageProperties.CONTENT_TYPE_JSON);
         props.setMessageId(correlationId);
-        props.setHeader("Authorization", "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ7XCJ1c2VySWRcIjpudWxsLFwib3JnXCI6XCJiMzc4YjU4ZC1hYjAwLTQyMmQtOWYzOC0yZDFhZDkzN2U1OTNcIixcIm5hbWVcIjpudWxsLFwiZW1haWxcIjpcInZpa2FzQGdtYWlsLmNvbVwiLFwidGVuYW50SWRcIjpcIjY0MzQ2XCIsXCJjcmVhdGVkRGF0ZVwiOjE3NTg2NTM2MTY2MDEsXCJleHBpcnlEYXRlXCI6MTIxNzU4NjczNDE2NjAxLFwicm9sZXNcIjpbXCIyODc3NDcxMlwiLFwiNDk5NTAwMjRcIixcIjU0MjAwMDk5XCIsXCI2MTUyMDU4OFwiLFwiNjU3MzU5OTJcIixcIjg5NTcwNzEzXCIsXCI5NjMyNDY1N1wiXX0iLCJhdWQiOlsiZGV2LXRha2Vhd2F5IiwiZGV2LXJldmlzZWQiXSwibmJmIjoxNzU4NjczNDE2LCJpc3MiOiJkZXYtYXV0aCIsInBlcm1pc3Npb24iOlsiQURNSU4iLCJVU0VSIiwiTUFOQUdFUiJdLCJleHAiOjEyMTc1ODY3MzQxNiwiaWF0IjoxNzU4NjczNDE2LCJqdGkiOiJiMzY3MWIxZi04YmI1LTQ4NWMtOWZkOC1iYjVhZWM4Y2I5MGEifQ.4MYWXSEd4b7upGoqrdi2toZBIbSA4HGdAxA3XFpwhag");
+
+        ServiceJwtToken payload = ServiceJwtToken.builder()
+                .jwtId(UUID.randomUUID())
+                .tokenType(TokenType.SERVICE)
+                .serviceName("tenant-service")
+                .scopes(List.of("tenant.create"))
+                .createdAt(System.currentTimeMillis())
+                .expiresAt(System.currentTimeMillis() + Duration.ofMinutes(3).toMillis())
+                .build();
+
+        String token = jwtTokenProviderManager.createJwtToken(payload);
+
+
+        props.setHeader("Authorization", token);
         return props;
     }
 

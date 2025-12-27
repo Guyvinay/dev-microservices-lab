@@ -1,6 +1,6 @@
 package com.dev.logging.constant;
 
-import com.dev.security.dto.JwtTokenDto;
+import com.dev.security.dto.AccessJwtToken;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -19,10 +19,10 @@ public class MDCLoggingUtility {
     public static final String USER_ID = "userId";
     public static final String TRACE_ID = "traceId";
 
-    public static void appendVariablesToMDC(JwtTokenDto jwtTokenDto, HttpServletRequest request) {
-        if(jwtTokenDto != null && jwtTokenDto.getUserBaseInfo() != null) {
-            MDC.put(TENANT_ID, jwtTokenDto.getUserBaseInfo().getTenantId());
-            MDC.put(USER_ID, ObjectUtils.isNotEmpty(jwtTokenDto.getUserBaseInfo().getId()) ? jwtTokenDto.getUserBaseInfo().getId().toString() : jwtTokenDto.getUserBaseInfo().getEmail());
+    public static void appendVariablesToMDC(AccessJwtToken accessJwtToken, HttpServletRequest request) {
+        if(accessJwtToken != null && accessJwtToken.getUserBaseInfo() != null) {
+            MDC.put(TENANT_ID, accessJwtToken.getUserBaseInfo().getTenantId());
+            MDC.put(USER_ID, ObjectUtils.isNotEmpty(accessJwtToken.getUserBaseInfo().getId()) ? accessJwtToken.getUserBaseInfo().getId().toString() : accessJwtToken.getUserBaseInfo().getEmail());
         }
         String traceId = request.getHeader(TRACE_ID);
 

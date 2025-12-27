@@ -14,4 +14,5 @@ public interface OrganizationModelRepository extends JpaRepository<OrganizationM
 
     boolean existsByOrgName(String orgName);
 
+    Optional<OrganizationModel> findByOrgName(String system);
 }

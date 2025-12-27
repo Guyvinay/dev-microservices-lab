@@ -1,6 +1,6 @@
 package com.dev.grpc.interceptor;
 
-import com.dev.dto.JwtTokenDto;
+import com.dev.dto.AccessJwtToken;
 import com.dev.provider.JwtTokenProviderManager;
 import com.dev.utility.AuthContextUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -22,7 +22,7 @@ public class GrpcClientInterceptor implements ClientInterceptor {
         return new ForwardingClientCall.SimpleForwardingClientCall<>(channel.newCall(methodDescriptor, callOptions)) {
             @Override
             public void start(Listener<RespT> responseListener, Metadata headers) {
-                JwtTokenDto tokenDto = AuthContextUtil.getJwtToken();
+                AccessJwtToken tokenDto = AuthContextUtil.getJwtToken();
 
                 try {
                     String token = jwtTokenProviderManager.createJwtToken(tokenDto);
