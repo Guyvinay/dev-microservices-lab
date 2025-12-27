@@ -6,8 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -17,11 +15,10 @@ import java.util.UUID;
 @Builder
 public class JwtTokenDto {
 
+    private UUID jwtId;
+    private TokenType tokenType;
     private UserBaseInfo userBaseInfo;
     private long createdAt;
     private long expiresAt;
 
 }
-
-
-

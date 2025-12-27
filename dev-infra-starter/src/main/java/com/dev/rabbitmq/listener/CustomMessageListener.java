@@ -1,5 +1,6 @@
 package com.dev.rabbitmq.listener;
 
+import com.dev.dto.TokenType;
 import com.dev.provider.JwtTokenProviderManager;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.nimbusds.jose.JOSEException;
@@ -34,7 +35,7 @@ public class CustomMessageListener implements MessageListener {
         String token = authorization.startsWith("Bearer ") ? authorization.substring(7) : authorization;
 
         try {
-            Authentication authentication = jwtTokenProviderManager.getAuthentication(token);
+            Authentication authentication = jwtTokenProviderManager.getAuthentication(token, TokenType.ACCESS);
             SecurityContextHolder.getContext().setAuthentication(authentication);
             listenerBean.onMessage(message);
             log.info("Message processed successfully. messageId={}", messageId);

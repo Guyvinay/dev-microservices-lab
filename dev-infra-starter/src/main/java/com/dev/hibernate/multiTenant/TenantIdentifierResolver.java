@@ -1,6 +1,8 @@
 package com.dev.hibernate.multiTenant;
 
 import com.dev.dto.JwtTokenDto;
+import com.dev.utility.AuthContextUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,12 +21,7 @@ public class TenantIdentifierResolver implements CurrentTenantIdentifierResolver
 
     @Override
     public String resolveCurrentTenantIdentifier() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if(authentication != null) {
-            JwtTokenDto tokenDto = (JwtTokenDto) authentication.getDetails();
-            return tokenDto.getUserBaseInfo().getTenantId();
-        }
-        return DEFAULT_TENANT_ID;
+        return AuthContextUtil.resolveTenantIdOrDefault(DEFAULT_TENANT_ID);
     }
 
     @Override

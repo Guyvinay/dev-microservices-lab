@@ -8,7 +8,6 @@ import com.dev.rabbitmq.publisher.ReliableTenantPublisher;
 import com.dev.repository.OrganizationTenantMappingRepository;
 import com.dev.service.OrganizationTenantService;
 import com.dev.utility.AuthUtility;
-import com.dev.utility.SecurityContextUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

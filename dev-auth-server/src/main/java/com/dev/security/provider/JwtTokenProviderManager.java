@@ -216,6 +216,10 @@ public class JwtTokenProviderManager {
         return customAuthToken;
     }
 
+    public JwtTokenDto getJwtTokenDTOFromToken(String token, TokenType access) throws JsonProcessingException, JOSEException, ParseException {
+        return OM.readValue(getSubjectPayload(token, access), JwtTokenDto.class);
+    }
+
 
     public JwtTokenDto createJwtTokeDtoFromModel(UserProfileDetailsDto userProfile, int expiredIn) {
         return createTokenDTOFromUserBaseInfo(mapToUserBaseInfo(userProfile), TokenType.ACCESS, expiredIn);

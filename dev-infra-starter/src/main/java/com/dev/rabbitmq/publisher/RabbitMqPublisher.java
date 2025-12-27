@@ -1,6 +1,6 @@
 package com.dev.rabbitmq.publisher;
 
-import com.dev.rabbitmq.utility.CurrentTenantIdentifier;
+import com.dev.utility.AuthContextUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.amqp.core.Message;
@@ -38,7 +38,7 @@ public class RabbitMqPublisher {
     /**
      * Publish a message to a specific exchange and routing key for a given tenant.
      *
-     * @param tenantId   the tenant identifier; if null/blank, resolved from {@link CurrentTenantIdentifier}
+     * @param tenantId   the tenant identifier; if null/blank, resolved from {@link AuthContextUtil}
      * @param exchange   the exchange name; if blank, the default exchange ("") is used
      * @param routingKey the routing key (or queue name if using default exchange)
      * @param payload    the message payload (converted to JSON string)
@@ -146,7 +146,7 @@ public class RabbitMqPublisher {
      * @return resolved tenant identifier
      */
     private String resolveTenant(String tenantId) {
-        String resolved = StringUtils.isNotBlank(tenantId) ? tenantId : CurrentTenantIdentifier.getTenantId();
+        String resolved = StringUtils.isNotBlank(tenantId) ? tenantId : AuthContextUtil.getTenantId();
         log.debug("Resolved tenantId={}", resolved);
         return resolved;
     }

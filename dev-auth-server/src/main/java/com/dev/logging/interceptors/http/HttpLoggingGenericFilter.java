@@ -2,7 +2,7 @@ package com.dev.logging.interceptors.http;
 
 import com.dev.security.dto.JwtTokenDto;
 import com.dev.logging.constant.MDCLoggingUtility;
-import com.dev.utility.SecurityContextUtil;
+import com.dev.utility.AuthContextUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,7 +17,7 @@ public class HttpLoggingGenericFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
-            JwtTokenDto jwtTokenDto = SecurityContextUtil.getJwtTokenDtoFromContext();
+            JwtTokenDto jwtTokenDto = AuthContextUtil.getJwtToken();
             MDCLoggingUtility.appendVariablesToMDC(jwtTokenDto, request);
             filterChain.doFilter(request, response);
         } finally {

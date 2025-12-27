@@ -1,6 +1,6 @@
 package com.dev.redis.service;
 
-import com.dev.utility.SecurityContextUtil;
+import com.dev.utility.AuthContextUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,7 +54,7 @@ public class CacheInspectorService {
      */
     public <T> T getValue(String key, Class<T> type) {
         log.info("redis getValue called");
-        String tenantId = SecurityContextUtil.getTenantId();
+        String tenantId = AuthContextUtil.getTenantId();
 
         String _key = tenantId + "::" + key;
         Object value = redisTemplate.opsForValue().get(_key);
@@ -84,7 +84,7 @@ public class CacheInspectorService {
     public <T> void setValue(String key, T value) {
         log.info("Setting in redis called: ");
 
-        String tenantId = SecurityContextUtil.getTenantId();
+        String tenantId = AuthContextUtil.getTenantId();
 
         String _key = tenantId + "::" + key;
         log.info("Setting in redis with key: {}", _key);

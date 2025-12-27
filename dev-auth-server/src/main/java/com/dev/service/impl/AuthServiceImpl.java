@@ -18,7 +18,7 @@ import com.dev.security.provider.CustomBcryptEncoder;
 import com.dev.security.provider.JwtTokenProviderManager;
 import com.dev.service.AuthService;
 import com.dev.service.UserProfileService;
-import com.dev.utility.SecurityContextUtil;
+import com.dev.utility.AuthContextUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.nimbusds.jose.JOSEException;
 import jakarta.mail.MessagingException;
@@ -60,7 +60,7 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public AccessRefreshTokenDto login() throws JsonProcessingException, JOSEException {
-        JwtTokenDto tokenDto = SecurityContextUtil.getJwtTokenDtoFromContext();
+        JwtTokenDto tokenDto = AuthContextUtil.getJwtToken();
 
         JwtTokenDto accessDto =
                 jwtTokenProviderManager.createAccessTokenDto(
@@ -82,7 +82,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AccessRefreshTokenDto refresh() throws JOSEException, JsonProcessingException {
-        JwtTokenDto tokenDto = SecurityContextUtil.getJwtTokenDtoFromContext();
+        JwtTokenDto tokenDto = AuthContextUtil.getJwtToken();
         JwtTokenDto newAccessDto =
                 jwtTokenProviderManager.createAccessTokenDto(
                         tokenDto,

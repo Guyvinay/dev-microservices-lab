@@ -1,8 +1,9 @@
 package com.dev.provider;
 
-import com.dev.SecurityConstants;
 import com.dev.details.CustomAuthToken;
 import com.dev.dto.JwtTokenDto;
+import com.dev.dto.TokenType;
+import com.dev.dto.UserBaseInfo;
 import com.dev.exception.AuthenticationException;
 import com.dev.exception.JWTTokenException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -15,18 +16,26 @@ import com.nimbusds.jwt.SignedJWT;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
-import java.util.stream.Collectors;
+
+import static com.dev.SecurityConstants.AUDIENCE;
+import static com.dev.SecurityConstants.AUTHORIZATION;
+import static com.dev.SecurityConstants.AUTHZ;
+import static com.dev.SecurityConstants.AUTH_TYPE;
+import static com.dev.SecurityConstants.CLOCK_SKEW_SECONDS;
+import static com.dev.SecurityConstants.ISSUER;
+import static com.dev.SecurityConstants.MAX_TOKEN_SIZE;
+import static com.dev.SecurityConstants.PERMISSION;
+import static com.dev.SecurityConstants.SIGNING_SECRET_KEY;
 
 @Slf4j
 @Component
@@ -34,120 +43,271 @@ public class JwtTokenProviderManager {
 
     private JWSSigner reqSigner;
     private JWSVerifier jwsVerifier;
-    private final String ISSUER = "dev-auth-server";
-    private final List<String> AUDIENCE = Arrays.asList("dev-sandbox", "dev-integration", "dev-auth-server");
-    private final List<String> AUTHZ = Arrays.asList("ADMIN", "USER", "MANAGER");
-    private final String PERMISSION = "permission";
-    private final String AUTH_TOKEN_TYPE = "auth";
-    private final String AUTH_TYPE = "type";
-    private static final int MAX_TOKEN_SIZE = 4096;
+
     private final ObjectMapper OM = new ObjectMapper();
-
-
-    @Autowired
-    private SecurityConstants securityConstants;
 
     @PostConstruct
     protected void postConstruct() throws JOSEException {
-        String secretKey = securityConstants.getSigningSecretKey();
-        reqSigner = new MACSigner(secretKey.getBytes());
-        jwsVerifier = new MACVerifier(secretKey.getBytes());
+        reqSigner = new MACSigner(SIGNING_SECRET_KEY.getBytes());
+        jwsVerifier = new MACVerifier(SIGNING_SECRET_KEY.getBytes());
     }
 
+    public String createJwtToken(
+            JwtTokenDto jwtTokenDto
+    ) throws JOSEException, JsonProcessingException {
 
-    public String createJwtToken(String payload, int expiryTimeMinutes) throws JOSEException {
+        validateCreateJwtToken(jwtTokenDto);
 
-        ZonedDateTime zonedDateTime = LocalDateTime.now().atZone(ZoneOffset.UTC);
+        Instant issuedAt = Instant.ofEpochMilli(jwtTokenDto.getCreatedAt());
+        Instant expiresAt = Instant.ofEpochMilli(jwtTokenDto.getExpiresAt());
 
-        JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(payload) // Token issuer user details.
-                .issuer(ISSUER)   // issuer service / entity
-                .audience(AUDIENCE)// Token is for my app's user
-                .expirationTime(Date.from(zonedDateTime.plusMinutes(expiryTimeMinutes).toInstant()))  // Expire in 15 min
-                .issueTime(Date.from(zonedDateTime.toInstant())) // Issue time
-                .notBeforeTime(Date.from(zonedDateTime.toInstant())) // Valid from now
-                .jwtID(String.valueOf(UUID.randomUUID()))   // Unique token ID
-                .claim(PERMISSION, AUTHZ) // custom permission claim
-                .claim(AUTH_TYPE, AUTH_TOKEN_TYPE)
+        JWTClaimsSet claims = new JWTClaimsSet.Builder()
+                .jwtID(jwtTokenDto.getJwtId().toString())
+                .subject(OM.writeValueAsString(jwtTokenDto))
+                .issuer(ISSUER)
+                .audience(AUDIENCE)
+                .issueTime(Date.from(issuedAt))
+                .notBeforeTime(Date.from(issuedAt))
+                .expirationTime(Date.from(expiresAt))
+                .claim(AUTH_TYPE, jwtTokenDto.getTokenType().name())
+                .claim(PERMISSION, AUTHZ)
                 .build();
 
-        SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), jwtClaimsSet);
+        SignedJWT signedJWT = new SignedJWT(buildJwsHeader(), claims);
         signedJWT.sign(reqSigner);
+
         return signedJWT.serialize();
     }
 
+    private static void validateCreateJwtToken(JwtTokenDto jwtTokenDto) {
+        // Validate required fields
+        if (jwtTokenDto.getCreatedAt() <= 0) {
+            throw new IllegalArgumentException("createdAt must be set");
+        }
+
+        if (jwtTokenDto.getExpiresAt() <= jwtTokenDto.getCreatedAt()) {
+            throw new IllegalArgumentException("expiresAt must be greater than createdAt");
+        }
+
+        if (jwtTokenDto.getTokenType() == null) {
+            throw new IllegalArgumentException("tokenType must be set");
+        }
+
+        // ️Ensure JWT ID
+        if (jwtTokenDto.getJwtId() == null) {
+            jwtTokenDto.setJwtId(UUID.randomUUID());
+        }
+    }
+
+    private JWSHeader buildJwsHeader() {
+        return new JWSHeader.Builder(JWSAlgorithm.HS256)
+                .type(JOSEObjectType.JWT)
+                .build();
+    }
 
     public String resolveToken(HttpServletRequest httpServletRequest) {
-        String bearerToken = httpServletRequest.getHeader(SecurityConstants.AUTHORIZATION);
+        String bearerToken = httpServletRequest.getHeader(AUTHORIZATION);
         if (Objects.nonNull(bearerToken) && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }
         return null;
     }
 
-    public JWTClaimsSet getJWTClaimsSet(String token) throws ParseException, JOSEException {
-        if (token.getBytes(StandardCharsets.UTF_8).length > MAX_TOKEN_SIZE) {
-            throw new JWTTokenException("JWT too large");
-        }
+    public JWTClaimsSet resolveAndValidateToken(String token, TokenType access) throws ParseException, JOSEException {
+        validateTokenSize(token);
 
         SignedJWT signedJWT = SignedJWT.parse(token);
 
+        verifySignature(signedJWT);
+
+        JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
+
+        validateStandardClaims(claims);
+        validateIssuer(claims);
+        validateAudience(claims);
+        validateTokenType(claims, access);
+        return claims;
+    }
+    private void validateTokenType(
+            JWTClaimsSet claims,
+            TokenType expectedType
+    ) throws ParseException {
+
+        String tokenType = claims.getStringClaim(AUTH_TYPE);
+
+        if (!StringUtils.hasText(tokenType)) {
+            throw new AuthenticationException("Missing token type");
+        }
+
+        if (!expectedType.name().equals(tokenType)) {
+            throw new AuthenticationException(
+                    "Invalid token type. Expected: " + expectedType);
+        }
+    }
+
+    private void validateIssuer(JWTClaimsSet claims) {
+        if (!ISSUER.equals(claims.getIssuer())) {
+            log.warn("Invalid JWT issuer: {}", claims.getIssuer());
+            throw new AuthenticationException("Invalid token issuer");
+        }
+    }
+
+    private void validateStandardClaims(JWTClaimsSet claims) throws JWTTokenException {
+
+        Instant now = Instant.now();
+
+        if (claims.getExpirationTime() == null) {
+            throw new JWTTokenException("Missing exp claim");
+        }
+
+        Instant exp = claims.getExpirationTime().toInstant();
+        if (exp.isBefore(now.minusSeconds(CLOCK_SKEW_SECONDS))) {
+            throw new AuthenticationException("JWT expired");
+        }
+
+        Date notBefore = claims.getNotBeforeTime();
+        if (notBefore != null &&
+                notBefore.toInstant().isAfter(now.plusSeconds(CLOCK_SKEW_SECONDS))) {
+            throw new AuthenticationException("JWT not active yet");
+        }
+    }
+
+    private void verifySignature(SignedJWT signedJWT) throws JOSEException {
         if (!signedJWT.verify(jwsVerifier)) {
-            log.warn("Signature of the token found invalid.");
-            throw new JWTTokenException("Signature of the token found invalid.");
+            log.warn("JWT signature verification failed");
+            throw new JWTTokenException("Invalid JWT signature");
+        }
+    }
+    private void validateAudience(JWTClaimsSet claims) {
+
+        List<String> tokenAudiences = claims.getAudience();
+
+        if (CollectionUtils.isEmpty(tokenAudiences)) {
+            throw new AuthenticationException("Missing token audience");
         }
 
-        JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
-
-        if (!AUTH_TOKEN_TYPE.equals(jwtClaimsSet.getClaim(AUTH_TYPE))) {
-            log.error("Invalid token type found. Accept only Authentication token.");
-            throw new JWTTokenException("Invalid token type found. Accept only Authentication token.");
-        }
-
-        if (null == jwtClaimsSet.getExpirationTime()) {
-            log.error("No expiration time on SignedJWT claim.");
-            throw new JWTTokenException("No expiration time on SignedJWT claims");
-        }
-
-        ZonedDateTime tokenExpirationTime = ZonedDateTime.ofInstant(jwtClaimsSet.getExpirationTime().toInstant(), ZoneOffset.UTC);
-        ZonedDateTime currentDateTime = LocalDateTime.now().atZone(ZoneOffset.UTC);
-
-        if (tokenExpirationTime.isBefore(currentDateTime)) {
-            log.warn("Jwt token expired to date: {}", currentDateTime);
-            throw new AuthenticationException("Jwt token expired to date: " + currentDateTime);
-        }
-
-        // issuer
-        if (!ISSUER.equals(jwtClaimsSet.getIssuer())) {
-            log.warn("Invalid token issuer found: {}", ISSUER);
-            throw new AuthenticationException("Invalid token issuer found: {}" + ISSUER);
-        }
-
-        // Validate audience
-        List<String> tokenAudiences = jwtClaimsSet.getAudience();
         if (Collections.disjoint(tokenAudiences, AUDIENCE)) {
-            throw new AuthenticationException("Invalid audience");
+            throw new AuthenticationException("Invalid token audience");
         }
+    }
 
-        return jwtClaimsSet;
+    private void validateTokenSize(String token) throws JWTTokenException {
+        if (token.getBytes(StandardCharsets.UTF_8).length > MAX_TOKEN_SIZE) {
+            throw new JWTTokenException("JWT too large");
+        }
     }
 
     /**
      * Extracts user details from a valid JWT.
      */
-    public String getSubjectPayload(String token) throws JOSEException, ParseException {
-        JWTClaimsSet claimsSet = getJWTClaimsSet(token);
+    public String getSubjectPayload(String token, TokenType access) throws JOSEException, ParseException {
+        JWTClaimsSet claimsSet = resolveAndValidateToken(token, access);
         if (claimsSet == null) {
             throw new AuthenticationException("Invalid token");
         }
         return claimsSet.getSubject();
     }
 
-    public Authentication getAuthentication(String token) throws JsonProcessingException, JOSEException, ParseException {
-        JwtTokenDto jwtToken = OM.readValue(getSubjectPayload(token), JwtTokenDto.class);
-        List<SimpleGrantedAuthority> authorities = jwtToken.getUserBaseInfo().getRoleIds().stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
-        CustomAuthToken customAuthToken = new CustomAuthToken(jwtToken.getUserBaseInfo().getEmail(), null, authorities);
+    public Authentication getAuthentication(String token, TokenType access) throws JsonProcessingException, JOSEException, ParseException {
+        JwtTokenDto jwtToken = OM.readValue(getSubjectPayload(token, access), JwtTokenDto.class);
+        CustomAuthToken customAuthToken = new CustomAuthToken(jwtToken.getUserBaseInfo().getEmail(), null, Collections.emptyList());
         customAuthToken.setDetails(jwtToken); // set jwtToken payload as user details ...
         return customAuthToken;
+    }
+
+    /**
+     * Creates a JwtTokenDto with dynamic expiration time.
+     *
+     * @param userBaseInfo user information to embed
+     * @param expiryMinutes token validity in minutes
+     * @return JwtTokenDto
+     */
+    public JwtTokenDto createTokenDTOFromUserBaseInfo(
+            UserBaseInfo userBaseInfo,
+            TokenType tokenType,
+            long expiryMinutes
+    ) {
+        if (userBaseInfo == null) {
+            throw new IllegalArgumentException("UserBaseInfo must not be null");
+        }
+        if (expiryMinutes <= 0) {
+            throw new IllegalArgumentException("Expiry minutes must be greater than zero");
+        }
+
+        long now = System.currentTimeMillis();
+        long expiresAt = now + Duration.ofMinutes(expiryMinutes).toMillis();
+
+        return JwtTokenDto.builder()
+                .jwtId(UUID.randomUUID())
+                .tokenType(tokenType)
+                .userBaseInfo(userBaseInfo)
+                .createdAt(now)
+                .expiresAt(expiresAt)
+                .build();
+    }
+
+
+    /**
+     * Create ACCESS token DTO
+     */
+    public JwtTokenDto createAccessTokenDto(
+            JwtTokenDto source,
+            long accessValidity
+    ) {
+        Instant now = Instant.now();
+
+        return JwtTokenDto.builder()
+                .jwtId(UUID.randomUUID())
+                .tokenType(TokenType.ACCESS)
+                .userBaseInfo(source.getUserBaseInfo())
+                .createdAt(now.toEpochMilli())
+                .expiresAt(
+                        now.plus(Duration.ofMinutes(accessValidity)).toEpochMilli()
+                )
+                .build();
+    }
+
+    /**
+     * Create REFRESH token DTO on LOGIN
+     * (full lifetime)
+     */
+    public JwtTokenDto createRefreshTokenDtoForLogin(
+            JwtTokenDto source,
+            long refreshValidity
+    ) {
+        Instant now = Instant.now();
+
+        return JwtTokenDto.builder()
+                .jwtId(UUID.randomUUID())
+                .tokenType(TokenType.REFRESH)
+                .userBaseInfo(source.getUserBaseInfo())
+                .createdAt(now.toEpochMilli())
+                .expiresAt(
+                        now.plus(Duration.ofMinutes(refreshValidity)).toEpochMilli()
+                )
+                .build();
+    }
+
+    /**
+     * Create REFRESH token DTO on REFRESH
+     * (preserve absolute expiry)
+     */
+    public JwtTokenDto createRefreshTokenDtoForRefresh(
+            JwtTokenDto source
+    ) {
+        Instant now = Instant.now();
+        Instant absoluteExpiry = Instant.ofEpochMilli(source.getExpiresAt());
+
+        if (now.isAfter(absoluteExpiry)) {
+            throw new AuthenticationException("Refresh token expired");
+        }
+
+        return JwtTokenDto.builder()
+                .jwtId(UUID.randomUUID())
+                .tokenType(TokenType.REFRESH)
+                .userBaseInfo(source.getUserBaseInfo())
+                .createdAt(now.toEpochMilli())
+                .expiresAt(absoluteExpiry.toEpochMilli())
+                .build();
     }
 }

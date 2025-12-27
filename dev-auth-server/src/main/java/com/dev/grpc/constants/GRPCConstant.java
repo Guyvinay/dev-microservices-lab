@@ -1,11 +1,12 @@
-package com.dev.grpc.constant;
+package com.dev.grpc.constants;
 
-import com.dev.dto.JwtTokenDto;
+import com.dev.security.dto.JwtTokenDto;
 import io.grpc.Context;
 import io.grpc.Metadata;
 
 public class GRPCConstant {
-    public static final String GRPC_AUTH = "__dev-auth-server__";
+
+    private GRPCConstant() {}
 
     public static final Metadata.Key<String> AUTHORIZATION =
             Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER);

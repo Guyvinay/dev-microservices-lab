@@ -18,9 +18,6 @@ public class SecurityConstants {
     public static final String ORGANIZATION = "organization";
     public static final String TENANT = "tenant";
 
-    public static final String JWT_ACCESS_TOKEN = "JWT_ACCESS_TOKEN";
-    public static final String JWT_REFRESH_TOKEN = "JWT_REFRESH_TOKEN";
-
     public static final String ISSUER = "dev-auth-server";
     public static final List<String> AUDIENCE = Arrays.asList("dev-sandbox", "dev-integration", "dev-auth-server");
     public static final List<String> AUTHZ = Arrays.asList("ADMIN", "USER", "MANAGER");
