@@ -23,6 +23,7 @@
             <column name="ORG_NAME" value="SYSTEM"/>
             <column name="ORG_EMAIL" value="mrsinghvinay563@gmail.com"/>
             <column name="CREATED_AT" valueComputed="EXTRACT(EPOCH FROM now()) * 1000"/>
+            <column name="UPDATED_AT" valueComputed="EXTRACT(EPOCH FROM now()) * 1000"/>
         </insert>
     </changeSet>
 

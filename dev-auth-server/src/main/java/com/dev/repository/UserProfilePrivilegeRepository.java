@@ -47,4 +47,6 @@ public interface UserProfilePrivilegeRepository extends JpaRepository<UserProfil
             Action action,
             Area area
     );
+
+    boolean existsByRoleId(Long roleId);
 }

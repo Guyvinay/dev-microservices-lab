@@ -15,4 +15,6 @@ public interface UserProfileTenantMappingRepository extends JpaRepository<UserPr
     List<UserProfileTenantMapping> findByUserId(UUID userId);
 
     boolean existsByTenantIdAndUserId(String tenantId, UUID userId);
+
+    boolean existsByUserIdAndTenantId(UUID id, String aPublic);
 }
