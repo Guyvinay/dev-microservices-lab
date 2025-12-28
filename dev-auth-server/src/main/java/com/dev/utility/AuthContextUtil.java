@@ -4,6 +4,7 @@ package com.dev.utility;
 
 import com.dev.exception.AuthenticationException;
 import com.dev.grpc.constants.GRPCConstant;
+import com.dev.security.details.UserBaseInfo;
 import com.dev.security.dto.AccessJwtToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -61,6 +62,11 @@ public class AuthContextUtil {
     public static List<String> getRoles() {
         AccessJwtToken jwt = getJwtToken();
         return jwt.getUserBaseInfo().getRoleIds();
+    }
+
+    public static UserBaseInfo getUserBaseInfo() {
+        AccessJwtToken jwt = getJwtToken();
+        return jwt.getUserBaseInfo();
     }
 
     /* =========================

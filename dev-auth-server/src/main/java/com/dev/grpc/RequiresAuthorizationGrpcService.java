@@ -1,10 +1,6 @@
 package com.dev.grpc;
 
-import com.dev.security.details.UserBaseInfo;
-import com.dev.security.dto.AccessJwtToken;
 import com.dev.service.AuthorizationEvaluator;
-import com.dev.service.impl.AuthorizationEvaluatorImpl;
-import com.dev.utility.AuthContextUtil;
 import com.dev.utility.grpc.RequiresAuthorizationGrpc;
 import com.dev.utility.grpc.RequiresRequest;
 import com.dev.utility.grpc.RequiresResponse;
@@ -22,13 +18,12 @@ public class RequiresAuthorizationGrpcService extends RequiresAuthorizationGrpc.
 
     @Override
     public void validateRequires(RequiresRequest request, StreamObserver<RequiresResponse> responseObserver) {
-        log.info("************************* :Called Grpc service: *************************");
-        AccessJwtToken accessJwtToken = AuthContextUtil.getJwtToken();
-        UserBaseInfo userBaseInfo = accessJwtToken.getUserBaseInfo();
-        RequiresResponse response = RequiresResponse.newBuilder().setAllowed(authorizationEvaluator.isAllowed(accessJwtToken, request)).build();
-        log.info("User: {}, tenant: {}, roles: {}", userBaseInfo.getEmail(), userBaseInfo.getTenantId(), userBaseInfo.getRoleIds());
+        log.info("gRPC Authorization request received");
 
-        responseObserver.onNext(response);
+        boolean allowed = authorizationEvaluator.isAllowed(request);
+
+        responseObserver.onNext(RequiresResponse.newBuilder().setAllowed(allowed).build());
         responseObserver.onCompleted();
     }
+
 }

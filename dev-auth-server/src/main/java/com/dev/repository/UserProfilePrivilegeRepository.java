@@ -5,12 +5,14 @@ import com.dev.dto.privilege.Action;
 import com.dev.dto.privilege.Area;
 import com.dev.dto.privilege.Privilege;
 import com.dev.entity.UserProfilePrivilegeModel;
+import com.dev.redis.annotation.RedisCacheAdapter;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -51,16 +53,17 @@ public interface UserProfilePrivilegeRepository extends JpaRepository<UserProfil
     );
 
     boolean existsByRoleId(Long roleId);
+
+//    @RedisCacheAdapter(log = true)
     @Query("""
         select count(p) > 0
         from UserProfilePrivilegeModel p
-        where p.roleId in :roleIds
+        where p.roleId in :activeRoleIds
           and p.privilege = :privilege
-          and p.action = :action
+          and p.action in :actions
     """)
-    boolean existsByRoleIdsAndPrivilegeAndAction(
-            @Param("roleIds") List<Long> roleIds,
+    boolean existsByRoleIdsAndPrivilegeAndActions(
+            @Param("activeRoleIds") List<Long> activeRoleIds,
             @Param("privilege") Privilege privilege,
-            @Param("action") Action action
-    );
+            @Param("actions") Set<Action> actions);
 }
