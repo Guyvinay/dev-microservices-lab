@@ -41,4 +41,9 @@ public interface UserProfileRoleModelRepository extends JpaRepository<UserProfil
             @Param("tenantId") String tenantId,
             @Param("roleIds") List<Long> roleIds
     );
+
+    List<UserProfileRoleModel> findByRoleIdInAndTenantIdAndIsActiveTrue(
+            List<Long> roleIds,
+            String tenantId
+    );
 }

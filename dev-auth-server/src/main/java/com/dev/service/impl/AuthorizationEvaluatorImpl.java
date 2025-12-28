@@ -2,11 +2,12 @@ package com.dev.service.impl;
 
 import com.dev.dto.privilege.Action;
 import com.dev.dto.privilege.Privilege;
+import com.dev.entity.UserProfileRoleModel;
 import com.dev.repository.UserProfilePrivilegeRepository;
 import com.dev.repository.UserProfileRoleModelRepository;
 import com.dev.security.details.UserBaseInfo;
-import com.dev.security.dto.AccessJwtToken;
 import com.dev.service.AuthorizationEvaluator;
+import com.dev.utility.AuthContextUtil;
 import com.dev.utility.grpc.PrivilegeActions;
 import com.dev.utility.grpc.RequiresRequest;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -29,14 +31,46 @@ public class AuthorizationEvaluatorImpl implements AuthorizationEvaluator {
 
     @Override
     @Transactional(readOnly = true)
-    public boolean isAllowed(
-            AccessJwtToken token,
-            RequiresRequest request
-    ) {
-        Map<Privilege, Set<Action>> required = extractRequiredPrivileges(request);
-        log.info("Privilege request in AuthorizationEvaluator: {}", required);
+    public boolean isAllowed(RequiresRequest request) {
 
-        return true;
+        UserBaseInfo user = AuthContextUtil.getUserBaseInfo();
+
+        List<Long> roleIds = user.getRoleIds().stream().map(Long::valueOf).toList();
+
+        log.info("Evaluating authorization | userId={} | tenant={} | roles={}", user.getId(), user.getTenantId(), roleIds);
+
+        List<UserProfileRoleModel> activeRoles = roleRepository.findByRoleIdInAndTenantIdAndIsActiveTrue(roleIds, user.getTenantId());
+
+        if (activeRoles.isEmpty()) {
+            log.warn("Authorization denied: No active roles");
+            return false;
+        }
+
+        List<Long> activeRoleIds = activeRoles.stream().map(UserProfileRoleModel::getRoleId).toList();
+
+        // ---------- Admin short-circuit ----------
+        if (activeRoles.stream().anyMatch(UserProfileRoleModel::isAdminFlag)) {
+            log.info("Authorization granted: Admin role | roles={}", activeRoleIds);
+            return true;
+        }
+
+        Map<Privilege, Set<Action>> required = extractRequiredPrivileges(request);
+
+        log.info("Required privileges: {}", required);
+
+        // ---------- Privilege evaluation ----------
+        for (Map.Entry<Privilege, Set<Action>> entry : required.entrySet()) {
+
+            boolean allowed = privilegeRepository.existsByRoleIdsAndPrivilegeAndActions(activeRoleIds, entry.getKey(), entry.getValue());
+
+            if (allowed) {
+                log.info("Authorization granted | privilege={} | actions={} | roles={}", entry.getKey(), entry.getValue(), activeRoleIds);
+                return true;
+            }
+        }
+
+        log.warn("Authorization denied | roles={} | required={}", activeRoleIds, required);
+        return false;
     }
 
 
@@ -49,31 +83,14 @@ public class AuthorizationEvaluatorImpl implements AuthorizationEvaluator {
 
         for (PrivilegeActions pa : request.getRequiredList()) {
 
-            Privilege privilege;
-            try {
-                privilege = Privilege.valueOf(pa.getPrivilege());
-            } catch (IllegalArgumentException ex) {
-                log.warn("Unknown privilege received: {}", pa.getPrivilege());
-                continue;
-            }
+            Privilege privilege = Privilege.valueOf(pa.getPrivilege());
 
             Set<Action> actions = EnumSet.noneOf(Action.class);
 
             for (String actionStr : pa.getActionsList()) {
-                try {
-                    actions.add(Action.valueOf(actionStr));
-                } catch (IllegalArgumentException ex) {
-                    log.warn(
-                            "Unknown action '{}' for privilege '{}'",
-                            actionStr, privilege
-                    );
-                }
+                actions.add(Action.valueOf(actionStr));
             }
-
-            if (!actions.isEmpty()) {
-                result.computeIfAbsent(privilege, k -> EnumSet.noneOf(Action.class))
-                        .addAll(actions);
-            }
+            result.put(privilege, actions);
         }
         return result;
     }

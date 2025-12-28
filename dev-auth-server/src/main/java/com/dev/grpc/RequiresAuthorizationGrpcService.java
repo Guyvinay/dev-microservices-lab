@@ -22,13 +22,12 @@ public class RequiresAuthorizationGrpcService extends RequiresAuthorizationGrpc.
 
     @Override
     public void validateRequires(RequiresRequest request, StreamObserver<RequiresResponse> responseObserver) {
-        log.info("************************* :Called Grpc service: *************************");
-        AccessJwtToken accessJwtToken = AuthContextUtil.getJwtToken();
-        UserBaseInfo userBaseInfo = accessJwtToken.getUserBaseInfo();
-        RequiresResponse response = RequiresResponse.newBuilder().setAllowed(authorizationEvaluator.isAllowed(accessJwtToken, request)).build();
-        log.info("User: {}, tenant: {}, roles: {}", userBaseInfo.getEmail(), userBaseInfo.getTenantId(), userBaseInfo.getRoleIds());
+        log.info("gRPC Authorization request received");
 
-        responseObserver.onNext(response);
+        boolean allowed = authorizationEvaluator.isAllowed(request);
+
+        responseObserver.onNext(RequiresResponse.newBuilder().setAllowed(allowed).build());
         responseObserver.onCompleted();
     }
+
 }

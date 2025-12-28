@@ -51,6 +51,4 @@ public class RequiresAuthorizationGrpcClient {
                 .allowed(response.getAllowed())
                 .build();
     }
-
-
 }

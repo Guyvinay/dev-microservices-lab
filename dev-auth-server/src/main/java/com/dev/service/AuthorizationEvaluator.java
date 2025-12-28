@@ -8,7 +8,6 @@ import java.util.UUID;
 
 public interface AuthorizationEvaluator {
     boolean isAllowed(
-            AccessJwtToken token,
             RequiresRequest request
     );
 }
