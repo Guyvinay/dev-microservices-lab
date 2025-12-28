@@ -43,7 +43,7 @@ public class RequiresAuthorization {
 
         log.info("Authorization request | method={} | required={}", method.getName(), request);
 
-        RequiresResponseDTO response = requiresAuthorizationGrpcClient.requiresAuthorizationGrpcClient(request);
+        RequiresResponseDTO response = requiresAuthorizationGrpcClient.requiresAuthorizationGrpcClient(request, requires.match());
 
         if (response == null || !response.getAllowed()) {
             log.warn("Authorization denied | method={} | required={}", method.getName(), request);

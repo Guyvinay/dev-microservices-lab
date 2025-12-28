@@ -1,6 +1,7 @@
 package com.dev.common.annotations;
 
 import com.dev.dto.privilege.Action;
+import com.dev.dto.privilege.MatchMode;
 import com.dev.dto.privilege.Privilege;
 
 import java.lang.annotation.ElementType;
@@ -13,6 +14,7 @@ import java.lang.annotation.Target;
 public @interface Requires {
 
     Require[] value();
+    MatchMode match() default MatchMode.ANY;
 
     @interface Require {
         Privilege privilege();

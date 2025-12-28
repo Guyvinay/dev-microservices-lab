@@ -8,6 +8,7 @@ import com.dev.repository.UserProfileRoleModelRepository;
 import com.dev.security.details.UserBaseInfo;
 import com.dev.service.AuthorizationEvaluator;
 import com.dev.utility.AuthContextUtil;
+import com.dev.utility.grpc.MatchMode;
 import com.dev.utility.grpc.PrivilegeActions;
 import com.dev.utility.grpc.RequiresRequest;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +38,7 @@ public class AuthorizationEvaluatorImpl implements AuthorizationEvaluator {
 
         List<Long> roleIds = user.getRoleIds().stream().map(Long::valueOf).toList();
 
-        log.info("Evaluating authorization | userId={} | tenant={} | roles={}", user.getId(), user.getTenantId(), roleIds);
+        log.info("Evaluating authorization | userId={} | tenant={} | match={} roles={}", user.getId(), user.getTenantId(), request.getMatchMode(), roleIds);
 
         List<UserProfileRoleModel> activeRoles = roleRepository.findByRoleIdInAndTenantIdAndIsActiveTrue(roleIds, user.getTenantId());
 
@@ -56,21 +57,28 @@ public class AuthorizationEvaluatorImpl implements AuthorizationEvaluator {
 
         Map<Privilege, Set<Action>> required = extractRequiredPrivileges(request);
 
-        log.info("Required privileges: {}", required);
+        boolean isAll = request.getMatchMode() == MatchMode.ALL;
 
         // ---------- Privilege evaluation ----------
         for (Map.Entry<Privilege, Set<Action>> entry : required.entrySet()) {
 
-            boolean allowed = privilegeRepository.existsByRoleIdsAndPrivilegeAndActions(activeRoleIds, entry.getKey(), entry.getValue());
+            boolean hasPrivilege = privilegeRepository.existsByRoleIdsAndPrivilegeAndActions(
+                    activeRoleIds, entry.getKey(), entry.getValue()
+            );
 
-            if (allowed) {
-                log.info("Authorization granted | privilege={} | actions={} | roles={}", entry.getKey(), entry.getValue(), activeRoleIds);
+            if (isAll && !hasPrivilege) {
+                log.warn("Authorization denied (ALL) | missing privilege={} | actions={}", entry.getKey(), entry.getValue());
+                return false;
+            }
+
+            if (!isAll && hasPrivilege) {
+                log.info("Authorization granted (ANY) | privilege={} | actions={}", entry.getKey(), entry.getValue());
                 return true;
             }
         }
 
-        log.warn("Authorization denied | roles={} | required={}", activeRoleIds, required);
-        return false;
+        log.info("Authorization response={}", isAll);
+        return isAll;
     }
 
 

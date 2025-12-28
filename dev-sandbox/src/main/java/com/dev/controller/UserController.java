@@ -4,6 +4,7 @@ import com.dev.common.annotations.Requires;
 import com.dev.dto.ApiResponse;
 import com.dev.dto.UserDTO;
 import com.dev.dto.privilege.Action;
+import com.dev.dto.privilege.MatchMode;
 import com.dev.dto.privilege.Privilege;
 import com.dev.service.UserAuditService;
 import com.dev.service.UserService;
@@ -24,10 +25,14 @@ public class UserController {
     @Autowired
     private UserAuditService userAuditService;
 
-    @Requires({
-            @Requires.Require(privilege = Privilege.MANAGE_USERS, actions = {Action.VIEW_USERS, Action.CREATE_USER, Action.DELETE_USER, Action.UPDATE_USER}),
-            @Requires.Require(privilege = Privilege.VIEW_REPORTS, actions = {Action.EXPORT_REPORT}),
-            @Requires.Require(privilege = Privilege.MANAGE_DATA, actions = {Action.CREATE_DATA, Action.DELETE_DATA})})
+    @Requires(
+            match = MatchMode.ALL,
+            value = {
+                    @Requires.Require(privilege = Privilege.MANAGE_USERS, actions = {Action.VIEW_USERS, Action.CREATE_USER, Action.DELETE_USER, Action.UPDATE_USER}),
+                    @Requires.Require(privilege = Privilege.VIEW_REPORTS, actions = {Action.EXPORT_REPORT}),
+                    @Requires.Require(privilege = Privilege.MANAGE_DATA, actions = {Action.CREATE_DATA, Action.DELETE_DATA})
+            }
+    )
     @GetMapping
     public ApiResponse<List<UserDTO>> getAllUsers() {
         List<UserDTO> users = userService.findAll();

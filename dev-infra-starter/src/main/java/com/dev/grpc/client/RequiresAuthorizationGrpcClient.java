@@ -2,6 +2,7 @@ package com.dev.grpc.client;
 
 import com.dev.common.dto.RequiresResponseDTO;
 import com.dev.dto.privilege.Action;
+import com.dev.dto.privilege.MatchMode;
 import com.dev.dto.privilege.Privilege;
 import com.dev.utility.grpc.PrivilegeActions;
 import com.dev.utility.grpc.RequiresAuthorizationGrpc;
@@ -22,8 +23,8 @@ public class RequiresAuthorizationGrpcClient {
     private RequiresAuthorizationGrpc.RequiresAuthorizationBlockingStub authorizationBlockingStub;
 
     public RequiresResponseDTO requiresAuthorizationGrpcClient(
-            Map<Privilege, Set<Action>> required
-    ) {
+            Map<Privilege, Set<Action>> required,
+            MatchMode match) {
 
         RequiresRequest.Builder requestBuilder = RequiresRequest.newBuilder();
 
@@ -40,6 +41,12 @@ public class RequiresAuthorizationGrpcClient {
 
             requestBuilder.addRequired(privilegeActions);
         }
+
+        requestBuilder.setMatchMode(
+                match == MatchMode.ALL ?
+                com.dev.utility.grpc.MatchMode.ALL:
+                com.dev.utility.grpc.MatchMode.ANY
+        );
 
         RequiresRequest request = requestBuilder.build();
 
