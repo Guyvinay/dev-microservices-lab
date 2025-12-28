@@ -1,19 +1,24 @@
 syntax = "proto3";
 
 option java_multiple_files = true;
-
-package com.dev.utility.grpc;
+option java_package = "com.dev.utility.grpc";
+option java_outer_classname = "RequiresAuthorizationProto";
 
 service RequiresAuthorization {
   rpc ValidateRequires (RequiresRequest) returns (RequiresResponse);
 }
 
 message RequiresRequest {
-  string orgId = 1;
-  string tenantId = 2;
+  string org_id = 1;
+  string tenant_id = 2;
   string user_id = 3;
-  string privilege = 4;
-  repeated string actions = 5;
+
+  repeated PrivilegeActions required = 4;
+}
+
+message PrivilegeActions {
+  string privilege = 1;
+  repeated string actions = 2;
 }
 
 message RequiresResponse {

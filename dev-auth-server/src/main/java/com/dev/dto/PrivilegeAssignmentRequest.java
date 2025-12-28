@@ -1,8 +1,8 @@
 package com.dev.dto;
 
-import com.dev.entity.enums.Action;
-import com.dev.entity.enums.Area;
-import com.dev.entity.enums.Privilege;
+import com.dev.dto.privilege.Action;
+import com.dev.dto.privilege.Area;
+import com.dev.dto.privilege.Privilege;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -2,14 +2,11 @@ package com.dev.service.impl;
 import com.dev.dto.ActionDTO;
 import com.dev.dto.PrivilegeAssignmentRequest;
 import com.dev.dto.PrivilegeDTO;
+import com.dev.dto.privilege.Privilege;
 import com.dev.entity.UserProfilePrivilegeModel;
-import com.dev.entity.enums.Action;
-import com.dev.entity.enums.Area;
-import com.dev.entity.enums.Privilege;
 import com.dev.repository.UserProfilePrivilegeRepository;
 import com.dev.service.UserProfilePrivilegeService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;

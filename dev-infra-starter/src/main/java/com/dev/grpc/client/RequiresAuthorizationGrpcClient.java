@@ -1,11 +1,18 @@
 package com.dev.grpc.client;
 
 import com.dev.common.dto.RequiresResponseDTO;
+import com.dev.dto.privilege.Action;
+import com.dev.dto.privilege.Privilege;
+import com.dev.utility.grpc.PrivilegeActions;
 import com.dev.utility.grpc.RequiresAuthorizationGrpc;
 import com.dev.utility.grpc.RequiresRequest;
 import com.dev.utility.grpc.RequiresResponse;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.dev.grpc.constant.GRPCConstant.GRPC_AUTH;
 
@@ -15,13 +22,35 @@ public class RequiresAuthorizationGrpcClient {
     @GrpcClient(GRPC_AUTH)
     private RequiresAuthorizationGrpc.RequiresAuthorizationBlockingStub authorizationBlockingStub;
 
-    public RequiresResponseDTO requiresAuthorizationGrpcClient(String actions, String privileges) {
+    public RequiresResponseDTO requiresAuthorizationGrpcClient(
+            Map<Privilege, Set<Action>> required
+    ) {
 
-        RequiresRequest authorizationReq = RequiresRequest.newBuilder().addActions(actions).setPrivilege(privileges).build();
-        RequiresResponse requiresResponse = authorizationBlockingStub.validateRequires(authorizationReq);
+        RequiresRequest.Builder requestBuilder = RequiresRequest.newBuilder();
 
+        for (Map.Entry<Privilege, Set<Action>> entry : required.entrySet()) {
 
-        return RequiresResponseDTO.builder().allowed(requiresResponse.getAllowed()).build();
+            PrivilegeActions privilegeActions = PrivilegeActions.newBuilder()
+                    .setPrivilege(entry.getKey().name())
+                    .addAllActions(
+                            entry.getValue().stream()
+                                    .map(Enum::name)
+                                    .toList()
+                    )
+                    .build();
+
+            requestBuilder.addRequired(privilegeActions);
+        }
+
+        RequiresRequest request = requestBuilder.build();
+
+        RequiresResponse response =
+                authorizationBlockingStub.validateRequires(request);
+
+        return RequiresResponseDTO.builder()
+                .allowed(response.getAllowed())
+                .build();
     }
+
 
 }

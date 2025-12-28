@@ -3,9 +3,6 @@ package com.dev.service;
 import com.dev.dto.PrivilegeAssignmentRequest;
 import com.dev.dto.PrivilegeDTO;
 import com.dev.entity.UserProfilePrivilegeModel;
-import com.dev.entity.enums.Action;
-import com.dev.entity.enums.Area;
-import com.dev.entity.enums.Privilege;
 
 import java.util.List;
 

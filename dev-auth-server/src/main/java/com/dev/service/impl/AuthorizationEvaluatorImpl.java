@@ -1,20 +1,23 @@
 package com.dev.service.impl;
 
-import com.dev.entity.enums.Action;
-import com.dev.entity.enums.Privilege;
+import com.dev.dto.privilege.Action;
+import com.dev.dto.privilege.Privilege;
 import com.dev.repository.UserProfilePrivilegeRepository;
 import com.dev.repository.UserProfileRoleModelRepository;
 import com.dev.security.details.UserBaseInfo;
 import com.dev.security.dto.AccessJwtToken;
 import com.dev.service.AuthorizationEvaluator;
+import com.dev.utility.grpc.PrivilegeActions;
 import com.dev.utility.grpc.RequiresRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -30,94 +33,49 @@ public class AuthorizationEvaluatorImpl implements AuthorizationEvaluator {
             AccessJwtToken token,
             RequiresRequest request
     ) {
+        Map<Privilege, Set<Action>> required = extractRequiredPrivileges(request);
+        log.info("Privilege request in AuthorizationEvaluator: {}", required);
 
-        UserBaseInfo user = token.getUserBaseInfo();
+        return true;
+    }
 
-        List<Long> roleIds = safeParseRoleIds(user.getRoleIds());
-        if (roleIds.isEmpty()) {
-            return false;
-        }
 
-        List<Long> activeRoleIds =
-                roleRepository.findActiveRoleIdsByTenantIdAndRoleIds(
-                        user.getTenantId(),
-                        roleIds
-                );
+    /**
+     * Extracts and validates privilege-action pairs from gRPC request
+     */
+    private Map<Privilege, Set<Action>> extractRequiredPrivileges(RequiresRequest request) {
 
-        if (!activeRoleIds.isEmpty()) {
-            return true;
-        }
+        Map<Privilege, Set<Action>> result = new EnumMap<>(Privilege.class);
 
-        if (activeRoleIds.isEmpty()) {
-            return false;
-        }
+        for (PrivilegeActions pa : request.getRequiredList()) {
 
-        // 3️⃣ No privilege requested → authenticated access allowed
-        if (request.getPrivilege().isBlank()) {
-            return true;
-        }
-
-        Privilege privilege = safePrivilege(request.getPrivilege());
-        if (privilege == null) {
-            return false;
-        }
-
-        request.getActionsList();
-
-        // 4️⃣ Validate at least ONE action is permitted
-        for (String actionStr : request.getActionsList()) {
-
-            Action action = safeAction(actionStr);
-            if (action == null) {
+            Privilege privilege;
+            try {
+                privilege = Privilege.valueOf(pa.getPrivilege());
+            } catch (IllegalArgumentException ex) {
+                log.warn("Unknown privilege received: {}", pa.getPrivilege());
                 continue;
             }
 
-            boolean allowed =
-                    privilegeRepository.existsByRoleIdsAndPrivilegeAndAction(
-                            activeRoleIds,
-                            privilege,
-                            action
-                    );
+            Set<Action> actions = EnumSet.noneOf(Action.class);
 
-            if (allowed) {
-                return true;
+            for (String actionStr : pa.getActionsList()) {
+                try {
+                    actions.add(Action.valueOf(actionStr));
+                } catch (IllegalArgumentException ex) {
+                    log.warn(
+                            "Unknown action '{}' for privilege '{}'",
+                            actionStr, privilege
+                    );
+                }
+            }
+
+            if (!actions.isEmpty()) {
+                result.computeIfAbsent(privilege, k -> EnumSet.noneOf(Action.class))
+                        .addAll(actions);
             }
         }
-
-        return false;
-    }
-
-    // ---------- helpers ----------
-
-    private List<Long> safeParseRoleIds(List<String> roles) {
-        return roles.stream()
-                .map(r -> {
-                    try {
-                        return Long.valueOf(r);
-                    } catch (Exception ex) {
-                        return null;
-                    }
-                })
-                .filter(Objects::nonNull)
-                .toList();
-    }
-
-    private Privilege safePrivilege(String privilege) {
-        try {
-            return Privilege.valueOf(privilege);
-        } catch (Exception ex) {
-            log.warn("Invalid privilege: {}", privilege);
-            return null;
-        }
-    }
-
-    private Action safeAction(String action) {
-        try {
-            return Action.valueOf(action);
-        } catch (Exception ex) {
-            log.warn("Invalid action: {}", action);
-            return null;
-        }
+        return result;
     }
 }
 
