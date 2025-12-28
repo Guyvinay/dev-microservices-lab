@@ -1,4 +1,4 @@
-package com.dev.entity.enums;
+package com.dev.dto.privilege;
 
 import lombok.Getter;
 

@@ -1,8 +1,8 @@
 package com.dev.entity;
 
-import com.dev.entity.enums.Action;
-import com.dev.entity.enums.Area;
-import com.dev.entity.enums.Privilege;
+import com.dev.dto.privilege.Action;
+import com.dev.dto.privilege.Area;
+import com.dev.dto.privilege.Privilege;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;

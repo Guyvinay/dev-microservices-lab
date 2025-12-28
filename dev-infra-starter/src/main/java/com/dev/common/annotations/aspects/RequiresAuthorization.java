@@ -2,6 +2,9 @@ package com.dev.common.annotations.aspects;
 
 import com.dev.common.annotations.Requires;
 import com.dev.common.dto.RequiresResponseDTO;
+import com.dev.dto.privilege.Action;
+import com.dev.dto.privilege.Privilege;
+import com.dev.dto.privilege.PrivilegeActionPair;
 import com.dev.grpc.client.RequiresAuthorizationGrpcClient;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -14,6 +17,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Aspect
 @Slf4j
@@ -31,15 +40,16 @@ public class RequiresAuthorization {
         Method method = methodSignature.getMethod();
 
         Requires requires = method.getAnnotation(Requires.class);
+        Map<Privilege, Set<Action>> request = new HashMap<>();
 
-
-        String privilege = requires.privilege();
-        String[] actions = requires.actions();
-
-        log.info("Checking privilege: {} with actions: {}", privilege, actions);
-
+        for (Requires.Require require : requires.value()) {
+            Action[] actions = require.actions();
+            Privilege privilege = require.privilege();
+            request.put(privilege, new HashSet<>(List.of(actions)));
+        }
+        log.info("Privilege request: {}",  request);
         RequiresResponseDTO response = requiresAuthorizationGrpcClient
-                .requiresAuthorizationGrpcClient(String.join(",", actions), privilege);
+                .requiresAuthorizationGrpcClient(request);
 
         if (response != null && !response.getAllowed()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
