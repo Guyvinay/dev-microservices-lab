@@ -31,12 +31,10 @@ import java.util.*;
 
 import static com.dev.SecurityConstants.AUDIENCE;
 import static com.dev.SecurityConstants.AUTHORIZATION;
-import static com.dev.SecurityConstants.AUTHZ;
 import static com.dev.SecurityConstants.AUTH_TYPE;
 import static com.dev.SecurityConstants.CLOCK_SKEW_SECONDS;
 import static com.dev.SecurityConstants.ISSUER;
 import static com.dev.SecurityConstants.MAX_TOKEN_SIZE;
-import static com.dev.SecurityConstants.PERMISSION;
 import static com.dev.SecurityConstants.SIGNING_SECRET_KEY;
 
 @Slf4j
