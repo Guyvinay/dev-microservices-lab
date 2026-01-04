@@ -1,4 +1,4 @@
-package com.dev.bulk.email.dto;
+package com.dev.dto.email;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

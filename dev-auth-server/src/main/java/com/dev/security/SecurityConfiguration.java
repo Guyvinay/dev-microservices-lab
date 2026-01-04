@@ -69,7 +69,8 @@ public class SecurityConfiguration {
                                     "/api/auth/request-password-reset",
                                     "/api/auth/validate-reset-password/**",
                                     "/api/auth/reset-password",
-                                    "/graphiql*/**", "/actuator*/**"
+                                    "/graphiql*/**", "/actuator*/**",
+                                    "/seed"
                             ).permitAll()
                             .anyRequest().authenticated();
                 })

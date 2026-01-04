@@ -1,12 +1,21 @@
 package com.dev.bulk.email.service;
 
 
-import com.dev.bulk.email.dto.EmailDocument;
+import com.dev.dto.email.EmailDocument;
+import com.dev.security.dto.ServiceJwtToken;
+import com.dev.security.dto.TokenType;
+import com.dev.security.provider.JwtTokenProviderManager;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nimbusds.jose.JOSEException;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageProperties;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -17,9 +26,12 @@ import org.thymeleaf.context.Context;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -29,10 +41,14 @@ public class EmailSendService {
     private final JavaMailSender mailSender;
     private final EmailElasticService emailElasticService;
     private final TemplateEngine templateEngine;
+    private final RabbitTemplate rabbitTemplate;
+    private final ObjectMapper objectMapper;
+    private final JwtTokenProviderManager jwtTokenProviderManager;
 
     @Async("threadPoolTaskExecutor")
     public void sendEmail(EmailDocument emailDocument) throws IOException {
         String threadName = Thread.currentThread().getName();
+
         long startTime = Instant.now().toEpochMilli();
         log.info("Preparing to send email to [{}] on thread [{}]", emailDocument.getEmailTo(), threadName);
 
@@ -116,8 +132,36 @@ public class EmailSendService {
         }
     }
 
-    private void indexEmailDocument(EmailDocument emailDocument) throws IOException {
+    private void indexEmailDocument(EmailDocument emailDocument) throws IOException, JOSEException {
         emailElasticService.indexEmail(emailDocument);
+//        MessageProperties properties = getMessageProperties(UUID.randomUUID().toString());
+//        Message message = rabbitTemplate.getMessageConverter().toMessage(emailDocument, properties);
+//        rabbitTemplate.convertAndSend(
+//                "integration.exchange",
+//                "email.integration.q",
+//                message
+//        );
+    }
+
+    private MessageProperties getMessageProperties(String correlationId) throws JOSEException, JsonProcessingException {
+        MessageProperties props = new MessageProperties();
+        props.setContentType(MessageProperties.CONTENT_TYPE_JSON);
+        props.setMessageId(correlationId);
+
+        ServiceJwtToken payload = ServiceJwtToken.builder()
+                .jwtId(UUID.randomUUID())
+                .tokenType(TokenType.SERVICE)
+                .serviceName("dev-integration")
+                .scopes(List.of("email.integrate"))
+                .createdAt(System.currentTimeMillis())
+                .expiresAt(System.currentTimeMillis() + Duration.ofMinutes(300).toMillis())
+                .build();
+
+        String token = jwtTokenProviderManager.createJwtToken(payload);
+
+
+        props.setHeader("Authorization", token);
+        return props;
     }
 
     @Async("threadPoolTaskExecutor")

@@ -1,5 +1,6 @@
 package com.dev.logging.constant;
 
+import com.dev.logging.MDCKeys;
 import com.dev.security.dto.AccessJwtToken;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +11,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRequest;
 
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -24,14 +26,37 @@ public class MDCLoggingUtility {
             MDC.put(TENANT_ID, accessJwtToken.getUserBaseInfo().getTenantId());
             MDC.put(USER_ID, ObjectUtils.isNotEmpty(accessJwtToken.getUserBaseInfo().getId()) ? accessJwtToken.getUserBaseInfo().getId().toString() : accessJwtToken.getUserBaseInfo().getEmail());
         }
-        String traceId = request.getHeader(TRACE_ID);
 
-        if(StringUtils.isNotBlank(traceId)) {
-            MDC.put(TRACE_ID, traceId);
-        } else {
-            traceId = UUID.randomUUID().toString();
-            log.info("Found blank traceId from headers. Setting random traceId {}", traceId);
-            MDC.put(TRACE_ID, traceId);
+        String traceId = Optional.ofNullable(request.getHeader(TRACE_ID))
+                .filter(StringUtils::isNoneBlank)
+                .orElseGet(()-> {
+                    String generated = UUID.randomUUID().toString();
+                    log.debug("Generated new traceId={}", generated);
+                    return generated;
+                });
+
+        MDC.put(TRACE_ID, traceId);
+
+        if (accessJwtToken != null && accessJwtToken.getUserBaseInfo() != null) {
+            putIfPresent(MDCKeys.TENANT_ID, accessJwtToken.getUserBaseInfo().getTenantId());
+            putIfPresent(
+                    MDCKeys.USER_ID,
+                    Optional.ofNullable(accessJwtToken.getUserBaseInfo().getId())
+                            .map(UUID::toString)
+                            .orElse(accessJwtToken.getUserBaseInfo().getEmail())
+            );
+        }
+    }
+
+    public static void clear() {
+        MDC.remove(MDCKeys.TRACE_ID);
+        MDC.remove(MDCKeys.USER_ID);
+        MDC.remove(MDCKeys.TENANT_ID);
+    }
+
+    private static void putIfPresent(String key, String value) {
+        if (StringUtils.isNotBlank(value)) {
+            MDC.put(key, value);
         }
     }
 

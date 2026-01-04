@@ -1,9 +1,9 @@
-package com.dev.bulk.email.service;
+package com.dev.service;
 
 import com.dev.dto.email.EmailDocument;
-import com.dev.elastic.client.EsRestHighLevelClient;
-import com.dev.utility.ElasticUtility;
+import com.dev.elastic.client.ElasticRestHighLevelClient;
 import com.dev.utility.AuthContextUtil;
+import com.dev.utils.ElasticUtility;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +44,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class EmailElasticService {
 
-    private final EsRestHighLevelClient esRestHighLevelClient;
+    private final ElasticRestHighLevelClient esRestHighLevelClient;
     private final ObjectMapper objectMapper;
 
     @Value("${elastic.index.email}")
@@ -88,8 +88,8 @@ public class EmailElasticService {
                 .source(jsonValue, XContentType.JSON)
                 .opType(DocWriteRequest.OpType.INDEX);
 
-        IndexResponse indexResponse = esRestHighLevelClient.indexDocument(indexRequest);
-        log.info("Email synced to elastic: {}, {}", emailDocument.getEmailTo(), indexResponse.status());
+//        IndexResponse indexResponse = esRestHighLevelClient.indexDocument(indexRequest);
+//        log.info("Email synced to elastic: {}, {}", emailDocument.getEmailTo(), indexResponse.status());
     }
 
     private BoolQueryBuilder boolQueryBuilder(long gte, long lte) {
@@ -176,7 +176,7 @@ public class EmailElasticService {
     }
 
     private String _index() {
-        return "email_index";
+        return index;
     }
 
     public boolean emailDocumentExits(String emailId) throws IOException {

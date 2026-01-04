@@ -27,7 +27,6 @@ public class ElasticConfiguration {
 
     @Bean
     public RestHighLevelClient buildElasticClient() {
-        log.info("Connecting to elastic starts");
         List<HttpHost> httpHosts = new ArrayList<>();
         httpHosts.add(new HttpHost(HOST, PORT, SCHEME));
         log.info("Connecting to elasticsearch at ({}://{}:{})", SCHEME, HOST, PORT);

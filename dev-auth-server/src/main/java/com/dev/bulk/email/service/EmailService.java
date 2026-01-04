@@ -1,7 +1,7 @@
 package com.dev.bulk.email.service;
 
-import com.dev.bulk.email.dto.EmailDocument;
-import com.dev.bulk.email.dto.EmailRequest;
+import com.dev.dto.email.EmailDocument;
+import com.dev.dto.email.EmailRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
@@ -93,13 +93,17 @@ public class EmailService {
              CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader())) {
             Map<String, EmailRequest> toSend = new HashMap<>();
             for (CSVRecord record : csvParser) {
-                String emailId = record.get("email");
-                String name = record.get("name");
-                String company = record.get("company");
-                if(validateEmailFormat(emailId)) {
-                    toSend.put(emailId, new EmailRequest(name, emailId, company));
-                } else {
-                    log.warn("Email: {} not valid so skipped", emailId);
+                try {
+                    String emailId = record.get("email");
+                    String name = record.get("name");
+                    String company = record.get("company");
+                    if(validateEmailFormat(emailId)) {
+                        toSend.put(emailId, new EmailRequest(name, emailId, company));
+                    } else {
+                        log.warn("Email: {} not valid so skipped", emailId);
+                    }
+                } catch (Exception e) {
+                    log.error("error while reading", e);
                 }
             }
             return toSend;

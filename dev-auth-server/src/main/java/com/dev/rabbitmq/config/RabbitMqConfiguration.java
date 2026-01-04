@@ -58,7 +58,6 @@ public class RabbitMqConfiguration {
         template.setConfirmCallback(confirmHandler);
         template.setReturnsCallback(returnsHandler);
 
-        template.setMessageConverter(messageConverter);
         return template;
     }
 

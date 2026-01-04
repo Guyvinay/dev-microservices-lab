@@ -1,8 +1,8 @@
 package com.dev.bulk.email.controller;
 
-import com.dev.bulk.email.dto.EmailDocument;
 import com.dev.bulk.email.service.EmailElasticService;
 import com.dev.bulk.email.service.EmailService;
+import com.dev.dto.email.EmailDocument;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
