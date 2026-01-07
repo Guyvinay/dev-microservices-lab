@@ -1,6 +1,6 @@
 package com.dev.repository;
 
-import com.dev.oauth2.dto.OAuthProvider;
+import com.dev.library.oauth2.dto.OAuthProvider;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

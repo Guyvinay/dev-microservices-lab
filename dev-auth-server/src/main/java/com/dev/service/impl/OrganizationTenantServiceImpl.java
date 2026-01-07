@@ -4,7 +4,7 @@ import com.dev.dto.OrganizationTenantDTO;
 import com.dev.entity.OrganizationTenantMapping;
 import com.dev.exception.DuplicateResourceException;
 import com.dev.exception.ResourceNotFoundException;
-import com.dev.rabbitmq.publisher.ReliableTenantPublisher;
+import com.dev.library.rabbitmq.publisher.ReliableTenantPublisher;
 import com.dev.repository.OrganizationTenantMappingRepository;
 import com.dev.service.OrganizationTenantService;
 import com.dev.utility.AuthUtility;

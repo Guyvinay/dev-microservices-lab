@@ -34,6 +34,7 @@ public class EmailServiceListener implements MessageListener {
         try {
             indexEmailDocument(objectMapper.readValue(message.getBody(), new TypeReference<EmailDocument>() {}));
         } catch (IOException e) {
+            log.error("Error: {}", e.getMessage(), e);
             throw new RuntimeException(e);
         }
     }

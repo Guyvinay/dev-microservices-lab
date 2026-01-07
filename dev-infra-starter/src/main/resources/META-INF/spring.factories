@@ -1,6 +1,7 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
     com.dev.DevStarterApplication,\
-	com.dev.elastic.configuration.ElasticConfiguration,\
+	com.dev.elastic.configuration.ElasticSearchConfiguration,\
+	com.dev.elastic.properties.ElasticConfigurationProperties,\
 	com.dev.hibernate.service.DatasourceService,\
 	com.dev.hibernate.service.LiquibaseService,\
 	com.dev.hibernate.SpringLiquibaseConfig,\

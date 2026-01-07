@@ -1,6 +1,5 @@
 package com.dev.service.impl;
 
-import com.dev.bulk.email.service.EmailSendService;
 import com.dev.entity.JWTRefreshTokenEntity;
 import com.dev.exception.AuthenticationException;
 import com.dev.repository.JWTRefreshTokenRepository;
@@ -45,7 +44,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserProfileService userProfileService;
     private final CustomBcryptEncoder customBcryptEncoder;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
-    private final EmailSendService emailSendService;
+    private final AsyncEmailSendService asyncEmailSendService;
     private final UserProfileModelRepository userProfileModelRepository;
     private final JWTRefreshTokenRepository jwtRefreshTokenRepository;
 
@@ -155,7 +154,7 @@ public class AuthServiceImpl implements AuthService {
 
         String resetLink = buildResetLink(url, token.getEmail(), token.getRawToken());
 
-        emailSendService.sendPasswordResetEmail(
+        asyncEmailSendService.sendPasswordResetEmail(
                 token.getEmail(),
                 resetLink,
                 userProfileResponseDTO.getName(),

@@ -5,7 +5,6 @@ import com.dev.dto.privilege.Action;
 import com.dev.dto.privilege.Area;
 import com.dev.dto.privilege.Privilege;
 import com.dev.entity.UserProfilePrivilegeModel;
-import com.dev.redis.annotation.RedisCacheAdapter;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
