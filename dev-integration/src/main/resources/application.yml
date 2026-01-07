@@ -4,3 +4,12 @@ spring:
 server:
   port: 8002
   servlet.context-path: /dev-integration
+
+################################################################################
+# ELASTICSEARCH (Custom index settings)
+################################################################################
+elastic:
+  index:
+    private: es_private_message_index
+    group: es_group_message_index
+    email: email_index_v2

@@ -1,5 +1,8 @@
 package com.dev.rest;
 
+import com.dev.dto.privilege.Action;
+import com.dev.dto.privilege.MatchMode;
+import com.dev.dto.privilege.Privilege;
 import com.dev.util.CustomSchemaInitializer;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,7 +31,14 @@ public class UserController {
     private CustomSchemaInitializer schemaInitializer;
 
     @GetMapping
-    @Requires(privilege = "privilege", actions = {"actions1", "actions2", "actions3", "actions4"})
+    @Requires(
+            match = MatchMode.ALL,
+            value = {
+                    @Requires.Require(privilege = Privilege.MANAGE_USERS, actions = {Action.VIEW_USERS, Action.CREATE_USER, Action.DELETE_USER, Action.UPDATE_USER}),
+                    @Requires.Require(privilege = Privilege.VIEW_REPORTS, actions = {Action.EXPORT_REPORT}),
+                    @Requires.Require(privilege = Privilege.MANAGE_DATA, actions = {Action.CREATE_DATA, Action.DELETE_DATA})
+            }
+    )
     public ApiResponse<List<UserDTO>> getAllUsers() {
         List<UserDTO> users = userService.findAll();
         return new ApiResponse<>("200", "Users retrieved successfully", users);

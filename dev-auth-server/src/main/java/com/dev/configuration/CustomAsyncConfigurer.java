@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.logging.Logger;
 
 @Configuration(proxyBeanMethods = false)
@@ -23,9 +24,13 @@ public class CustomAsyncConfigurer implements AsyncConfigurer {
     public Executor threadPoolTaskExecutor() {
         taskExecutor = new ThreadPoolTaskExecutor();
         taskExecutor.setCorePoolSize(16);
-        taskExecutor.setMaxPoolSize(64);
-        taskExecutor.setQueueCapacity(256);
+        taskExecutor.setMaxPoolSize(32);
+        taskExecutor.setQueueCapacity(2000);
         taskExecutor.setThreadNamePrefix("threadPoolTaskExecutor-");
+
+        taskExecutor.setRejectedExecutionHandler(
+                new ThreadPoolExecutor.CallerRunsPolicy()
+        );
         taskExecutor.initialize();
         return taskExecutor;
     }

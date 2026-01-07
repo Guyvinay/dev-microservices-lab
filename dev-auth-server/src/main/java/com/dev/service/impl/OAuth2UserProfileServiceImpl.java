@@ -6,7 +6,7 @@ import com.dev.entity.UserProfileModel;
 import com.dev.entity.UserProfileRoleMapping;
 import com.dev.entity.UserProfileRoleModel;
 import com.dev.entity.UserProfileTenantMapping;
-import com.dev.oauth2.dto.OAuthProvider;
+import com.dev.library.oauth2.dto.OAuthProvider;
 import com.dev.repository.OAuthProviderRepository;
 import com.dev.repository.OrganizationTenantMappingRepository;
 import com.dev.repository.UserProfileModelRepository;
@@ -16,14 +16,11 @@ import com.dev.repository.UserProfileTenantMappingRepository;
 import com.dev.service.OAuth2UserProfileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static com.dev.utility.DefaultConstants.DEFAULT_ROLE;
 import static com.dev.utility.DefaultConstants.PUBLIC_TENANT;

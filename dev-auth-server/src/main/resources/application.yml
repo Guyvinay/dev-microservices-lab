@@ -56,8 +56,8 @@ spring:
         registration:
 
           github:
-            client-id: ${ client-id }
-            client-secret: ${ secret }
+            client-id: Iv23liap9b0pCJfbCrxs
+            client-secret: 4f522c14abd21d62eb6b5729bc7c7183329fa1ec
             scope: read:user, user:email
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}" # "{baseUrl}/login/oauth2/code/{registrationId}"
             client-authentication-method: client_secret_post
@@ -65,8 +65,8 @@ spring:
             client-name: GitHub
 
           google:
-            client-id: ${ client-id }
-            client-secret: ${ secret }
+            client-id: 190624024371-5rnr5nhn766nk7okgev8vp126oqpd96d.apps.googleusercontent.com
+            client-secret: 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
             scope: profile, email
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
             authorization-grant-type: authorization_code
@@ -94,7 +94,7 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: mrsinghvinay563@gmail.com
-    password: ${ password }        # MUST be env/secret in production
+    password: acwovynbhuaahcls        # MUST be env/secret in production
     properties:
       mail.debug: false
       mail.smtp.auth: true
@@ -123,19 +123,6 @@ spring:
 
   cache:
     type: redis                       # Use Redis as cache backend
-
-
-
-################################################################################
-# APPLICATION LEVEL PROPERTIES
-################################################################################
-app:
-  redis:
-    key-prefix: dev-auth              # separates keys per microservice
-    cache:
-      default-ttl-minutes: 15         # default cache TTL
-
-
 
 ################################################################################
 # SERVER CONFIGURATION
@@ -232,27 +219,29 @@ management:
       application: ${spring.application.name}  # helpful for dashboards
 
 
-bootstrap:
-  enabled: true
+################################################################################
+# APPLICATION LEVEL PROPERTIES
+################################################################################
+app:
+  redis:
+    key-prefix: dev-auth              # separates keys per microservice
+    cache:
+      default-ttl-minutes: 15         # default cache TTL
 
-  organization:
-    name: SYSTEM
-    email: system@platform.local
 
-  tenant:
-    id: public
-    name: Public Tenant
+  bootstrap:
+    enabled: true
 
-  roles:
-    - name: ADMIN
-      admin: true
-      description: System Administrator
+    system-org:
+      name: SYSTEM
+      email: mrsinghvinay563@gmail.com
+      contact: 7479856872
 
-    - name: USER
-      admin: false
-      description: Normal User
+    public-tenant:
+      id: public
+      name: Public Tenant
 
-  admin-user:
-    email: admin@system.local
-    name: System Admin
-    password: ${ADMIN_PASSWORD:Admin@123}
+    admin:
+      email: mrsinghvinay563@gmail.com
+      password: password
+      name: System Administrator

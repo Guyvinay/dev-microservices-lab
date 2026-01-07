@@ -1,12 +1,12 @@
 package com.dev.security;
 
-import com.dev.oauth2.handler.CustomAuthenticationFailureHandler;
-import com.dev.oauth2.handler.OAuth2LoginSuccessHandler;
-import com.dev.oauth2.service.CustomOAuth2UserService;
+import com.dev.library.oauth2.handler.CustomAuthenticationFailureHandler;
+import com.dev.library.oauth2.handler.OAuth2LoginSuccessHandler;
+import com.dev.library.oauth2.service.CustomOAuth2UserService;
 import com.dev.security.details.CustomUserDetailsService;
 import com.dev.security.filter.JWTAuthenticationFilter;
 import com.dev.security.filter.JWTAuthorizationFilter;
-import com.dev.oauth2.handler.CustomAccessTokenEndpointHandler;
+import com.dev.library.oauth2.handler.CustomAccessTokenEndpointHandler;
 import com.dev.security.filter.JWTRefreshTokenFilter;
 import com.dev.security.provider.CustomAuthenticationEntryPoint;
 import com.dev.security.provider.CustomAuthenticationProvider;
@@ -69,7 +69,8 @@ public class SecurityConfiguration {
                                     "/api/auth/request-password-reset",
                                     "/api/auth/validate-reset-password/**",
                                     "/api/auth/reset-password",
-                                    "/graphiql*/**", "/actuator*/**"
+                                    "/graphiql*/**", "/actuator*/**",
+                                    "/seed"
                             ).permitAll()
                             .anyRequest().authenticated();
                 })

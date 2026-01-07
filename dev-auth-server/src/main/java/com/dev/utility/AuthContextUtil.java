@@ -3,7 +3,7 @@
 package com.dev.utility;
 
 import com.dev.exception.AuthenticationException;
-import com.dev.grpc.constants.GRPCConstant;
+import com.dev.library.grpc.constants.GRPCConstant;
 import com.dev.security.details.UserBaseInfo;
 import com.dev.security.dto.AccessJwtToken;
 import org.springframework.security.core.Authentication;

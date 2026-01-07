@@ -1,6 +1,6 @@
 package com.dev.configuration;
 
-import com.dev.elastic.properties.ElasticConfigurationProperties;
+import com.dev.library.elastic.properties.ElasticConfigurationProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
