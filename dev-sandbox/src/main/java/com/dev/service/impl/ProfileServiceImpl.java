@@ -105,16 +105,4 @@ public class ProfileServiceImpl implements ProfileService {
 		return objectMapper.convertValue(profileDocument, Map.class);
 	}
 
-
-	//    @Autowired
-	//    private ObjectMapper objectMapper;
-
-	//    @Override
-	//    public String saveProfile(Profile profile) {
-	//
-	//        UUID uuid = UUID.randomUUID();
-	//        profile.setId(uuid.toString());
-	//        return profile.getId();
-	//    }
-
 }

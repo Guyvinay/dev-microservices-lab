@@ -1,19 +1,13 @@
 package com.dev.service.impl;
 
 import com.dev.common.dto.document.Document;
-import com.dev.dto.ProfilingDocumentDTO;
-import com.dev.dto.ProfilingDocumentResponse;
-import com.dev.exception.ProfilingFailedException;
-import com.dev.exception.ProfilingNotFoundException;
 import com.dev.rabbitmq.publisher.RabbitMqPublisher;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.dev.configuration.MyElasticsearchClient;
 import com.dev.modal.Student;
 import com.dev.service.ElasticService;
 import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -29,13 +23,10 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.xcontent.XContentBuilder;
 import org.elasticsearch.xcontent.XContentFactory;
-import org.elasticsearch.xcontent.XContentType;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -181,90 +172,6 @@ public class ElasticServiceImpl implements ElasticService {
 
     }
 
-    @Override
-    public List<ProfilingDocumentDTO> indexBulkDocument() {
-        List<ProfilingDocumentDTO> documents = readJsonData();
-        log.info("documents: {} ", documents.size());
-
-        BulkRequest bulkRequest = new BulkRequest();
-
-        try {
-            for (ProfilingDocumentDTO doc : documents) {
-                String docId = doc.getColumn();
-                bulkRequest.add(new IndexRequest("localhost_504349_do_profile_346377_en1")
-                        .id(docId)
-                        .source(objectMapper.writeValueAsString(doc), XContentType.JSON)
-                );
-
-                IndexRequest indexRequest = new IndexRequest("localhost_504349_do_profile_346377_en1")
-                        .id(docId)
-                        .source(objectMapper.writeValueAsString(doc), XContentType.JSON);
-                restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
-            }
-//            BulkResponse bulkResponse = restHighLevelClient.bulk(bulkRequest, RequestOptions.DEFAULT);
-//            if (bulkResponse.hasFailures()) {
-//                System.out.println("Bulk insert had failures: " + bulkResponse.buildFailureMessage());
-//            } else {
-//                System.out.println("Bulk insert successful.");
-//            }
-
-        } catch (Exception e) {
-            log.error("Exception: {}", e.getMessage());
-            e.printStackTrace();
-        }
-        return documents;
-    }
-
-
-    public List<ProfilingDocumentDTO> readJsonData() {
-        String fileClassPath = "profiling.json";
-        List<ProfilingDocumentDTO> documents = null;
-        File jsonFile = new File(fileClassPath);
-
-        try {
-            documents = objectMapper.readValue(jsonFile, new TypeReference<>() {
-            });
-        } catch (Exception exception) {
-            log.error(exception.getMessage());
-            exception.printStackTrace();
-        }
-
-        return documents;
-    }
-
-    @Override
-    public List<ProfilingDocumentDTO> getProfilingDocuments(int from, int page) {
-        return List.of();
-    }
-
-    @Override
-    public ProfilingDocumentResponse getAllProfilingDocuments(String tenantId, Long moduleId, Integer pageNumber, Integer pageSize) {
-        String indexName = _index(moduleId, tenantId);
-        log.info("Getting profiling documents from index: {}", indexName);
-        Long totalCount = getTotalDocumentCount(indexName);
-        log.info("Total count: {}", totalCount);
-        SearchRequest searchRequest = buildSearchRequestWithExclusions(indexName, pageNumber, pageSize, new String[]{"value_frequency"});
-        List<ProfilingDocumentDTO> response = fetchProfilingDocuments(searchRequest);
-
-        return new ProfilingDocumentResponse(response, totalCount);
-
-    }
-
-    @Override
-    public ProfilingDocumentDTO getProfilingDocumentById(String tenantId, Long moduleId, String fieldId) {
-
-        String indexName = _index(moduleId, tenantId);
-        log.info("Getting profiling document from index: {}, for field : {}", indexName, fieldId);
-        SearchRequest searchRequest = buildSearchRequestByColumnValue(indexName, fieldId);
-        List<ProfilingDocumentDTO> profilingDocumentDTOS = fetchProfilingDocuments(searchRequest);
-        if (CollectionUtils.isEmpty(profilingDocumentDTOS)) {
-            throw new ProfilingNotFoundException("Technical profiling not found for field: " + fieldId);
-        }
-
-//        return profilingDocumentDTOS.getFirst();
-        return new ProfilingDocumentDTO();
-    }
-
     /**
      * Builds an Elasticsearch {@link SearchRequest} to search by a specific field value in the specified index.
      *
@@ -312,39 +219,6 @@ public class ElasticServiceImpl implements ElasticService {
         return searchRequest;
     }
 
-    /**
-     * Executes elasticsearch search request to retrieve profiling documents, returning a list of
-     * {@link ProfilingDocumentDTO} objects.
-     *
-     * @param searchRequest searchRequest {@link SearchRequest} object contains query for retrieving profiling documents.
-     * @return a list {@link List} of {@link ProfilingDocumentDTO} objects each representing a profiling
-     * document retrieved from elasticsearch index.
-     * If no document is matching the search criteria empty list is returned.
-     */
-    private List<ProfilingDocumentDTO> fetchProfilingDocuments(SearchRequest searchRequest) {
-
-        try {
-            SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
-            List<ProfilingDocumentDTO> results = new ArrayList<>();
-
-            if (searchResponse != null && searchResponse.getHits() != null && searchResponse.getHits().getHits().length > 0) {
-                SearchHit[] searchHits = searchResponse.getHits().getHits();
-                log.info("Received profiling search response hits : {}", searchHits.length);
-                for (SearchHit searchHit : searchResponse.getHits().getHits()) {
-                    try {
-                        ProfilingDocumentDTO profilingDocument = objectMapper.readValue(searchHit.getSourceAsString(), ProfilingDocumentDTO.class);
-                        results.add(profilingDocument);
-                    } catch (IOException exception) {
-                        log.error("Error while parsing: {}", exception.getMessage());
-                    }
-                }
-            }
-            return results;
-        } catch (IOException ex) {
-            log.error("Exception while fetching profiling: {}", ex.getMessage());
-            throw new ProfilingFailedException("Exception while fetching profiling: " + ex.getMessage());
-        }
-    }
 
     /**
      * Gets the total count in specified index.
