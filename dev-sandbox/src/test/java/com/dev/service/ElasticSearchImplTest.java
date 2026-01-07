@@ -1,9 +1,6 @@
 package com.dev.service;
 
-import com.dev.dto.ProfilingDocumentDTO;
-import com.dev.dto.ProfilingDocumentResponse;
 import com.dev.exception.ProfilingNotFoundException;
-import com.dev.exception.ResourceNotFoundException;
 import com.dev.service.impl.ElasticServiceImpl;
 import org.apache.lucene.search.TotalHits;
 import org.elasticsearch.action.search.SearchRequest;
@@ -18,7 +15,6 @@ import org.elasticsearch.common.bytes.BytesArray;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
