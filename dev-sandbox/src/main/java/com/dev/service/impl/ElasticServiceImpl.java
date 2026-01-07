@@ -4,7 +4,6 @@ import com.dev.common.dto.document.Document;
 import com.dev.rabbitmq.publisher.RabbitMqPublisher;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.dev.configuration.MyElasticsearchClient;
 import com.dev.modal.Student;
 import com.dev.service.ElasticService;
 import lombok.extern.slf4j.Slf4j;
@@ -35,9 +34,6 @@ import java.util.*;
 public class ElasticServiceImpl implements ElasticService {
 
     //    @Autowired
-    private MyElasticsearchClient elasticsearchClient;
-
-    //    @Autowired
     private RabbitTemplate rabbitTemplate;
 
 //    @Autowired
@@ -57,11 +53,6 @@ public class ElasticServiceImpl implements ElasticService {
 
     @Override
     public void saveStudent(Student student) {
-        try {
-            elasticsearchClient.indexDocument(index, student.getStudentId(), new ObjectMapper().writeValueAsString(student));
-        } catch (Exception e) {
-            log.info("parsing error: {}", e.getMessage());
-        }
     }
 
     @Override
