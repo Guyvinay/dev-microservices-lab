@@ -1,6 +1,6 @@
-package com.dev.configuration;
+package com.dev.async;
 
-import com.dev.library.logging.MdcTaskDecorator;
+import com.dev.logging.MdcTaskDecorator;
 import jakarta.annotation.PreDestroy;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.context.annotation.Bean;

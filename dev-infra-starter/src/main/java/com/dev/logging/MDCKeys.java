@@ -1,4 +1,4 @@
-package com.dev.library.logging;
+package com.dev.logging;
 
 import io.grpc.Metadata;
 

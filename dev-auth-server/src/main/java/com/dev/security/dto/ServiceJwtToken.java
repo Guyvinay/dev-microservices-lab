@@ -1,5 +1,6 @@
 package com.dev.security.dto;
 
+import com.dev.security.details.UserBaseInfo;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,6 +18,7 @@ public class ServiceJwtToken implements JwtToken {
     private UUID jwtId;
     private TokenType tokenType;
     private String serviceName;
+    private UserBaseInfo userBaseInfo;
     private List<String> scopes;
     private long createdAt;
     private long expiresAt;

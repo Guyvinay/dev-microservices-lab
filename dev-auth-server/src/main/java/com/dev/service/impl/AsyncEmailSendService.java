@@ -14,6 +14,7 @@ import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.mail.MailException;
@@ -82,7 +83,7 @@ public class AsyncEmailSendService {
             // ============================================================
             // 3️Send email
             // ============================================================
-            mailSender.send(message);
+//            mailSender.send(message);
 
             // ============================================================
             // 4️Update EmailDocument metadata
@@ -133,14 +134,14 @@ public class AsyncEmailSendService {
     }
 
     private void indexEmailDocument(EmailDocument emailDocument) throws IOException, JOSEException {
-        emailElasticSyncService.indexEmail(emailDocument);
-//        MessageProperties properties = getMessageProperties(UUID.randomUUID().toString());
-//        Message message = rabbitTemplate.getMessageConverter().toMessage(emailDocument, properties);
-//        rabbitTemplate.convertAndSend(
-//                "integration.exchange",
-//                "email.integration.q",
-//                message
-//        );
+//        emailElasticSyncService.indexEmail(emailDocument);
+        MessageProperties properties = getMessageProperties(UUID.randomUUID().toString());
+        Message message = rabbitTemplate.getMessageConverter().toMessage(emailDocument, properties);
+        rabbitTemplate.convertAndSend(
+                "integration.exchange",
+                "email.integration.q",
+                message
+        );
     }
 
     private MessageProperties getMessageProperties(String correlationId) throws JOSEException, JsonProcessingException {

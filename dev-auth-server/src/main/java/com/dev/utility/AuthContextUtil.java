@@ -6,6 +6,8 @@ import com.dev.exception.AuthenticationException;
 import com.dev.library.grpc.constants.GRPCConstant;
 import com.dev.security.details.UserBaseInfo;
 import com.dev.security.dto.AccessJwtToken;
+import com.dev.security.dto.JwtToken;
+import com.dev.security.dto.ServiceJwtToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -91,15 +93,15 @@ public class AuthContextUtil {
         return accessJwtToken;
     }
 
-    public static AccessJwtToken getJwtFromSecurityContextOrNull() {
+    public static JwtToken getJwtFromSecurityContextOrNull() {
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null) return null;
 
         Object details = authentication.getDetails();
-        if (!(details instanceof AccessJwtToken accessJwtToken)) return null;
-
-        return accessJwtToken;
+        if (details instanceof AccessJwtToken accessJwtToken) return accessJwtToken;
+        if (details instanceof ServiceJwtToken serviceJwtToken) return serviceJwtToken;
+        return null;
     }
 }

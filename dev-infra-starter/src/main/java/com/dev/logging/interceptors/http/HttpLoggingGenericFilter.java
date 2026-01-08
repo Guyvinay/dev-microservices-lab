@@ -1,9 +1,8 @@
-package com.dev.library.logging.interceptors.http;
+package com.dev.logging.interceptors.http;
 
-import com.dev.library.logging.MDCKeys;
-import com.dev.security.dto.AccessJwtToken;
-import com.dev.library.logging.MDCLoggingUtility;
-import com.dev.security.dto.JwtToken;
+import com.dev.dto.JwtToken;
+import com.dev.logging.MDCKeys;
+import com.dev.logging.MDCLoggingUtility;
 import com.dev.utility.AuthContextUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

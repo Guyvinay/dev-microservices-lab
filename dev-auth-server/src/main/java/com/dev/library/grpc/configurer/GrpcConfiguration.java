@@ -2,6 +2,8 @@ package com.dev.library.grpc.configurer;
 
 import com.dev.library.grpc.interceptor.GrpcClientInterceptor;
 import com.dev.library.grpc.interceptor.GrpcServerInterceptor;
+import com.dev.library.logging.interceptors.grpc.GrpcMdcClientInterceptor;
+import com.dev.library.logging.interceptors.grpc.GrpcMdcServerInterceptor;
 import com.dev.security.provider.JwtTokenProviderManager;
 import io.grpc.ClientInterceptor;
 import io.grpc.ServerInterceptor;
@@ -23,7 +25,6 @@ public class GrpcConfiguration implements GlobalServerInterceptorConfigurer, Glo
     @Autowired
     private JwtTokenProviderManager jwtTokenProviderManager;
 
-
     @Bean
     public GrpcAuthenticationReader grpcAuthenticationReader() {
         // You can implement your own reader, or use built-in ones like BasicGrpcAuthenticationReader
@@ -36,6 +37,7 @@ public class GrpcConfiguration implements GlobalServerInterceptorConfigurer, Glo
     @Override
     public void configureServerInterceptors(List<ServerInterceptor> interceptors) {
         interceptors.add(new GrpcServerInterceptor(jwtTokenProviderManager));
+        interceptors.add(new GrpcMdcServerInterceptor());
     }
 
     /**
@@ -44,5 +46,6 @@ public class GrpcConfiguration implements GlobalServerInterceptorConfigurer, Glo
     @Override
     public void configureClientInterceptors(List<ClientInterceptor> interceptors) {
         interceptors.add(new GrpcClientInterceptor());
+        interceptors.add(new GrpcMdcClientInterceptor());
     }
 }
