@@ -17,6 +17,7 @@ public class ServiceJwtToken implements JwtToken {
     private UUID jwtId;
     private TokenType tokenType;
     private String serviceName;
+    private UserBaseInfo userBaseInfo;
     private List<String> scopes;
     private long createdAt;
     private long expiresAt;

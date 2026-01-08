@@ -8,4 +8,5 @@ public interface JwtToken {
     long getCreatedAt();
     long getExpiresAt();
     void setJwtId(UUID jwtId);
+    UserBaseInfo getUserBaseInfo();
 }

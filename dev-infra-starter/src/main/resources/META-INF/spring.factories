@@ -9,4 +9,6 @@ org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
     com.dev.hibernate.multiTenant.SchemaMultiTenantConnectionProvider,\
     com.dev.hibernate.multiTenant.TenantIdentifierResolver,\
     com.dev.grpc.config.GrpcConfiguration,\
-    com.dev.rabbitmq.configuration.RabbitMqConfiguration
+    com.dev.rabbitmq.configuration.RabbitMqConfiguration,\
+    com.dev.logging.interceptors.http.HttpLoggingGenericFilter,\
+    com.dev.logging.interceptors.http.HttpClientLoggingInterceptor

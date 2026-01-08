@@ -1,15 +1,13 @@
-package com.dev.library.logging.interceptors.http;
+package com.dev.logging.interceptors.http;
 
-import com.dev.library.logging.MDCLoggingUtility;
+import com.dev.logging.MDCLoggingUtility;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.http.client.support.HttpRequestWrapper;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-
 
 @Component
 public class HttpClientLoggingInterceptor implements ClientHttpRequestInterceptor {

@@ -1,5 +1,7 @@
 package com.dev.security.dto;
 
+import com.dev.security.details.UserBaseInfo;
+
 import java.util.UUID;
 
 public interface JwtToken {
@@ -8,4 +10,5 @@ public interface JwtToken {
     long getCreatedAt();
     long getExpiresAt();
     void setJwtId(UUID jwtId);
+    UserBaseInfo getUserBaseInfo();
 }
