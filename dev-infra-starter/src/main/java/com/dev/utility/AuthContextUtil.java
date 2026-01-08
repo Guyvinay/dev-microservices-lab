@@ -4,6 +4,8 @@ package com.dev.utility;
 
 import com.dev.dto.AccessJwtToken;
 import com.dev.dto.AccessJwtToken;
+import com.dev.dto.JwtToken;
+import com.dev.dto.ServiceJwtToken;
 import com.dev.exception.AuthenticationException;
 import com.dev.grpc.constant.GRPCConstant;
 import org.apache.commons.lang3.StringUtils;
@@ -96,16 +98,15 @@ public class AuthContextUtil {
         return AccessJwtToken;
     }
 
-
-    public static AccessJwtToken getJwtFromSecurityContextOrNull() {
+    public static JwtToken getJwtFromSecurityContextOrNull() {
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null) return null;
 
         Object details = authentication.getDetails();
-        if (!(details instanceof AccessJwtToken AccessJwtToken)) return null;
-
-        return AccessJwtToken;
+        if (details instanceof AccessJwtToken accessJwtToken) return accessJwtToken;
+        if (details instanceof ServiceJwtToken serviceJwtToken) return serviceJwtToken;
+        return null;
     }
 }

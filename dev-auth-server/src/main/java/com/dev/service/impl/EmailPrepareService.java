@@ -51,7 +51,7 @@ public class EmailPrepareService {
             String company = emailRequest.getCompany();
             String emailId = emailRequest.getEmailTo();
             EmailDocument emailDocument;
-            if(emailElasticSyncService.emailDocumentExits(emailId)) {
+/*            if(emailElasticSyncService.emailDocumentExits(emailId)) {
 
                 emailDocument = emailElasticSyncService.getEmailDocumentFromESByEmailID(emailId);
 
@@ -76,10 +76,11 @@ public class EmailPrepareService {
             } else {
                 emailDocument = prepareEmailDocument(name, company, emailId);
             }
-
+*/
+            emailDocument = prepareEmailDocument(name, company, emailId);
             try {
                 asyncEmailSendService.sendEmail(emailDocument);
-                Thread.sleep(2500);
+                Thread.sleep(0);
             } catch (IOException | InterruptedException e) {
                 log.error("Failed to send email to: {}", emailId, e);
                 throw new RuntimeException(e);
