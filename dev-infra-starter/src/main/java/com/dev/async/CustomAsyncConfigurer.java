@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.security.task.DelegatingSecurityContextAsyncTaskExecutor;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -33,7 +34,10 @@ public class CustomAsyncConfigurer implements AsyncConfigurer {
                 new ThreadPoolExecutor.CallerRunsPolicy()
         );
         taskExecutor.initialize();
-        return taskExecutor;
+
+        // To delegate current Security context in async thread from ThreadLocal
+        // If no need then just return taskExecutor
+        return new DelegatingSecurityContextAsyncTaskExecutor(taskExecutor);
     }
 
     @Bean

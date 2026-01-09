@@ -178,7 +178,7 @@ public class TenantRabbitListenerBinding {
                 message.getMessageProperties().setUserId(tenantId);
                 ((MessageListener) listenerBean).onMessage(message);
             });
-            messageListenerContainer.setMessageListener(new CustomMessageListener((MessageListener) listenerBean, jwtTokenProviderManager));
+            messageListenerContainer.setMessageListener(new CustomMessageListener((MessageListener) listenerBean, jwtTokenProviderManager, tenantId));
             messageListenerContainer.setMessageAckListener(new CustomMessageAckListener());
             messageListenerContainer.setConcurrentConsumers(1);
             messageListenerContainer.setMaxConcurrentConsumers(maxConsumers);

@@ -3,20 +3,14 @@ package com.dev.service.impl;
 
 import com.dev.dto.email.EmailDocument;
 import com.dev.library.elastic.service.EmailElasticSyncService;
-import com.dev.security.dto.ServiceJwtToken;
-import com.dev.security.dto.TokenType;
-import com.dev.security.provider.JwtTokenProviderManager;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nimbusds.jose.JOSEException;
+import com.dev.library.rabbitmq.dto.RmqEvent;
+import com.dev.library.rabbitmq.publisher.RabbitMqEventPublisher;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -24,15 +18,13 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -42,9 +34,7 @@ public class AsyncEmailSendService {
     private final JavaMailSender mailSender;
     private final EmailElasticSyncService emailElasticSyncService;
     private final TemplateEngine templateEngine;
-    private final RabbitTemplate rabbitTemplate;
-    private final ObjectMapper objectMapper;
-    private final JwtTokenProviderManager jwtTokenProviderManager;
+    private final RabbitMqEventPublisher tenantPublisher;
 
     @Async("threadPoolTaskExecutor")
     public void sendEmail(EmailDocument emailDocument) throws IOException {
@@ -133,36 +123,14 @@ public class AsyncEmailSendService {
         }
     }
 
-    private void indexEmailDocument(EmailDocument emailDocument) throws IOException, JOSEException {
-//        emailElasticSyncService.indexEmail(emailDocument);
-        MessageProperties properties = getMessageProperties(UUID.randomUUID().toString());
-        Message message = rabbitTemplate.getMessageConverter().toMessage(emailDocument, properties);
-        rabbitTemplate.convertAndSend(
-                "integration.exchange",
-                "email.integration.q",
-                message
-        );
-    }
+    private void indexEmailDocument(EmailDocument emailDocument) {
 
-    private MessageProperties getMessageProperties(String correlationId) throws JOSEException, JsonProcessingException {
-        MessageProperties props = new MessageProperties();
-        props.setContentType(MessageProperties.CONTENT_TYPE_JSON);
-        props.setMessageId(correlationId);
-
-        ServiceJwtToken payload = ServiceJwtToken.builder()
-                .jwtId(UUID.randomUUID())
-                .tokenType(TokenType.SERVICE)
-                .serviceName("dev-integration")
-                .scopes(List.of("email.integrate"))
-                .createdAt(System.currentTimeMillis())
-                .expiresAt(System.currentTimeMillis() + Duration.ofMinutes(300).toMillis())
-                .build();
-
-        String token = jwtTokenProviderManager.createJwtToken(payload);
-
-
-        props.setHeader("Authorization", token);
-        return props;
+        tenantPublisher.publish(
+                RmqEvent.builder()
+                    .routingKey("email.integration.q")
+                    .exchange("integration.exchange")
+                    .payload(emailDocument)
+                .build());
     }
 
     @Async("threadPoolTaskExecutor")
@@ -198,5 +166,11 @@ public class AsyncEmailSendService {
             context.setVariable(entry.getKey(), entry.getValue());
         }
         return templateEngine.process("password-reset-email.html", context);
+    }
+
+    private void putIfPresent(MessageProperties props, String key, String value) {
+        if (StringUtils.isNotBlank(value)) {
+            props.setHeader(key, value);
+        }
     }
 }

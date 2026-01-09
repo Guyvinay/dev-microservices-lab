@@ -7,6 +7,7 @@ import com.dev.dto.AccessJwtToken;
 import com.dev.dto.JwtToken;
 import com.dev.dto.ServiceJwtToken;
 import com.dev.dto.TokenType;
+import com.dev.dto.UserBaseInfo;
 import com.dev.exception.AuthenticationException;
 import com.dev.exception.JWTTokenException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -19,6 +20,7 @@ import com.nimbusds.jwt.SignedJWT;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -26,6 +28,7 @@ import org.springframework.util.StringUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 
@@ -43,6 +46,9 @@ public class JwtTokenProviderManager {
 
     private JWSSigner reqSigner;
     private JWSVerifier jwsVerifier;
+
+//    @Value("${spring.application.name: dev-auth-server}")
+    private final String serviceName = "dev-auth-server";
 
     private final ObjectMapper OM = new ObjectMapper();
 
@@ -64,7 +70,7 @@ public class JwtTokenProviderManager {
         JWTClaimsSet.Builder claimsBuilder = new JWTClaimsSet.Builder()
                 .jwtID(jwtToken.getJwtId().toString())
                 .subject(OM.writeValueAsString(jwtToken))
-                .issuer(ISSUER)
+                .issuer(serviceName)
                 .audience(AUDIENCE)
                 .issueTime(Date.from(issuedAt))
                 .notBeforeTime(Date.from(issuedAt))
@@ -259,6 +265,45 @@ public class JwtTokenProviderManager {
         serviceAuthToken.setDetails(serviceJwtToken);
 
         return serviceAuthToken;
+    }
+
+    public Authentication getAuthenticatedServiceToken(String tenantId) throws ParseException, JOSEException, JsonProcessingException {
+        ServiceJwtToken serviceJwtToken = ServiceJwtToken.builder()
+                .userBaseInfo(UserBaseInfo.builder()
+                        .tenantId(tenantId)
+                        .build()
+                )
+                .serviceName(serviceName)
+                .scopes(List.of())
+                .build();
+
+        ServicePrincipal principal = new ServicePrincipal(serviceJwtToken.getServiceName(), serviceJwtToken.getScopes());
+        ServiceAuthToken serviceAuthToken = new ServiceAuthToken(principal);
+        serviceAuthToken.setDetails(serviceJwtToken);
+
+        return serviceAuthToken;
+    }
+
+    public ServiceJwtToken createServiceJwtToken(UserBaseInfo userBaseInfo, long minutes) {
+        long currentMillis = System.currentTimeMillis();
+        return ServiceJwtToken.builder()
+                .tokenType(TokenType.SERVICE)
+                .userBaseInfo(userBaseInfo)
+                .serviceName(serviceName)
+                .scopes(List.of(serviceName))
+                .createdAt(currentMillis)
+                .expiresAt(currentMillis + Duration.ofMinutes(minutes).toMillis())
+                .build();
+    }
+
+    public AccessJwtToken createAccessJwtToken(UserBaseInfo userBaseInfo, long minutes) {
+        long currentMillis = System.currentTimeMillis();
+        return AccessJwtToken.builder()
+                .tokenType(TokenType.ACCESS)
+                .userBaseInfo(userBaseInfo)
+                .createdAt(currentMillis)
+                .expiresAt(currentMillis + Duration.ofMinutes(minutes).toMillis())
+                .build();
     }
 
 }

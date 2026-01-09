@@ -20,6 +20,7 @@ import com.nimbusds.jwt.SignedJWT;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -47,6 +48,10 @@ public class JwtTokenProviderManager {
     private JWSVerifier jwsVerifier;
 
     private final ObjectMapper OM = new ObjectMapper();
+
+
+    @Value("${spring.application.name:dev-auth-server}")
+    private String serviceName;
 
     @PostConstruct
     protected void postConstruct() throws JOSEException {
@@ -166,6 +171,7 @@ public class JwtTokenProviderManager {
 
         return claims;
     }
+
     private void validateTokenType(
             JWTClaimsSet claims,
             TokenType expectedType
@@ -216,6 +222,7 @@ public class JwtTokenProviderManager {
             throw new JWTTokenException("Invalid JWT signature");
         }
     }
+
     private void validateAudience(JWTClaimsSet claims) {
 
         List<String> tokenAudiences = claims.getAudience();
@@ -264,10 +271,10 @@ public class JwtTokenProviderManager {
         return serviceAuthToken;
     }
 
-    public AccessJwtToken getJwtTokenDTOFromToken(String token, TokenType access) throws JsonProcessingException, JOSEException, ParseException {
-        return OM.readValue(getSubjectPayload(token, access), AccessJwtToken.class);
+    public JwtToken getJwtTokenDTOFromToken(String token, TokenType access) throws JsonProcessingException, JOSEException, ParseException {
+        if(access == TokenType.ACCESS) return OM.readValue(getSubjectPayload(token, access), AccessJwtToken.class);
+        return OM.readValue(getSubjectPayload(token, access), ServiceJwtToken.class);
     }
-
 
     public AccessJwtToken createJwtTokeDtoFromModel(UserProfileDetailsDto userProfile, int expiredIn) {
         return createTokenDTOFromUserBaseInfo(mapToUserBaseInfo(userProfile), TokenType.ACCESS, expiredIn);
@@ -321,7 +328,7 @@ public class JwtTokenProviderManager {
      * Create ACCESS token DTO
      */
     public AccessJwtToken createAccessTokenDto(
-            AccessJwtToken source,
+            JwtToken source,
             long accessValidity
     ) {
         Instant now = Instant.now();
@@ -342,7 +349,7 @@ public class JwtTokenProviderManager {
      * (full lifetime)
      */
     public AccessJwtToken createRefreshTokenDtoForLogin(
-            AccessJwtToken source,
+            JwtToken source,
             long refreshValidity
     ) {
         Instant now = Instant.now();
@@ -363,7 +370,7 @@ public class JwtTokenProviderManager {
      * (preserve absolute expiry)
      */
     public AccessJwtToken createRefreshTokenDtoForRefresh(
-            AccessJwtToken source
+            JwtToken source
     ) {
         Instant now = Instant.now();
         Instant absoluteExpiry = Instant.ofEpochMilli(source.getExpiresAt());
@@ -378,6 +385,46 @@ public class JwtTokenProviderManager {
                 .userBaseInfo(source.getUserBaseInfo())
                 .createdAt(now.toEpochMilli())
                 .expiresAt(absoluteExpiry.toEpochMilli())
+                .build();
+    }
+
+    public Authentication getAuthenticatedServiceToken(String tenantId) {
+        ServiceJwtToken serviceJwtToken = ServiceJwtToken.builder()
+                .userBaseInfo(UserBaseInfo.builder()
+                        .tenantId(tenantId)
+                        .build()
+                )
+                .serviceName("service-token")
+                .scopes(List.of())
+                .build();
+
+        ServicePrincipal principal = new ServicePrincipal(serviceJwtToken.getServiceName(), serviceJwtToken.getScopes());
+        ServiceAuthToken serviceAuthToken = new ServiceAuthToken(principal);
+        serviceAuthToken.setDetails(serviceJwtToken);
+
+        return serviceAuthToken;
+    }
+
+
+    public ServiceJwtToken createServiceJwtToken(UserBaseInfo userBaseInfo, long minutes) {
+        long currentMillis = System.currentTimeMillis();
+        return ServiceJwtToken.builder()
+                .tokenType(TokenType.SERVICE)
+                .userBaseInfo(userBaseInfo)
+                .serviceName(serviceName)
+                .scopes(List.of(serviceName))
+                .createdAt(currentMillis)
+                .expiresAt(currentMillis + Duration.ofMinutes(minutes).toMillis())
+                .build();
+    }
+
+    public AccessJwtToken createAccessJwtToken(UserBaseInfo userBaseInfo, long minutes) {
+        long currentMillis = System.currentTimeMillis();
+        return AccessJwtToken.builder()
+                .tokenType(TokenType.ACCESS)
+                .userBaseInfo(userBaseInfo)
+                .createdAt(currentMillis)
+                .expiresAt(currentMillis + Duration.ofMinutes(minutes).toMillis())
                 .build();
     }
 }

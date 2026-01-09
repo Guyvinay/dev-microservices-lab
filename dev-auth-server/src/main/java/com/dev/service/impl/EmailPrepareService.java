@@ -51,7 +51,8 @@ public class EmailPrepareService {
             String company = emailRequest.getCompany();
             String emailId = emailRequest.getEmailTo();
             EmailDocument emailDocument;
-/*            if(emailElasticSyncService.emailDocumentExits(emailId)) {
+/*
+            if(emailElasticSyncService.emailDocumentExits(emailId)) {
 
                 emailDocument = emailElasticSyncService.getEmailDocumentFromESByEmailID(emailId);
 
