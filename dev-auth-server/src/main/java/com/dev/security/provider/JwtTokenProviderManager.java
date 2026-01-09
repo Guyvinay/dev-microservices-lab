@@ -50,7 +50,7 @@ public class JwtTokenProviderManager {
     private final ObjectMapper OM = new ObjectMapper();
 
 
-    @Value("spring.application.name:SYSTEM")
+    @Value("${spring.application.name:dev-auth-server}")
     private String serviceName;
 
     @PostConstruct
@@ -171,6 +171,7 @@ public class JwtTokenProviderManager {
 
         return claims;
     }
+
     private void validateTokenType(
             JWTClaimsSet claims,
             TokenType expectedType
@@ -221,6 +222,7 @@ public class JwtTokenProviderManager {
             throw new JWTTokenException("Invalid JWT signature");
         }
     }
+
     private void validateAudience(JWTClaimsSet claims) {
 
         List<String> tokenAudiences = claims.getAudience();
@@ -269,10 +271,10 @@ public class JwtTokenProviderManager {
         return serviceAuthToken;
     }
 
-    public AccessJwtToken getJwtTokenDTOFromToken(String token, TokenType access) throws JsonProcessingException, JOSEException, ParseException {
-        return OM.readValue(getSubjectPayload(token, access), AccessJwtToken.class);
+    public JwtToken getJwtTokenDTOFromToken(String token, TokenType access) throws JsonProcessingException, JOSEException, ParseException {
+        if(access == TokenType.ACCESS) return OM.readValue(getSubjectPayload(token, access), AccessJwtToken.class);
+        return OM.readValue(getSubjectPayload(token, access), ServiceJwtToken.class);
     }
-
 
     public AccessJwtToken createJwtTokeDtoFromModel(UserProfileDetailsDto userProfile, int expiredIn) {
         return createTokenDTOFromUserBaseInfo(mapToUserBaseInfo(userProfile), TokenType.ACCESS, expiredIn);
@@ -326,7 +328,7 @@ public class JwtTokenProviderManager {
      * Create ACCESS token DTO
      */
     public AccessJwtToken createAccessTokenDto(
-            AccessJwtToken source,
+            JwtToken source,
             long accessValidity
     ) {
         Instant now = Instant.now();
@@ -347,7 +349,7 @@ public class JwtTokenProviderManager {
      * (full lifetime)
      */
     public AccessJwtToken createRefreshTokenDtoForLogin(
-            AccessJwtToken source,
+            JwtToken source,
             long refreshValidity
     ) {
         Instant now = Instant.now();
@@ -368,7 +370,7 @@ public class JwtTokenProviderManager {
      * (preserve absolute expiry)
      */
     public AccessJwtToken createRefreshTokenDtoForRefresh(
-            AccessJwtToken source
+            JwtToken source
     ) {
         Instant now = Instant.now();
         Instant absoluteExpiry = Instant.ofEpochMilli(source.getExpiresAt());

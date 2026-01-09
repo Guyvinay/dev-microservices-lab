@@ -6,6 +6,7 @@ import com.dev.dto.AccessJwtToken;
 import com.dev.dto.AccessJwtToken;
 import com.dev.dto.JwtToken;
 import com.dev.dto.ServiceJwtToken;
+import com.dev.dto.UserBaseInfo;
 import com.dev.exception.AuthenticationException;
 import com.dev.grpc.constant.GRPCConstant;
 import org.apache.commons.lang3.StringUtils;
@@ -21,9 +22,9 @@ public class AuthContextUtil {
      * Jwt Token from gRPC context if found otherwise
      * From SecurityContextHolder.
      * ========================= */
-    public static AccessJwtToken getJwtToken() {
+    public static JwtToken getJwtToken() {
         // gRPC context (only present during gRPC calls)
-        AccessJwtToken grpcJwt = GRPCConstant.JWT_CONTEXT.get();
+        JwtToken grpcJwt = GRPCConstant.JWT_CONTEXT.get();
         if (grpcJwt != null) {
             return grpcJwt;
         }
@@ -33,7 +34,7 @@ public class AuthContextUtil {
     }
 
     public static UUID getUserId() {
-        AccessJwtToken jwt = getJwtToken();
+        JwtToken jwt = getJwtToken();
         UUID userId = jwt.getUserBaseInfo().getId();
 
         if (userId == null) {
@@ -43,7 +44,7 @@ public class AuthContextUtil {
     }
 
     public static String getTenantId() {
-        AccessJwtToken jwt = getJwtToken();
+        JwtToken jwt = getJwtToken();
         String tenantId = jwt.getUserBaseInfo().getTenantId();
 
         if (tenantId == null || tenantId.isBlank()) {
@@ -53,7 +54,7 @@ public class AuthContextUtil {
     }
 
     public static String getOrgId() {
-        AccessJwtToken jwt = getJwtToken();
+        JwtToken jwt = getJwtToken();
         String orgId = jwt.getUserBaseInfo().getOrgId();
 
         if (orgId == null || orgId.isBlank()) {
@@ -63,8 +64,13 @@ public class AuthContextUtil {
     }
 
     public static List<String> getRoles() {
-        AccessJwtToken jwt = getJwtToken();
+        JwtToken jwt = getJwtToken();
         return jwt.getUserBaseInfo().getRoleIds();
+    }
+
+    public static UserBaseInfo getUserBaseInfo() {
+        JwtToken jwt = getJwtToken();
+        return jwt.getUserBaseInfo();
     }
 
     public static String resolveTenantIdOrNull() {

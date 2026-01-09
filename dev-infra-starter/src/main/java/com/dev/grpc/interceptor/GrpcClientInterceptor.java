@@ -26,16 +26,10 @@ public class GrpcClientInterceptor implements ClientInterceptor {
 
             @Override
             public void start(Listener<RespT> responseListener, Metadata headers) {
-                AccessJwtToken tokenDto = AuthContextUtil.getJwtToken();
-                UserBaseInfo userBaseInfo = tokenDto.getUserBaseInfo();
+                UserBaseInfo userBaseInfo = AuthContextUtil.getUserBaseInfo();
 
                 try {
-                    ServiceJwtToken serviceJwtToken = ServiceJwtToken.builder()
-                            .tokenType(TokenType.SERVICE)
-                            .userBaseInfo(UserBaseInfo.builder()
-                                    .tenantId(userBaseInfo.getTenantId())
-                                    .build())
-                            .build();
+                    ServiceJwtToken serviceJwtToken = jwtTokenProviderManager.createServiceJwtToken(userBaseInfo, 200);
 
                     String token = jwtTokenProviderManager.createJwtToken(serviceJwtToken);
 

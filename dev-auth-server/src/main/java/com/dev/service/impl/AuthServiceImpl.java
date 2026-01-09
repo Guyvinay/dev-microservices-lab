@@ -13,6 +13,7 @@ import com.dev.entity.UserProfileModel;
 import com.dev.exception.PasswordResetException;
 import com.dev.repository.PasswordResetTokenRepository;
 import com.dev.repository.UserProfileModelRepository;
+import com.dev.security.dto.JwtToken;
 import com.dev.security.provider.CustomBcryptEncoder;
 import com.dev.security.provider.JwtTokenProviderManager;
 import com.dev.service.AuthService;
@@ -59,7 +60,7 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public AccessRefreshTokenDto login() throws JsonProcessingException, JOSEException {
-        AccessJwtToken tokenDto = AuthContextUtil.getJwtToken();
+        JwtToken tokenDto = AuthContextUtil.getJwtToken();
 
         AccessJwtToken accessDto =
                 jwtTokenProviderManager.createAccessTokenDto(
@@ -81,7 +82,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AccessRefreshTokenDto refresh() throws JOSEException, JsonProcessingException {
-        AccessJwtToken tokenDto = AuthContextUtil.getJwtToken();
+        JwtToken tokenDto = AuthContextUtil.getJwtToken();
         AccessJwtToken newAccessDto =
                 jwtTokenProviderManager.createAccessTokenDto(
                         tokenDto,

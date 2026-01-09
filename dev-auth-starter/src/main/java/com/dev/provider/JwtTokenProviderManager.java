@@ -47,8 +47,8 @@ public class JwtTokenProviderManager {
     private JWSSigner reqSigner;
     private JWSVerifier jwsVerifier;
 
-    @Value("spring.application.name:SYSTEM")
-    private String serviceName;
+//    @Value("${spring.application.name: dev-auth-server}")
+    private final String serviceName = "dev-auth-server";
 
     private final ObjectMapper OM = new ObjectMapper();
 
@@ -273,7 +273,7 @@ public class JwtTokenProviderManager {
                         .tenantId(tenantId)
                         .build()
                 )
-                .serviceName("service-token")
+                .serviceName(serviceName)
                 .scopes(List.of())
                 .build();
 

@@ -3,6 +3,7 @@ package com.dev.library.grpc.interceptor;
 import com.dev.exception.AuthenticationException;
 import com.dev.library.grpc.constants.GRPCConstant;
 import com.dev.security.dto.AccessJwtToken;
+import com.dev.security.dto.JwtToken;
 import com.dev.security.dto.TokenType;
 import com.dev.security.provider.JwtTokenProviderManager;
 import io.grpc.*;
@@ -29,18 +30,18 @@ public class GrpcServerInterceptor implements ServerInterceptor {
             }
             log.info("GrpcServerInterceptor: JWT Token received from grpc request");
             // Get jwtTokenDto from token
-            AccessJwtToken accessJwtToken = jwtTokenHelper.getJwtTokenDTOFromToken(authHeader, TokenType.ACCESS);
+            JwtToken accessJwtToken = jwtTokenHelper.getJwtTokenDTOFromToken(authHeader, TokenType.SERVICE);
 
             Context grpcCtx = Context.current().withValue(GRPCConstant.JWT_CONTEXT, accessJwtToken);
 
             // Chain
             return Contexts.interceptCall(grpcCtx, call, requestHeaders, next);
         } catch (AuthenticationException ex) {
-            log.error("gRPC auth failed: {}", ex.getMessage());
+            log.error("gRPC auth failed: {}", ex.getMessage(), ex);
             call.close(Status.UNAUTHENTICATED.withDescription(ex.getMessage()), new Metadata());
             return new ServerCall.Listener<>() {};
         } catch (Exception ex) {
-            log.error("gRPC auth error", ex);
+            log.error("gRPC auth error: {}", ex.getMessage(), ex);
             call.close(Status.INTERNAL.withDescription("Authentication error"), new Metadata());
             return new ServerCall.Listener<>() {};
         }
