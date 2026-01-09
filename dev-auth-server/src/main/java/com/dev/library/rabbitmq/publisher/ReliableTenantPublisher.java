@@ -1,5 +1,6 @@
 package com.dev.library.rabbitmq.publisher;
 
+import com.dev.library.logging.MDCKeys;
 import com.dev.security.dto.ServiceJwtToken;
 import com.dev.security.dto.TokenType;
 import com.dev.security.provider.JwtTokenProviderManager;
@@ -8,6 +9,7 @@ import com.nimbusds.jose.JOSEException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.jboss.logging.MDC;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
@@ -72,6 +74,9 @@ public class ReliableTenantPublisher {
 
         String token = jwtTokenProviderManager.createJwtToken(payload);
 
+        putIfPresent(props, MDCKeys.HEADER_TRACE_ID, String.valueOf(MDC.get(MDCKeys.TRACE_ID)));
+        putIfPresent(props, MDCKeys.HEADER_TENANT_ID, String.valueOf(MDC.get(MDCKeys.TENANT_ID)));
+        putIfPresent(props, MDCKeys.HEADER_USER_ID, String.valueOf(MDC.get(MDCKeys.USER_ID)));
 
         props.setHeader("Authorization", token);
         return props;
@@ -80,5 +85,11 @@ public class ReliableTenantPublisher {
     private String resolvePublishTenant(String tenantId) {
         // If you publish to the public vhost default, return "public" (or null logic depending on your CF)
         return StringUtils.isNotBlank(tenantId) ? tenantId : "public";
+    }
+
+    private void putIfPresent(MessageProperties props, String key, String value) {
+        if (StringUtils.isNotBlank(value)) {
+            props.setHeader(key, value);
+        }
     }
 }

@@ -7,6 +7,7 @@ import com.dev.dto.AccessJwtToken;
 import com.dev.dto.JwtToken;
 import com.dev.dto.ServiceJwtToken;
 import com.dev.dto.TokenType;
+import com.dev.dto.UserBaseInfo;
 import com.dev.exception.AuthenticationException;
 import com.dev.exception.JWTTokenException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -253,6 +254,23 @@ public class JwtTokenProviderManager {
 
     public Authentication getServiceAuthentication(String token) throws ParseException, JOSEException, JsonProcessingException {
         ServiceJwtToken serviceJwtToken = OM.readValue(getSubjectPayload(token, TokenType.SERVICE), ServiceJwtToken.class);
+
+        ServicePrincipal principal = new ServicePrincipal(serviceJwtToken.getServiceName(), serviceJwtToken.getScopes());
+        ServiceAuthToken serviceAuthToken = new ServiceAuthToken(principal);
+        serviceAuthToken.setDetails(serviceJwtToken);
+
+        return serviceAuthToken;
+    }
+
+    public Authentication getAuthenticatedServiceToken(String tenantId) throws ParseException, JOSEException, JsonProcessingException {
+        ServiceJwtToken serviceJwtToken = ServiceJwtToken.builder()
+                .userBaseInfo(UserBaseInfo.builder()
+                        .tenantId(tenantId)
+                        .build()
+                )
+                .serviceName("service-token")
+                .scopes(List.of())
+                .build();
 
         ServicePrincipal principal = new ServicePrincipal(serviceJwtToken.getServiceName(), serviceJwtToken.getScopes());
         ServiceAuthToken serviceAuthToken = new ServiceAuthToken(principal);

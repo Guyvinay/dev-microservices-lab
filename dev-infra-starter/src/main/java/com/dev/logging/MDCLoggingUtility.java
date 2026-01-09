@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.MDC;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.support.HttpRequestWrapper;
@@ -86,5 +87,29 @@ public class MDCLoggingUtility {
         if (StringUtils.isNotBlank(value)) {
             headers.add(key, value);
         }
+    }
+
+    public static void populateFromRmqHeaders(MessageProperties props) {
+
+        String traceId = getOrGenerate(props, MDCKeys.HEADER_TRACE_ID);
+        putIfPresent(MDCKeys.TRACE_ID, traceId);
+        putIfPresent(MDCKeys.TENANT_ID, props.getHeader(MDCKeys.HEADER_TENANT_ID));
+        putIfPresent(MDCKeys.USER_ID, props.getHeader(MDCKeys.HEADER_USER_ID));
+    }
+
+    public static void putIfPresent(MessageProperties props, String key, String value) {
+        if (StringUtils.isNotBlank(value)) {
+            props.setHeader(key, value);
+        }
+    }
+
+    private static String getOrGenerate(MessageProperties props, String key) {
+        Object value = props.getHeader(key);
+        if (value instanceof String && StringUtils.isNotBlank((String) value)) {
+            return (String) value;
+        }
+        String generated = UUID.randomUUID().toString();
+        log.debug("Generated RabbitMQ traceId={}", generated);
+        return generated;
     }
 }

@@ -3,6 +3,7 @@ package com.dev.service.impl;
 
 import com.dev.dto.email.EmailDocument;
 import com.dev.library.elastic.service.EmailElasticSyncService;
+import com.dev.library.logging.MDCKeys;
 import com.dev.security.dto.ServiceJwtToken;
 import com.dev.security.dto.TokenType;
 import com.dev.security.provider.JwtTokenProviderManager;
@@ -14,6 +15,7 @@ import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.jboss.logging.MDC;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -24,6 +26,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -160,6 +163,9 @@ public class AsyncEmailSendService {
 
         String token = jwtTokenProviderManager.createJwtToken(payload);
 
+        putIfPresent(props, MDCKeys.HEADER_TRACE_ID, String.valueOf(MDC.get(MDCKeys.TRACE_ID)));
+        putIfPresent(props, MDCKeys.HEADER_TENANT_ID, String.valueOf(MDC.get(MDCKeys.TENANT_ID)));
+        putIfPresent(props, MDCKeys.HEADER_USER_ID, String.valueOf(MDC.get(MDCKeys.USER_ID)));
 
         props.setHeader("Authorization", token);
         return props;
@@ -198,5 +204,11 @@ public class AsyncEmailSendService {
             context.setVariable(entry.getKey(), entry.getValue());
         }
         return templateEngine.process("password-reset-email.html", context);
+    }
+
+    private void putIfPresent(MessageProperties props, String key, String value) {
+        if (StringUtils.isNotBlank(value)) {
+            props.setHeader(key, value);
+        }
     }
 }
