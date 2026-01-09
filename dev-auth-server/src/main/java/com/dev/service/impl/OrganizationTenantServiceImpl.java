@@ -4,7 +4,8 @@ import com.dev.dto.OrganizationTenantDTO;
 import com.dev.entity.OrganizationTenantMapping;
 import com.dev.exception.DuplicateResourceException;
 import com.dev.exception.ResourceNotFoundException;
-import com.dev.library.rabbitmq.publisher.ReliableTenantPublisher;
+import com.dev.library.rabbitmq.dto.RmqEvent;
+import com.dev.library.rabbitmq.publisher.RabbitMqEventPublisher;
 import com.dev.repository.OrganizationTenantMappingRepository;
 import com.dev.service.OrganizationTenantService;
 import com.dev.utility.AuthUtility;
@@ -25,7 +26,7 @@ public class OrganizationTenantServiceImpl implements OrganizationTenantService 
 
     private final OrganizationTenantMappingRepository tenantRepository;
     private final ModelMapper modelMapper;
-    private final ReliableTenantPublisher tenantPublisher;
+    private final RabbitMqEventPublisher tenantPublisher;
 
     @Override
     public OrganizationTenantDTO createTenant(OrganizationTenantDTO dto) {
@@ -53,7 +54,7 @@ public class OrganizationTenantServiceImpl implements OrganizationTenantService 
 
         log.info("Tenant created successfully: tenantId={} tenantName={} orgId={}",
                 tenantMapping.getTenantId(), tenantMapping.getTenantName(), tenantMapping.getOrgId());
-        tenantPublisher.publishTenantCreated(tenantMapping.getTenantId());
+        tenantPublisher.publish(RmqEvent.builder().payload(tenantMapping.getTenantId()).build());
         return modelMapper.map(tenantMapping, OrganizationTenantDTO.class);
     }
 

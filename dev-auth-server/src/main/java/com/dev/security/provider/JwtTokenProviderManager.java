@@ -20,6 +20,7 @@ import com.nimbusds.jwt.SignedJWT;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -47,6 +48,10 @@ public class JwtTokenProviderManager {
     private JWSVerifier jwsVerifier;
 
     private final ObjectMapper OM = new ObjectMapper();
+
+
+    @Value("spring.application.name:SYSTEM")
+    private String serviceName;
 
     @PostConstruct
     protected void postConstruct() throws JOSEException {
@@ -378,6 +383,46 @@ public class JwtTokenProviderManager {
                 .userBaseInfo(source.getUserBaseInfo())
                 .createdAt(now.toEpochMilli())
                 .expiresAt(absoluteExpiry.toEpochMilli())
+                .build();
+    }
+
+    public Authentication getAuthenticatedServiceToken(String tenantId) {
+        ServiceJwtToken serviceJwtToken = ServiceJwtToken.builder()
+                .userBaseInfo(UserBaseInfo.builder()
+                        .tenantId(tenantId)
+                        .build()
+                )
+                .serviceName("service-token")
+                .scopes(List.of())
+                .build();
+
+        ServicePrincipal principal = new ServicePrincipal(serviceJwtToken.getServiceName(), serviceJwtToken.getScopes());
+        ServiceAuthToken serviceAuthToken = new ServiceAuthToken(principal);
+        serviceAuthToken.setDetails(serviceJwtToken);
+
+        return serviceAuthToken;
+    }
+
+
+    public ServiceJwtToken createServiceJwtToken(UserBaseInfo userBaseInfo, long minutes) {
+        long currentMillis = System.currentTimeMillis();
+        return ServiceJwtToken.builder()
+                .tokenType(TokenType.SERVICE)
+                .userBaseInfo(userBaseInfo)
+                .serviceName(serviceName)
+                .scopes(List.of(serviceName))
+                .createdAt(currentMillis)
+                .expiresAt(currentMillis + Duration.ofMinutes(minutes).toMillis())
+                .build();
+    }
+
+    public AccessJwtToken createAccessJwtToken(UserBaseInfo userBaseInfo, long minutes) {
+        long currentMillis = System.currentTimeMillis();
+        return AccessJwtToken.builder()
+                .tokenType(TokenType.ACCESS)
+                .userBaseInfo(userBaseInfo)
+                .createdAt(currentMillis)
+                .expiresAt(currentMillis + Duration.ofMinutes(minutes).toMillis())
                 .build();
     }
 }

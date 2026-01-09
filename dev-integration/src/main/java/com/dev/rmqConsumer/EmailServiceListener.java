@@ -5,7 +5,6 @@ import com.dev.rabbitmq.annotation.TenantRabbitListener;
 import com.dev.service.EmailElasticService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;

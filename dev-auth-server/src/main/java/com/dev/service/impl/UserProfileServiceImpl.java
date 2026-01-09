@@ -7,7 +7,7 @@ import com.dev.dto.UserProfileTenantWrapper;
 import com.dev.entity.UserProfileModel;
 import com.dev.exception.InvalidInputException;
 import com.dev.exception.UserNotFoundException;
-import com.dev.library.rabbitmq.publisher.ReliableTenantPublisher;
+import com.dev.library.rabbitmq.publisher.RabbitMqEventPublisher;
 import com.dev.library.redis.annotation.RedisCacheAdapter;
 import com.dev.repository.UserProfileModelRepository;
 import com.dev.security.provider.CustomBcryptEncoder;
@@ -47,7 +47,7 @@ public class UserProfileServiceImpl implements UserProfileService {
     private final EntityDtoMapper entityDtoMapper;
     private final CustomBcryptEncoder customBcryptEncoder;
     private final UserProfileTenantService userProfileTenantService;
-    private final ReliableTenantPublisher tenantPublisher;
+    private final RabbitMqEventPublisher tenantPublisher;
 
 
     /**
