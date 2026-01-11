@@ -154,7 +154,7 @@
         <dependency>
             <groupId>com.dev</groupId>
             <artifactId>dev-infra-starter</artifactId>
-            <version>2.0.0</version>
+            <version>3.0.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.dev</groupId>
@@ -166,7 +166,7 @@
         <dependency>
             <groupId>com.dev</groupId>
             <artifactId>dev-auth-starter</artifactId>
-            <version>2.0.0</version>
+            <version>3.0.0</version>
         </dependency>
 
     </dependencies>
