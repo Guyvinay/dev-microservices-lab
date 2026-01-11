@@ -94,8 +94,6 @@ public class EmailPrepareService {
                         emailId
                 );
             }
-*/
-            emailDocument = prepareEmailDocument(name, company, emailId);
             try {
                 asyncEmailSendService.sendEmail(emailDocument);
                 Thread.sleep(0);
