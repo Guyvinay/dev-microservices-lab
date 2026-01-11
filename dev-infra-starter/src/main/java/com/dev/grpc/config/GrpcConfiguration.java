@@ -28,7 +28,7 @@ public class GrpcConfiguration implements GlobalServerInterceptorConfigurer, Glo
 
     @Override
     public void configureServerInterceptors(List<ServerInterceptor> interceptors) {
-        interceptors.add(new GrpcServerInterceptor());
+        interceptors.add(new GrpcServerInterceptor(jwtTokenProviderManager));
         interceptors.add(new GrpcMdcServerInterceptor());
     }
 }
