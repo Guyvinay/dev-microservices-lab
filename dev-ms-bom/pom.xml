@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>3.3.8</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>com.dev</groupId>
+	<artifactId>dev-ms-bom</artifactId>
+	<version>1.0.0</version>
+	<name>dev-ms-bom</name>
+	<description>Demo project for Spring Boot</description>
+	<packaging>pom</packaging>
+	<properties>
+		<!-- Platform -->
+		<java.version>21</java.version>
+		<spring.boot.version>3.3.1</spring.boot.version>
+
+		<!-- Database -->
+		<postgres.version>42.7.4</postgres.version>
+		<hibernate.version>6.5.2.Final</hibernate.version>
+		<liquibase.version>4.29.2</liquibase.version>
+
+		<!-- Observability -->
+		<logstash.encoder.version>7.4</logstash.encoder.version>
+		<janino.version>3.1.2</janino.version>
+
+		<!-- Serialization -->
+		<jackson.version>2.17.1</jackson.version>
+		<gson.version>2.11.0</gson.version>
+
+		<!-- Security -->
+		<nimbus.jwt.version>9.10.1</nimbus.jwt.version>
+
+		<!-- Infra -->
+		<elasticsearch.version>7.17.18</elasticsearch.version>
+
+		<!-- Utilities -->
+		<modelmapper.version>3.2.1</modelmapper.version>
+		<commons.csv.version>1.10.0</commons.csv.version>
+		<commons.compress.version>1.26.2</commons.compress.version>
+
+		<liquibase-core.version>4.29.1</liquibase-core.version>
+
+
+		<!-- Starters -->
+		<dev.infra.starter.version>3.0.0</dev.infra.starter.version>
+		<dev.auth.starter.version>3.0.0</dev.auth.starter.version>
+		<dev.shared.utility.version>3.0.0</dev.shared.utility.version>
+	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+
+			<!-- Spring Boot BOM -->
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>${spring.boot.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<!-- Internal starters -->
+			<dependency>
+				<groupId>com.dev</groupId>
+				<artifactId>dev-infra-starter</artifactId>
+				<version>${dev.infra.starter.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.dev</groupId>
+				<artifactId>dev-auth-starter</artifactId>
+				<version>${dev.auth.starter.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.dev</groupId>
+				<artifactId>dev-shared-utility</artifactId>
+				<version>${dev.shared.utility.version}</version>
+			</dependency>
+
+			<!-- Database -->
+			<dependency>
+				<groupId>org.postgresql</groupId>
+				<artifactId>postgresql</artifactId>
+				<version>${postgres.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.hibernate</groupId>
+				<artifactId>hibernate-envers</artifactId>
+				<version>${hibernate.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.liquibase</groupId>
+				<artifactId>liquibase-core</artifactId>
+				<version>${liquibase.version}</version>
+			</dependency>
+
+			<!-- Infra -->
+			<dependency>
+				<groupId>org.elasticsearch.client</groupId>
+				<artifactId>elasticsearch-rest-high-level-client</artifactId>
+				<version>${elasticsearch.version}</version>
+			</dependency>
+
+			<!-- Utils -->
+			<dependency>
+				<groupId>org.modelmapper</groupId>
+				<artifactId>modelmapper</artifactId>
+				<version>${modelmapper.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-csv</artifactId>
+				<version>${commons.csv.version}</version>
+			</dependency>
+
+			<!-- Logging -->
+			<dependency>
+				<groupId>net.logstash.logback</groupId>
+				<artifactId>logstash-logback-encoder</artifactId>
+				<version>${logstash.encoder.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.codehaus.janino</groupId>
+				<artifactId>janino</artifactId>
+				<version>${janino.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.springdoc</groupId>
+				<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+				<version>2.2.0</version>
+			</dependency>
+
+			<dependency>
+				<groupId>io.swagger</groupId>
+				<artifactId>swagger-annotations</artifactId>
+				<version>1.5.20</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.google.code.gson</groupId>
+				<artifactId>gson</artifactId>
+				<version>2.11.0</version>
+			</dependency>
+
+
+			<dependency>
+				<groupId>org.json</groupId>
+				<artifactId>json</artifactId>
+				<version>20230227</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-lang3</artifactId>
+				<version>3.14.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-compress</artifactId>
+				<version>1.26.2</version>
+			</dependency>
+			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-java</artifactId>
+				<version>4.22.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-graphql</artifactId>
+			</dependency>
+			<dependency>
+				<groupId>org.ehcache</groupId>
+				<artifactId>ehcache</artifactId>
+			</dependency>
+			<dependency>
+				<groupId>org.jooq</groupId>
+				<artifactId>jooq</artifactId>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
