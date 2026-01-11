@@ -3,8 +3,13 @@ package com.dev.service.impl;
 import com.dev.dto.email.EmailDocument;
 import com.dev.dto.email.EmailRequest;
 import com.dev.library.elastic.service.EmailElasticSyncService;
+import com.dev.utility.grpc.email.EmailElasticServiceGrpc;
+import com.dev.utility.grpc.email.EmailLookupRequest;
+import com.dev.utility.grpc.email.EmailLookupResponse;
+import com.dev.utils.GrpcMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -31,6 +36,8 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.dev.utils.GRPCConstant.DEV_INTEGRATION;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -41,33 +48,39 @@ public class EmailPrepareService {
     private static final int HOURS_TO = 12;
     private final AsyncEmailSendService asyncEmailSendService;
 
+    @GrpcClient(DEV_INTEGRATION)
+    private EmailElasticServiceGrpc.EmailElasticServiceBlockingStub elasticServiceStub;
+
     public void sendEmailFromCSVFile(MultipartFile file) throws IOException {
         List<String> skippedEmails = new ArrayList<>();
         Map<String, EmailRequest> toSend = getEmailRequestsFromCSV(file);
-        log.info("Emails to send: {}", toSend.size());
-        for (Map.Entry<String, EmailRequest> entry: toSend.entrySet()) {
-            EmailRequest emailRequest = entry.getValue();
-            String name = emailRequest.getName();
-            String company = emailRequest.getCompany();
-            String emailId = emailRequest.getEmailTo();
+        List<String> allEmails = new ArrayList<>(toSend.keySet());
+        log.info("Total emails from CSV: {}", allEmails.size());
+        Map<String, EmailDocument> existingDocs = new HashMap<>();
+
+        for (List<String> batch : partition(allEmails, 100)) {
+            EmailLookupRequest emailLookupRequest = EmailLookupRequest.newBuilder().addAllEmailIds(batch).build();
+            EmailLookupResponse emailLookupResponse = elasticServiceStub.getEmailDocumentsByEmailIds(emailLookupRequest);
+
+            emailLookupResponse.getDocumentsList()
+                    .forEach(doc -> existingDocs.put(doc.getEmailTo(), GrpcMapper.fromProto(doc)));
+
+        }
+
+        for (String emailId : allEmails) {
+            EmailRequest req = toSend.get(emailId);
             EmailDocument emailDocument;
-/*
-            if(emailElasticSyncService.emailDocumentExits(emailId)) {
 
-                emailDocument = emailElasticSyncService.getEmailDocumentFromESByEmailID(emailId);
-
-                if(!isEligibleToSend(emailDocument)) {
-                    log.info("Skipping ineligible email to {} (status={}, lastSent={})",
-                            emailDocument.getEmailTo(),
-                            emailDocument.getStatus(),
-                            Instant.ofEpochMilli(emailDocument.getLastSentAt()));
-                    skippedEmails.add(emailId);
-                    continue;
-                }
-
-                if(StringUtils.isNotBlank(name)) emailDocument.setRecipientName(name);
+            EmailDocument existingDoc = existingDocs.get(emailId);
+            if(existingDoc != null) {
+//                if (!isEligibleToSend(existingDoc)) {
+//                    skippedEmails.add(emailId);
+//                    continue;
+//                }
+                emailDocument = existingDoc;
+                if(StringUtils.isNotBlank(req.getName())) emailDocument.setRecipientName(req.getName());
                 if(StringUtils.isNotBlank(emailId)) emailDocument.setEmailTo(emailId);
-                if(StringUtils.isNotBlank(company)) emailDocument.setCompany(company);
+                if(StringUtils.isNotBlank(req.getCompany())) emailDocument.setCompany(req.getCompany());
                 Map<String, String> templateVariable = Map.of(
                         "name", emailDocument.getRecipientName(),
                         "company", emailDocument.getCompany()
@@ -75,10 +88,12 @@ public class EmailPrepareService {
                 emailDocument.setEmailTemplate(prepareEmailTemplate(templateVariable));
                 emailDocument.setTemplateVariables(templateVariable);
             } else {
-                emailDocument = prepareEmailDocument(name, company, emailId);
+                emailDocument = prepareEmailDocument(
+                        req.getName(),
+                        req.getCompany(),
+                        emailId
+                );
             }
-*/
-            emailDocument = prepareEmailDocument(name, company, emailId);
             try {
                 asyncEmailSendService.sendEmail(emailDocument);
                 Thread.sleep(0);
@@ -162,6 +177,7 @@ public class EmailPrepareService {
         long gte = instant.minus(hours + 120, ChronoUnit.HOURS).toEpochMilli();
         return emailElasticSyncService.getEligibleEmails(gte, lte);
     }
+
     private String prepareEmailTemplate(Map<String, String> templateVariables) {
         Context context = new Context();
         for (Map.Entry<String, String> entry: templateVariables.entrySet()) {
@@ -285,4 +301,13 @@ public class EmailPrepareService {
 
         return emailElasticSyncService.getEmailDocumentFromEmailIds(emailIds);
     }
+
+    public static <T> List<List<T>> partition(List<T> list, int size) {
+        List<List<T>> partitions = new ArrayList<>();
+        for (int i = 0; i < list.size(); i += size) {
+            partitions.add(list.subList(i, Math.min(i + size, list.size())));
+        }
+        return partitions;
+    }
+
 }

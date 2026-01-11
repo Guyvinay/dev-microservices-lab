@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+package email;
+
+option java_multiple_files = true;
+option java_package = "com.dev.utility.grpc.email";
+option java_outer_classname = "EmailDocumentProto";
+
+/**
+ * Email Document shared across microservices.
+ * This mirrors the Elastic EmailDocument but is transport-safe.
+ */
+message EmailDocument {
+
+  // === Identity & Recipient ===
+  string email_to = 1;
+  string recipient_name = 2;
+  string email_from = 3;
+  string company = 4;
+
+  // === Validation & Eligibility ===
+  bool valid_email = 5;
+  bool resend_eligible = 6;
+
+  // === Email Content ===
+  string subject = 7;
+  bool is_html = 8;
+  string template_name = 9;
+
+  // Using map is safe in proto3 (backed by repeated entries)
+  map<string, string> template_variables = 10;
+
+  // Optional – can be large, include only when needed
+  string email_template = 11;
+
+  // === Delivery & Status ===
+  string status = 12;        // e.g. SENT, FAILED, SKIPPED
+  string error_message = 13;
+
+  int32 retry_count = 14;
+  int32 email_sent_times = 15;
+
+  // Epoch millis (Elastic + DB friendly)
+  int64 last_sent_at = 16;
+  int64 last_updated_at = 17;
+
+  int64 delivery_time_ms = 18;
+
+  // === Metadata ===
+  int64 date_created_epoch_ms = 19;
+  string category = 20;
+
+  repeated string attachment_names = 21;
+  int64 attachment_size_bytes = 22;
+
+  string sent_by = 23;
+  string thread_name = 24;
+  string environment = 25;
+}
+
+/**
+ * Batch lookup request
+ */
+message EmailLookupRequest {
+  repeated string email_ids = 1;
+}
+
+/**
+ * Batch lookup response
+ */
+message EmailLookupResponse {
+  repeated EmailDocument documents = 1;
+}
+
+/**
+ * gRPC Service for Email Elastic operations
+ */
+service EmailElasticService {
+
+  /**
+   * Batch fetch email documents by email IDs.
+   * Recommended batch size: 100–300
+   */
+  rpc getEmailDocumentsByEmailIds(EmailLookupRequest)
+      returns (EmailLookupResponse);
+}
