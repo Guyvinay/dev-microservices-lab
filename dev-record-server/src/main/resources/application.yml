@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: dev-record-server
+  datasource:
+    url: jdbc:postgresql://localhost:5432/dev_record_server
+    username: postgres
+    password: root
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties.org.hibernate.envers.store_data_at_delete: true
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+
+  rabbitmq:
+    host: localhost
+    port: 15672
+    username: guest
+    password: guest
+    addresses: localhost:15672
+
+rmq:
+  host: localhost
+  port: 5672
+  username: guest
+  password: guest
+  addresses: localhost:15672
+
+#logging:
+#  pattern:
+#    console: "%clr(%d{HH:mm:ss}){blue} - %clr(%5level){cyan} --> %clr(%msg){green} -- %clr(%logger){yellow}%n"
+#  level:
+#    org:
+#      hibernate:
+
+management:
+  endpoints:
+    health:
+      show-details: true
+    web:
+      exposure:
+        include: "*"
+
+liquibase:
+  master:
+    file:
+      path: classpath:db/changelog/db.changelog-master.xml
+
+server:
+  port: 8004
+  servlet.context-path: /dev-sandbox

@@ -67,16 +67,18 @@ public class EmailPrepareService {
 
         }
 
+        log.info("Existing doc found: {}", existingDocs.size());
+
         for (String emailId : allEmails) {
             EmailRequest req = toSend.get(emailId);
             EmailDocument emailDocument;
 
             EmailDocument existingDoc = existingDocs.get(emailId);
             if(existingDoc != null) {
-//                if (!isEligibleToSend(existingDoc)) {
-//                    skippedEmails.add(emailId);
-//                    continue;
-//                }
+                if (!isEligibleToSend(existingDoc)) {
+                    skippedEmails.add(emailId);
+                    continue;
+                }
                 emailDocument = existingDoc;
                 if(StringUtils.isNotBlank(req.getName())) emailDocument.setRecipientName(req.getName());
                 if(StringUtils.isNotBlank(emailId)) emailDocument.setEmailTo(emailId);
@@ -96,7 +98,7 @@ public class EmailPrepareService {
             }
             try {
                 asyncEmailSendService.sendEmail(emailDocument);
-                Thread.sleep(0);
+                Thread.sleep(2500);
             } catch (IOException | InterruptedException e) {
                 log.error("Failed to send email to: {}", emailId, e);
                 throw new RuntimeException(e);

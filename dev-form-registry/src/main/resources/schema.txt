@@ -1,0 +1,214 @@
+Space
+{
+  "id": "hr_space",
+  "tenantId": "tenant_1",
+  "name": "HR Forms",
+  "description": "All HR related forms",
+  "createdAt": "2026-01-01T09:00:00Z"
+}
+
+Field Type (System-Level)
+{
+  "type": "TEXT",
+  "supportedDataTypes": ["STRING"],
+  "uiSchema": {
+    "component": "input",
+    "allowedSubTypes": ["text", "email", "password", "url"]
+  },
+  "supportsOptions": false,
+  "supportsValidation": true,
+  "supportsMasking": true,
+  "isLayoutOnly": false,
+  "createdAt": "2026-01-01T00:00:00Z"
+}
+
+Field Definition (Versioned)
+{
+  "id": "fld_text_email",
+  "version": 1,
+
+  "tenantId": "tenant_1",
+  "spaceId": "hr_space",
+
+  "type": "TEXT",
+  "dataType": "STRING",
+
+  "label": "Email Address",
+  "description": "Primary contact email",
+
+  "ui": {
+    "component": "input",
+    "subType": "email",
+    "placeholder": "example@company.com",
+    "helpText": "We will contact you via this email",
+    "width": 12,
+    "icon": "email",
+    "readonly": false,
+    "hidden": false
+  },
+
+  "validation": {
+    "required": true,
+    "regex": "^[A-Za-z0-9+_.-]+@(.+)$",
+    "minLength": 5,
+    "maxLength": 100
+  },
+
+  "security": {
+    "pii": true,
+    "masking": "PARTIAL",
+    "encryption": "AT_REST"
+  },
+
+  "status": "ACTIVE",
+  "immutable": true,
+
+  "createdBy": "admin",
+  "createdAt": "2026-01-01T10:00:00Z"
+}
+
+Form (Logical Container)
+{
+  "id": "job_application_form",
+  "tenantId": "tenant_1",
+  "spaceId": "hr_space",
+
+  "title": "Job Application",
+  "description": "Apply for backend engineer role",
+
+  "currentPublishedVersion": 3,
+  "status": "ACTIVE",
+
+  "createdBy": "admin",
+  "createdAt": "2025-12-01T09:00:00Z"
+}
+
+Form Version (Fully Expanded)
+{
+  "formId": "job_application_form",
+  "version": 3,
+  "tenantId": "tenant_1",
+
+  "status": "PUBLISHED",
+  "schemaVersion": "1.0",
+
+  "layout": {
+    "type": "GRID",
+    "columns": 2,
+    "responsive": {
+      "mobile": 1,
+      "tablet": 2,
+      "desktop": 2
+    }
+  },
+
+  "fields": [
+    {
+      "fieldId": "fld_text_name",
+      "fieldVersion": 1,
+      "order": 1,
+
+      "overrides": {
+        "label": "Full Name",
+        "required": true,
+        "placeholder": "Enter your full name",
+        "helpText": "As per official documents",
+        "readonly": false,
+        "hidden": false
+      },
+
+      "visibilityRules": [
+        {
+          "condition": "ALWAYS",
+          "expression": null
+        }
+      ],
+
+      "layout": {
+        "columnSpan": 1
+      }
+    },
+    {
+      "fieldId": "fld_text_email",
+      "fieldVersion": 1,
+      "order": 2,
+
+      "overrides": {
+        "required": true
+      },
+
+      "visibilityRules": [],
+
+      "layout": {
+        "columnSpan": 1
+      }
+    }
+  ],
+
+  "logic": {
+    "conditions": [
+      {
+        "id": "cond_1",
+        "when": {
+          "fieldId": "fld_select_experience",
+          "operator": "LESS_THAN",
+          "value": 2
+        },
+        "then": {
+          "action": "SHOW",
+          "targetFieldId": "fld_text_notice_period"
+        }
+      }
+    ],
+    "computedFields": [
+      {
+        "fieldId": "fld_system_score",
+        "expression": "experience * 10",
+        "dataType": "NUMBER"
+      }
+    ]
+  },
+
+  "settings": {
+    "allowDrafts": true,
+    "allowMultipleSubmissions": false,
+    "submissionTimeoutMinutes": 30,
+    "postSubmission": {
+      "redirectUrl": "/thank-you",
+      "successMessage": "Application submitted successfully"
+    }
+  },
+
+  "createdBy": "admin",
+  "createdAt": "2026-01-05T11:00:00Z"
+}
+
+7️⃣ Form Render API Response (Angular-Friendly)
+{
+  "form": {
+    "id": "job_application_form",
+    "version": 3,
+    "title": "Job Application",
+    "description": "Apply for backend engineer role"
+  },
+  "layout": {
+    "type": "GRID",
+    "columns": 2
+  },
+  "fields": [
+    {
+      "id": "fld_text_email",
+      "label": "Email Address",
+      "type": "TEXT",
+      "ui": {
+        "component": "input",
+        "subType": "email",
+        "placeholder": "example@company.com"
+      },
+      "validation": {
+        "required": true,
+        "regex": "^[A-Za-z0-9+_.-]+@(.+)$"
+      }
+    }
+  ]
+}

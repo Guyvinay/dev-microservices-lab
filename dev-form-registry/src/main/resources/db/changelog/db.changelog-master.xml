@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- To enable auditing -->
+    <changeSet id="113" author="vinay.singh">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="AUTH_REVINFO_TABLE"/>
+            </not>
+        </preConditions>
+        <createTable tableName="AUTH_REVINFO_TABLE">
+            <column name="ID" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="TIMESTAMP" type="BIGINT"/>
+            <column name="MODIFIEDBY" type="varchar(150)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="118" author="vinay.singh" context="dev,prod" labels="feature1,feature2">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="test_table"/>
+            </not>
+        </preConditions>
+        <createTable tableName="test_table">
+            <column name="test_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="test_column" type="INT"/>
+        </createTable>
+        <comment>test table created</comment>
+    </changeSet>
+
+
+
+
+<!--    001-space.xml-->
+    <changeSet id="13.01.2025-00:41" author="vinay.singh">
+        <createTable tableName="space">
+            <column name="id" type="varchar(64)">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="tenant_id" type="varchar(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)"/>
+            <column name="created_at" type="timestamp"/>
+        </createTable>
+    </changeSet>
+
+<!--    002-field-types.xml-->
+    <changeSet id="002" author="vinay">
+        <createTable tableName="field_type">
+            <column name="type" type="varchar(32)">
+                <constraints primaryKey="true"/>
+            </column>
+
+            <column name="supported_data_types" type="jsonb"/>
+            <column name="ui_schema" type="jsonb"/>
+
+            <column name="supports_options" type="boolean"/>
+            <column name="supports_validation" type="boolean"/>
+            <column name="is_layout_only" type="boolean"/>
+
+            <column name="created_at" type="timestamp"/>
+        </createTable>
+    </changeSet>
+
+
+<!--    003-field-definition.xml-->
+    <changeSet id="003" author="vinay">
+        <createTable tableName="field_definition">
+            <column name="id" type="varchar(64)"/>
+            <column name="version" type="int"/>
+
+            <column name="tenant_id" type="varchar(64)"/>
+            <column name="space_id" type="varchar(64)"/>
+
+            <column name="type" type="varchar(32)"/>
+            <column name="data_type" type="varchar(32)"/>
+
+            <column name="label" type="varchar(255)"/>
+            <column name="description" type="varchar(1024)"/>
+
+            <column name="ui_config" type="jsonb"/>
+            <column name="validation_config" type="jsonb"/>
+            <column name="security_config" type="jsonb"/>
+
+            <column name="status" type="varchar(32)"/>
+            <column name="immutable" type="boolean"/>
+
+            <column name="created_by" type="varchar(64)"/>
+            <column name="created_at" type="timestamp"/>
+
+        </createTable>
+
+        <createIndex tableName="field_definition" indexName="idx_field_tenant">
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+
+
+
+<!--    004-form.xml-->
+    <changeSet id="004" author="vinay">
+        <createTable tableName="form">
+            <column name="id" type="varchar(64)">
+                <constraints primaryKey="true"/>
+            </column>
+
+            <column name="tenant_id" type="varchar(64)"/>
+            <column name="space_id" type="varchar(64)"/>
+
+            <column name="title" type="varchar(255)"/>
+            <column name="description" type="varchar(1024)"/>
+
+            <column name="current_published_version" type="int"/>
+            <column name="status" type="varchar(32)"/>
+
+            <column name="created_by" type="varchar(64)"/>
+            <column name="created_at" type="timestamp"/>
+        </createTable>
+    </changeSet>
+
+    <!--        005-form-version.xml-->
+    <changeSet id="005" author="vinay">
+        <createTable tableName="form_version">
+            <column name="form_id" type="varchar(64)"/>
+            <column name="version" type="int"/>
+
+            <column name="tenant_id" type="varchar(64)"/>
+            <column name="status" type="varchar(32)"/>
+
+            <column name="schema_version" type="varchar(16)"/>
+
+            <column name="layout_config" type="jsonb"/>
+            <column name="logic_config" type="jsonb"/>
+            <column name="settings_config" type="jsonb"/>
+
+            <column name="created_by" type="varchar(64)"/>
+            <column name="created_at" type="timestamp"/>
+
+        </createTable>
+
+    </changeSet>
+
+
+    <!--        005-form-version.xml-->
+    <changeSet id="006" author="vinay">
+        <createTable tableName="form_field">
+            <column name="form_id" type="varchar(64)"/>
+            <column name="form_version" type="int"/>
+
+            <column name="field_id" type="varchar(64)"/>
+            <column name="field_version" type="int"/>
+
+            <column name="field_order" type="int"/>
+
+            <column name="overrides" type="jsonb"/>
+            <column name="visibility_rules" type="jsonb"/>
+            <column name="layout_config" type="jsonb"/>
+
+        </createTable>
+
+    </changeSet>
+
+
+
+
+
+</databaseChangeLog>

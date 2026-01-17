@@ -10,7 +10,6 @@ import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -43,7 +42,6 @@ public class AsyncEmailSendService {
 
         long startTime = Instant.now().toEpochMilli();
         log.info("Preparing to send email to [{}] on thread [{}]", emailDocument.getEmailTo(), threadName);
-
         try {
             // ============================================================
             // 1️Prepare message
@@ -74,7 +72,7 @@ public class AsyncEmailSendService {
             // ============================================================
             // 3️Send email
             // ============================================================
-//            mailSender.send(message);
+            mailSender.send(message);
 
             // ============================================================
             // 4️Update EmailDocument metadata
