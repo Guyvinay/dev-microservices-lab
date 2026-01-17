@@ -35,142 +35,162 @@
         <comment>test table created</comment>
     </changeSet>
 
+    <!-- ===================== SPACE ===================== -->
+    <changeSet id="001-create-space" author="vinay">
 
-
-
-<!--    001-space.xml-->
-    <changeSet id="13.01.2025-00:41" author="vinay.singh">
         <createTable tableName="space">
-            <column name="id" type="varchar(64)">
-                <constraints primaryKey="true"/>
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
             </column>
+
             <column name="tenant_id" type="varchar(64)">
                 <constraints nullable="false"/>
             </column>
-            <column name="name" type="varchar(255)"/>
-            <column name="created_at" type="timestamp"/>
-        </createTable>
-    </changeSet>
 
-<!--    002-field-types.xml-->
-    <changeSet id="002" author="vinay">
-        <createTable tableName="field_type">
-            <column name="type" type="varchar(32)">
-                <constraints primaryKey="true"/>
+            <column name="name" type="varchar(150)">
+                <constraints nullable="false"/>
             </column>
 
-            <column name="supported_data_types" type="jsonb"/>
-            <column name="ui_schema" type="jsonb"/>
-
-            <column name="supports_options" type="boolean"/>
-            <column name="supports_validation" type="boolean"/>
-            <column name="is_layout_only" type="boolean"/>
-
-            <column name="created_at" type="timestamp"/>
-        </createTable>
-    </changeSet>
-
-
-<!--    003-field-definition.xml-->
-    <changeSet id="003" author="vinay">
-        <createTable tableName="field_definition">
-            <column name="id" type="varchar(64)"/>
-            <column name="version" type="int"/>
-
-            <column name="tenant_id" type="varchar(64)"/>
-            <column name="space_id" type="varchar(64)"/>
-
-            <column name="type" type="varchar(32)"/>
-            <column name="data_type" type="varchar(32)"/>
-
-            <column name="label" type="varchar(255)"/>
-            <column name="description" type="varchar(1024)"/>
-
-            <column name="ui_config" type="jsonb"/>
-            <column name="validation_config" type="jsonb"/>
-            <column name="security_config" type="jsonb"/>
-
-            <column name="status" type="varchar(32)"/>
-            <column name="immutable" type="boolean"/>
-
-            <column name="created_by" type="varchar(64)"/>
-            <column name="created_at" type="timestamp"/>
-
+            <column name="description" type="varchar(500)"/>
+            <column name="created_at" type="bigint"/>
+            <column name="updated_at" type="bigint"/>
+            <column name="created_by" type="varchar(100)"/>
+            <column name="updated_by" type="varchar(100)"/>
         </createTable>
 
-        <createIndex tableName="field_definition" indexName="idx_field_tenant">
+        <createIndex tableName="space" indexName="idx_space_tenant">
             <column name="tenant_id"/>
         </createIndex>
+
     </changeSet>
 
+    <!-- ===================== FIELD DEFINITION ===================== -->
 
+    <changeSet id="002-create-field-definition" author="vinay">
 
+        <createTable tableName="field_definition">
 
-<!--    004-form.xml-->
-    <changeSet id="004" author="vinay">
-        <createTable tableName="form">
-            <column name="id" type="varchar(64)">
-                <constraints primaryKey="true"/>
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
             </column>
 
-            <column name="tenant_id" type="varchar(64)"/>
-            <column name="space_id" type="varchar(64)"/>
+            <column name="space_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
 
-            <column name="title" type="varchar(255)"/>
-            <column name="description" type="varchar(1024)"/>
+            <column name="type" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
 
-            <column name="current_published_version" type="int"/>
-            <column name="status" type="varchar(32)"/>
+            <column name="label" type="varchar(150)">
+                <constraints nullable="false"/>
+            </column>
 
-            <column name="created_by" type="varchar(64)"/>
-            <column name="created_at" type="timestamp"/>
-        </createTable>
-    </changeSet>
+            <column name="data_type" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
 
-    <!--        005-form-version.xml-->
-    <changeSet id="005" author="vinay">
-        <createTable tableName="form_version">
-            <column name="form_id" type="varchar(64)"/>
-            <column name="version" type="int"/>
+            <column name="ui_json" type="nvarchar"/>
 
-            <column name="tenant_id" type="varchar(64)"/>
-            <column name="status" type="varchar(32)"/>
+            <column name="validation_json" type="nvarchar"/>
 
-            <column name="schema_version" type="varchar(16)"/>
+            <column name="status" type="varchar(30)">
+                <constraints nullable="false"/>
+            </column>
 
-            <column name="layout_config" type="jsonb"/>
-            <column name="logic_config" type="jsonb"/>
-            <column name="settings_config" type="jsonb"/>
-
-            <column name="created_by" type="varchar(64)"/>
-            <column name="created_at" type="timestamp"/>
+            <column name="created_at" type="bigint"/>
+            <column name="updated_at" type="bigint"/>
+            <column name="created_by" type="varchar(100)"/>
+            <column name="updated_by" type="varchar(100)"/>
 
         </createTable>
 
+        <addForeignKeyConstraint
+                baseTableName="field_definition"
+                baseColumnNames="space_id"
+                referencedTableName="space"
+                referencedColumnNames="id"
+                constraintName="fk_field_space"/>
+
     </changeSet>
 
+    <!-- ===================== FORM ===================== -->
 
-    <!--        005-form-version.xml-->
-    <changeSet id="006" author="vinay">
+    <changeSet id="003-create-form" author="vinay">
+
+        <createTable tableName="form">
+
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="space_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="name" type="varchar(150)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="description" type="varchar(500)"/>
+
+            <column name="status" type="varchar(30)"/>
+
+            <column name="created_at" type="bigint"/>
+            <column name="updated_at" type="bigint"/>
+            <column name="created_by" type="varchar(100)"/>
+            <column name="updated_by" type="varchar(100)"/>
+
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="form"
+                baseColumnNames="space_id"
+                referencedTableName="space"
+                referencedColumnNames="id"
+                constraintName="fk_form_space"/>
+    </changeSet>
+
+    <!-- ===================== FORM FIELD ===================== -->
+
+    <changeSet id="004-create-form-field" author="vinay">
+
         <createTable tableName="form_field">
-            <column name="form_id" type="varchar(64)"/>
-            <column name="form_version" type="int"/>
 
-            <column name="field_id" type="varchar(64)"/>
-            <column name="field_version" type="int"/>
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
 
-            <column name="field_order" type="int"/>
+            <column name="form_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
 
-            <column name="overrides" type="jsonb"/>
-            <column name="visibility_rules" type="jsonb"/>
-            <column name="layout_config" type="jsonb"/>
+            <column name="field_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="field_order" type="int">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="required_override" type="boolean"/>
+            <column name="override_json" type="nvarchar"/>
 
         </createTable>
 
+        <addForeignKeyConstraint
+                baseTableName="form_field"
+                baseColumnNames="form_id"
+                referencedTableName="form"
+                referencedColumnNames="id"
+                constraintName="fk_form_field_form"/>
+
+        <addForeignKeyConstraint
+                baseTableName="form_field"
+                baseColumnNames="field_id"
+                referencedTableName="field_definition"
+                referencedColumnNames="id"
+                constraintName="fk_form_field_definition"/>
     </changeSet>
-
-
-
-
 
 </databaseChangeLog>
