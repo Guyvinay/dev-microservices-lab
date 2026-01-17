@@ -9,6 +9,7 @@ import com.dev.service.FormFieldService;
 import com.dev.service.FormService;
 import com.dev.service.SpaceService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
@@ -19,6 +20,9 @@ import java.util.UUID;
 @Component
 @Slf4j
 public class DataBootstrapRunner implements ApplicationRunner {
+
+    @Value("${app.bootstrap.enabled}")
+    private boolean enabled;
 
     private final SpaceService spaceService;
     private final FieldDefinitionService fieldService;
@@ -39,6 +43,9 @@ public class DataBootstrapRunner implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
+
+        if (!enabled) return;
+
 
         String tenantId = "public";
 
@@ -135,7 +142,7 @@ public class DataBootstrapRunner implements ApplicationRunner {
         nameMapping.setFormId(formId);
         nameMapping.setFieldId(savedNameField.getId());
         nameMapping.setFieldOrder(1);
-        nameMapping.setRequiredOverride(true);
+        nameMapping.setRequiredOverride(false);
 
         formFieldService.create(nameMapping);
 

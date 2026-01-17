@@ -93,6 +93,11 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.jooq</groupId>
+			<artifactId>jooq</artifactId>
+		</dependency>
+
+		<dependency>
 			<groupId>com.dev</groupId>
 			<artifactId>dev-infra-starter</artifactId>
 			<version>3.0.0</version>
