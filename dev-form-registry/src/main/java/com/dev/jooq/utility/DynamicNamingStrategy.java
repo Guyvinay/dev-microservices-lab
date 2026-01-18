@@ -4,23 +4,21 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class DynamicNamingStrategy {
+    public String normalizeColumnName(String label) {
 
-    public String normalizeColumn(String input) {
-
-        return input
+        return label
                 .toLowerCase()
-                .replaceAll("[^a-z0-9_]", "_")
+                .trim()
+                .replaceAll("[^a-z0-9]", "_")
                 .replaceAll("_+", "_");
     }
 
-    public String normalizeTable(String tenant,
-                                 String space,
-                                 String form) {
+    public String normalizeTableName(String name) {
 
-        return String.format("df_%s_%s_%s",
-                tenant,
-                space,
-                form
-        ).toLowerCase();
+        return name
+                .toLowerCase()
+                .trim()
+                .replaceAll("[^a-z0-9]", "_")
+                .replaceAll("_+", "_");
     }
 }

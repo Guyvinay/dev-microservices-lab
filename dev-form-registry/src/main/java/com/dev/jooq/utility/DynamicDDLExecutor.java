@@ -2,11 +2,13 @@ package com.dev.jooq.utility;
 
 import com.dev.jooq.definition.DynamicColumnDefinition;
 import com.dev.jooq.definition.DynamicTableDefinition;
+import jakarta.transaction.Transactional;
 import org.jooq.CreateTableElementListStep;
 import org.jooq.DSLContext;
 import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.Fields;
+import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 import org.springframework.stereotype.Component;
@@ -29,12 +31,10 @@ public class DynamicDDLExecutor {
     public void createTable(DynamicTableDefinition table) {
 
         CreateTableElementListStep step =
-                dsl.createTableIfNotExists(table.getTableName());
+                dsl.createTableIfNotExists(table(table));
 
-        // Primary key
         step = step.column("id", SQLDataType.UUID.nullable(false));
 
-        // Audit columns
         if (table.isIncludeAuditColumns()) {
 
             step = step
@@ -60,10 +60,18 @@ public class DynamicDDLExecutor {
         ).execute();
     }
 
-    public Set<String> fetchExistingColumns(String tableName) {
+    private Table<?> table(DynamicTableDefinition table) {
+
+        return DSL.table(
+                DSL.name(table.getSchema(), table.getTableName())
+        );
+    }
+
+
+    public Set<String> fetchExistingColumns(DynamicTableDefinition table) {
 
         return dsl.meta()
-                .getTables(tableName)
+                .getTables(DSL.name(table.getSchema(), table.getTableName()))
                 .stream()
                 .flatMap(Fields::fieldStream)
                 .map(Field::getName)
@@ -72,13 +80,13 @@ public class DynamicDDLExecutor {
 
     public void syncColumns(DynamicTableDefinition table) {
 
-        Set<String> existing = fetchExistingColumns(table.getTableName());
+        Set<String> existing = fetchExistingColumns(table);
 
         for (DynamicColumnDefinition column : table.getColumns()) {
 
             if (!existing.contains(column.getName())) {
 
-                dsl.alterTable(table.getTableName())
+                dsl.alterTable(table(table))
                         .addColumn(
                                 column.getName(),
                                 typeMapper.map(column)
@@ -87,5 +95,15 @@ public class DynamicDDLExecutor {
         }
     }
 
+
+    public void acquireLock(String key) {
+
+        dsl.fetch("SELECT pg_advisory_lock(hashtext(?))", key);
+    }
+
+    public void releaseLock(String key) {
+
+        dsl.fetch("SELECT pg_advisory_unlock(hashtext(?))", key);
+    }
 
 }

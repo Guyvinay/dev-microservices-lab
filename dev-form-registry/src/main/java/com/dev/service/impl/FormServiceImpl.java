@@ -6,6 +6,8 @@ import com.dev.repository.FormRepository;
 import com.dev.service.FormService;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 public class FormServiceImpl implements FormService {
 
@@ -27,6 +29,20 @@ public class FormServiceImpl implements FormService {
         entity.setCreatedAt(System.currentTimeMillis());
 
         return map(repository.save(entity));
+    }
+
+    @Override
+    public FormDto getById(UUID uuid) {
+        return map(
+                repository.findById(uuid).orElseThrow(
+                        ()-> new RuntimeException("Form not found")
+                )
+        );
+    }
+
+    @Override
+    public void updateStatus(UUID formId, String published) {
+
     }
 
     private FormDto map(FormEntity e) {

@@ -10,4 +10,6 @@ public interface FieldDefinitionService {
     FieldDefinitionDto create(FieldDefinitionDto dto);
 
     List<FieldDefinitionDto> getBySpace(UUID spaceId);
+
+    FieldDefinitionDto getById(UUID fieldId);
 }

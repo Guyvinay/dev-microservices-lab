@@ -14,10 +14,24 @@ public class DynamicSchemaService {
         this.executor = executor;
     }
 
+    @Transactional
     public void syncTable(DynamicTableDefinition tableDefinition) {
 
-        executor.createTable(tableDefinition);
+        String lockKey =
+                tableDefinition.getSchema()
+                        + "." + tableDefinition.getTableName();
 
-        executor.syncColumns(tableDefinition);
+        executor.acquireLock(lockKey);
+
+        try {
+
+            executor.createTable(tableDefinition);
+            executor.syncColumns(tableDefinition);
+
+        } finally {
+
+            executor.releaseLock(lockKey);
+        }
     }
+
 }

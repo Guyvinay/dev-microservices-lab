@@ -44,6 +44,11 @@ public class FieldDefinitionServiceImpl implements FieldDefinitionService {
                 .toList();
     }
 
+    @Override
+    public FieldDefinitionDto getById(UUID fieldId) {
+        return null;
+    }
+
     private FieldDefinitionDto map(FieldDefinitionEntity e) {
 
         FieldDefinitionDto d = new FieldDefinitionDto();

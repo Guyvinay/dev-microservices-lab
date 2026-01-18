@@ -54,4 +54,4 @@ liquibase:
 
 server:
   port: 8003
-  servlet.context-path: /dev-sandbox
+  servlet.context-path: /dev-form-registry

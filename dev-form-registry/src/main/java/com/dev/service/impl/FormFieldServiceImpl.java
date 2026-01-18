@@ -6,6 +6,9 @@ import com.dev.repository.FormFieldRepository;
 import com.dev.service.FormFieldService;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.UUID;
+
 @Service
 public class FormFieldServiceImpl implements FormFieldService {
 
@@ -27,6 +30,15 @@ public class FormFieldServiceImpl implements FormFieldService {
         entity.setOverrideJson(dto.getOverrideJson());
 
         return map(repository.save(entity));
+    }
+
+    @Override
+    public List<FormFieldDto> findByFormId(UUID formId) {
+
+        return repository.findByFormIdOrderByFieldOrderAsc(formId)
+                .stream()
+                .map(this::map)
+                .toList();
     }
 
     private FormFieldDto map(FormFieldEntity e) {
