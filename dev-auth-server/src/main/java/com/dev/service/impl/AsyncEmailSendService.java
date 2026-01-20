@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.amqp.core.MessageProperties;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -60,7 +62,10 @@ public class AsyncEmailSendService {
 
             if(CollectionUtils.isNotEmpty(emailDocument.getAttachmentNames())) {
                 for (String attachmentName: emailDocument.getAttachmentNames()) {
-                    File file = new File("/home/guyvinay/dev/repo/assets/" + attachmentName);
+                    Resource resource = new ClassPathResource("data/" + attachmentName);
+
+                    File file = resource.getFile();
+
                     if(file.exists()) {
                         messageHelper.addAttachment(attachmentName, file);
                     } else {
@@ -112,7 +117,7 @@ public class AsyncEmailSendService {
             // 6️Persist final state to Elasticsearch
             // ============================================================
             try {
-                indexEmailDocument(emailDocument);  // performs upsert in Elasticsearch
+//                indexEmailDocument(emailDocument);  // performs upsert in Elasticsearch
                 log.info("Email document synced to Elasticsearch for [{}] (status: {})",
                         emailDocument.getEmailTo(), emailDocument.getStatus());
             } catch (Exception ex) {

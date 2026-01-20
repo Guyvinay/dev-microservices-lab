@@ -45,7 +45,7 @@ public class EmailPrepareService {
 
     private final TemplateEngine templateEngine;
     private final EmailElasticSyncService emailElasticSyncService;
-    private static final int HOURS_TO = 12;
+    private static final int HOURS_TO = 360;
     private final AsyncEmailSendService asyncEmailSendService;
 
     @GrpcClient(DEV_INTEGRATION)
@@ -74,7 +74,7 @@ public class EmailPrepareService {
             EmailDocument emailDocument;
 
             EmailDocument existingDoc = existingDocs.get(emailId);
-            if(existingDoc != null) {
+            /*if(existingDoc != null) {
                 if (!isEligibleToSend(existingDoc)) {
                     skippedEmails.add(emailId);
                     continue;
@@ -90,12 +90,12 @@ public class EmailPrepareService {
                 emailDocument.setEmailTemplate(prepareEmailTemplate(templateVariable));
                 emailDocument.setTemplateVariables(templateVariable);
             } else {
-                emailDocument = prepareEmailDocument(
-                        req.getName(),
-                        req.getCompany(),
-                        emailId
-                );
-            }
+            }*/
+            emailDocument = prepareEmailDocument(
+                    req.getName(),
+                    req.getCompany(),
+                    emailId
+            );
             try {
                 asyncEmailSendService.sendEmail(emailDocument);
                 Thread.sleep(2500);
@@ -142,7 +142,7 @@ public class EmailPrepareService {
 
         long cutoffTime = Instant.now().minus(HOURS_TO, ChronoUnit.HOURS).toEpochMilli();
 
-        return !"DISABLED".equalsIgnoreCase(emailDocument.getStatus()) && !"SUCCESS".equalsIgnoreCase(emailDocument.getStatus()) &&
+        return !"DISABLED".equalsIgnoreCase(emailDocument.getStatus()) &&
                 emailDocument.getLastSentAt() <= cutoffTime &&
                 emailDocument.isResendEligible() &&
                 emailDocument.getRetryCount() <= 15;
@@ -235,7 +235,7 @@ public class EmailPrepareService {
         emailDocument.setRecipientName(recipientName);
         emailDocument.setCompany(companyName);
         emailDocument.setEmailFrom("mrsinghvinay563@gmail.com");
-        emailDocument.setSubject("Java Backend Developer Application For New Opportunities");
+        emailDocument.setSubject("Java Full Stack Developer Application For New Opportunities");
 
         // --- Template & content ---
         emailDocument.setHtml(true);
