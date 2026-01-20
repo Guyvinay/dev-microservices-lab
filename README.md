@@ -327,6 +327,16 @@ public UserPrivileges getUserPrivileges(UUID userId) {
     return privilegeRepository.findByUserId(userId);
 }
 ```
+---
+
+# Microservice Properties
+| Microservice Name | HTTP Port | Context Path      | gRPC Port | DB Schema |
+|-------------------|-----------|-------------------|-----------|-----------|
+| dev-auth-server   | 8000      | /dev-auth-server  | 50050     | auth_db   |
+| dev-sandbox       | 8001      | /dev-sandbox      | 50051     | sandbox   |
+| dev-integration   | 8002      | /dev-integration  | 50052     | integrate | 
+| dev-url-shortner  | 8003      | /dev-url-shortner | 50053     | url_db    |
+
 
 # Communication Patterns
 

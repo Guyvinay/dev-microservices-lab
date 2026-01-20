@@ -28,7 +28,6 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 
-
 		<!-- Spring Boot starter for Spring Data JPA, provides ORM capabilities using Hibernate -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -53,6 +52,36 @@
 			<artifactId>lombok</artifactId>
 			<version>1.18.36</version>
 			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>net.logstash.logback</groupId>
+			<artifactId>logstash-logback-encoder</artifactId>
+			<version>7.4</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.codehaus.janino</groupId>
+			<artifactId>janino</artifactId>
+			<version>3.1.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.dev</groupId>
+			<artifactId>dev-infra-starter</artifactId>
+			<version>3.0.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.dev</groupId>
+					<artifactId>dev-auth-starter</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>com.dev</groupId>
+			<artifactId>dev-auth-starter</artifactId>
+			<version>3.0.0</version>
 		</dependency>
 
 
