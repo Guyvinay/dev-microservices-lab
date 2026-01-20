@@ -19,83 +19,47 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="21:01:2026-00:03" author="vinay.singh">
 
-    <changeSet id="112" author="vinay.singh">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <tableExists tableName="users"/>
-            </not>
-        </preConditions>
+        <createTable tableName="short_urls">
 
-        <!--        <createSequence sequenceName="users_id_seq" />-->
-
-        <createTable tableName="users">
-            <column name="id" type="bigserial">
-                <constraints primaryKey="true" nullable="false"/>
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"
+                             primaryKeyName="pk_short_urls"
+                             nullable="false"/>
             </column>
-            <column name="name" type="varchar(255)">
+
+            <column name="tenant_id" type="VARCHAR(64)">
                 <constraints nullable="false"/>
             </column>
-            <column name="email" type="varchar(255)">
-                <constraints nullable="false" unique="true"/>
-            </column>
-            <column name="password" type="varchar(255)">
+
+            <column name="short_code" type="VARCHAR(16)">
                 <constraints nullable="false"/>
             </column>
-            <column name="created_at" type="timestamp">
+
+            <column name="long_url" type="TEXT">
                 <constraints nullable="false"/>
             </column>
-            <column name="updated_at" type="timestamp"/>
+
+            <column name="created_by" type="VARCHAR(128)"/>
+
+            <column name="created_at" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="expires_at" type="BIGINT"/>
+
+            <column name="max_hits" type="BIGINT"/>
+
+            <column name="hit_count" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+
         </createTable>
-    </changeSet>
 
-    <changeSet id="14-12-2024-11.46" author="vinay.singh">
-        <preConditions onFail="MARK_RAN">
-            <tableExists tableName="users"/>
-            <not>
-                <columnExists tableName="users" columnName="role"/>
-            </not>
-        </preConditions>
-        <addColumn tableName="users">
-            <column name="role" type="varchar(50)" />
-        </addColumn>
-    </changeSet>
-
-
-    <!-- Create the users_aud table (audit table for users) -->
-    <changeSet id="117" author="vinay.singh">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <tableExists tableName="users_aud"/>
-            </not>
-        </preConditions>
-        <createTable tableName="users_aud">
-            <column name="id" type="bigint"/>
-            <column name="name" type="varchar(255)"/>
-            <column name="email" type="varchar(255)"/>
-            <column name="password" type="varchar(255)"/>
-            <column name="created_at" type="timestamp"/>
-            <column name="updated_at" type="timestamp"/>
-            <!-- Auditing columns -->
-            <column name="rev" type="bigint">
-                <constraints nullable="false"/>
-            </column>
-            <column name="revtype" type="int">
-                <constraints nullable="false"/>
-            </column>
-            <column name="timestamp" type="timestamp"/>
-        </createTable>
-    </changeSet>
-
-    <changeSet id="14-12-2024-11.51" author="vinay.singh">
-        <preConditions onFail="MARK_RAN">
-            <tableExists tableName="users_aud"/>
-            <not>
-                <columnExists tableName="users_aud" columnName="role"/>
-            </not>
-        </preConditions>
-        <addColumn tableName="users_aud">
-            <column name="role" type="varchar(50)" />
-        </addColumn>
     </changeSet>
 </databaseChangeLog>
