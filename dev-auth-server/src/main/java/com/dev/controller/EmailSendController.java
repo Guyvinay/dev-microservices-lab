@@ -29,7 +29,7 @@ public class EmailSendController {
     private final EmailPrepareService emailPrepareService;
     private final EmailElasticSyncService emailElasticSyncService;
 
-    @GetMapping(value = "/send-from-csv-file-v2")
+    @GetMapping(value = "/send-from-csv-file")
     public void sendEmailsFromFile() throws Exception {
         emailPrepareService.sendEmailFromCSVFile(null);
     }

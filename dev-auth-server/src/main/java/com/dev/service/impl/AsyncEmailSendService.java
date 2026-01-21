@@ -117,7 +117,7 @@ public class AsyncEmailSendService {
             // 6️Persist final state to Elasticsearch
             // ============================================================
             try {
-//                indexEmailDocument(emailDocument);  // performs upsert in Elasticsearch
+                indexEmailDocument(emailDocument);  // performs upsert in Elasticsearch
                 log.info("Email document synced to Elasticsearch for [{}] (status: {})",
                         emailDocument.getEmailTo(), emailDocument.getStatus());
             } catch (Exception ex) {
