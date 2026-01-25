@@ -13,3 +13,26 @@ elastic:
     private: es_private_message_index
     group: es_group_message_index
     email: email_index
+
+
+app:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+
+    protocol: smtp
+
+    auth: true
+    start-tls-enable: true
+    start-tls-required: true
+
+    connection-timeout: 5000
+    timeout: 5000
+    write-timeout: 5000
+
+    pool-enabled: true
+    pool-size: 10
+
+    default-encoding: UTF-8

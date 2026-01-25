@@ -73,6 +73,21 @@ message EmailLookupResponse {
 }
 
 /**
+ * Batch index request
+ */
+message BulkIndexEmailRequest {
+  repeated EmailDocument documents = 1;
+}
+
+/**
+ * Response for bulk indexing
+ */
+message BulkIndexEmailResponse {
+  int32 indexed_count = 1;          // Number of documents successfully indexed
+  repeated string failed_email_ids = 2; // IDs that failed to index
+}
+
+/**
  * gRPC Service for Email Elastic operations
  */
 service EmailElasticService {
@@ -83,4 +98,10 @@ service EmailElasticService {
    */
   rpc getEmailDocumentsByEmailIds(EmailLookupRequest)
       returns (EmailLookupResponse);
+
+  /**
+   * Bulk index multiple email documents into Elasticsearch.
+   */
+  rpc bulkIndexEmails(BulkIndexEmailRequest)
+      returns (BulkIndexEmailResponse);
 }
