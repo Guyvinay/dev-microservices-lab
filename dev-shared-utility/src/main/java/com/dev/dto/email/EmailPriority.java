@@ -1,4 +1,4 @@
-package com.dev.dto;
+package com.dev.dto.email;
 
 public enum EmailPriority {
     HIGH,

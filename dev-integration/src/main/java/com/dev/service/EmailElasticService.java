@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.DocWriteRequest;
+import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.get.GetRequest;
@@ -91,6 +92,45 @@ public class EmailElasticService {
         IndexResponse indexResponse = esRestHighLevelClient.indexDocument(indexRequest);
         log.info("Email synced to elastic: {}, {}", emailDocument.getEmailTo(), indexResponse.status());
     }
+
+    public void bulkIndexEmail(List<EmailDocument> emailDocuments) throws IOException {
+        if (emailDocuments == null || emailDocuments.isEmpty()) return;
+
+        String index = _index(); // your index name logic
+
+        BulkRequest bulkRequest = new BulkRequest();
+
+        for (EmailDocument emailDocument : emailDocuments) {
+            if (emailDocument == null) continue;
+
+            String emailId = emailDocument.getEmailTo(); // use unique ID
+            String jsonValue = objectMapper.writeValueAsString(emailDocument);
+
+            IndexRequest indexRequest = new IndexRequest(index)
+                    .id(emailId)
+                    .source(jsonValue, XContentType.JSON)
+                    .opType(DocWriteRequest.OpType.INDEX); // upsert behavior
+
+            bulkRequest.add(indexRequest);
+        }
+
+        if (bulkRequest.numberOfActions() == 0) return;
+
+        BulkResponse bulkResponse = esRestHighLevelClient.bulkIndexDocument(bulkRequest);
+
+        if (bulkResponse.hasFailures()) {
+            log.error("Bulk indexing completed with failures: {}", bulkResponse.buildFailureMessage());
+        } else {
+            log.info("Bulk indexing successful: {} documents", emailDocuments.size());
+        }
+
+        for (BulkItemResponse itemResponse : bulkResponse) {
+            if (itemResponse.isFailed()) {
+                log.error("Failed to index {}: {}", itemResponse.getId(), itemResponse.getFailureMessage());
+            }
+        }
+    }
+
 
     private BoolQueryBuilder boolQueryBuilder(long gte, long lte) {
         // 1. Create BoolQueryBuilder
