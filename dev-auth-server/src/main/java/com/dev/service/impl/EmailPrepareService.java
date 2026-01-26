@@ -1,11 +1,11 @@
 package com.dev.service.impl;
 
+import com.dev.dto.email.EmailCategory;
 import com.dev.dto.email.EmailDocument;
 import com.dev.dto.email.EmailRequest;
 import com.dev.library.elastic.service.EmailElasticSyncService;
-import com.dev.utility.grpc.email.EmailElasticServiceGrpc;
-import com.dev.utility.grpc.email.EmailLookupRequest;
-import com.dev.utility.grpc.email.EmailLookupResponse;
+import com.dev.utility.grpc.email.*;
+import com.dev.utils.EmailEventMapper;
 import com.dev.utils.GrpcMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,12 +54,14 @@ public class EmailPrepareService {
     @GrpcClient(DEV_INTEGRATION)
     private EmailElasticServiceGrpc.EmailElasticServiceBlockingStub elasticServiceStub;
 
+
     public void sendEmailFromCSVFile(MultipartFile file) throws IOException {
         List<String> skippedEmails = new ArrayList<>();
         Map<String, EmailRequest> toSend = getEmailRequestsFromCSV(file);
         List<String> allEmails = new ArrayList<>(toSend.keySet());
         log.info("Total emails from CSV: {}", allEmails.size());
         Map<String, EmailDocument> existingDocs = new HashMap<>();
+        List<EmailDocument> docsToSave = new ArrayList<>();
 
         for (List<String> batch : partition(allEmails, 100)) {
             EmailLookupRequest emailLookupRequest = EmailLookupRequest.newBuilder().addAllEmailIds(batch).build();
@@ -99,14 +101,33 @@ public class EmailPrepareService {
                         emailId
                 );
             }
-            try {
-                asyncEmailSendService.sendEmail(emailDocument);
-                Thread.sleep(2500);
-            } catch (IOException | InterruptedException e) {
-                log.error("Failed to send email to: {}", emailId, e);
-                throw new RuntimeException(e);
-            }
+
+            docsToSave.add(emailDocument);
         }
+
+        log.info("Total docs to save: {}", docsToSave.size());
+
+        // Step 3: Bulk save to dev-integration via gRPC
+        List<com.dev.utility.grpc.email.EmailDocument> grpcDocs =
+                docsToSave.stream()
+                        .map(GrpcMapper::toProto)
+                        .toList();
+
+        BulkIndexEmailRequest bulkRequest = BulkIndexEmailRequest.newBuilder()
+                .addAllDocuments(grpcDocs)
+                .build();
+
+        BulkIndexEmailResponse bulkResponse = elasticServiceStub.bulkIndexEmails(bulkRequest);
+        log.info("Bulk save completed: indexed={} failed={}",
+                bulkResponse.getIndexedCount(),
+                bulkResponse.getFailedEmailIdsList());
+
+        log.info("Total docs to send: {}", docsToSave.size());
+        // Step 4: Send emails asynchronously
+        for (EmailDocument emailDocument : docsToSave) {
+            asyncEmailSendService.sendRmqEmailEvent(EmailEventMapper.toSendEventFromEmailDocuments(emailDocument));
+        }
+
         log.info("{} Emails skipped=[{}]", skippedEmails.size(), skippedEmails);
     }
 
@@ -268,7 +289,7 @@ public class EmailPrepareService {
 
         // --- Status & tracking ---
         emailDocument.setStatus("READY");
-        emailDocument.setCategory("APPLICATION");
+        emailDocument.setCategory(EmailCategory.JOB_APPLICATION);
         emailDocument.setResendEligible(true);
         emailDocument.setValidEmail(validateEmailFormat(emailTo));
         emailDocument.setRetryCount(0);

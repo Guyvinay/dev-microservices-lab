@@ -1,6 +1,7 @@
 package com.dev.utils;
 
 
+import com.dev.dto.email.EmailCategory;
 import com.dev.dto.email.EmailDocument;
 
 import java.time.Instant;
@@ -31,7 +32,7 @@ public class GrpcMapper {
                         .setLastUpdatedAt(doc.getLastUpdatedAt())
                         .setDeliveryTimeMs(doc.getDeliveryTimeMs())
                         .setDateCreatedEpochMs(doc.getDateCreated() != null ? doc.getDateCreated().toEpochMilli() : 0)
-                        .setCategory(doc.getCategory() != null ? doc.getCategory() : "")
+                        .setCategory(doc.getCategory() != null ? String.valueOf(doc.getCategory()) : "")
                         .setEmailTemplate(doc.getEmailTemplate() != null ? doc.getEmailTemplate() : "")
                         .setSentBy(doc.getSentBy() != null ? doc.getSentBy() : "")
                         .setThreadName(doc.getThreadName() != null ? doc.getThreadName() : "")
@@ -67,7 +68,7 @@ public class GrpcMapper {
             doc.setDateCreated(Instant.ofEpochMilli(proto.getDateCreatedEpochMs()));
         }
 
-        doc.setCategory(proto.getCategory());
+        doc.setCategory(EmailCategory.valueOf(proto.getCategory()));
         doc.setEmailTemplate(proto.getEmailTemplate());
         doc.setSentBy(proto.getSentBy());
         doc.setThreadName(proto.getThreadName());
