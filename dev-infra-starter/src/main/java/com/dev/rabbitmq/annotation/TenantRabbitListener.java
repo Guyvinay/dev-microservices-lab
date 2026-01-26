@@ -55,6 +55,11 @@ public @interface TenantRabbitListener {
     int maxConcurrentConsumers() default 10;
 
     /**
+     * container tuning: max concurrent consumers
+     */
+    int concurrentConsumers() default 1;
+
+    /**
      * optional prefetch/pull count for consumers
      */
     int prefetch() default 1;

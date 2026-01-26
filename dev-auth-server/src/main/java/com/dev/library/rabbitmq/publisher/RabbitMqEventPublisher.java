@@ -50,7 +50,7 @@ public class RabbitMqEventPublisher {
 
         } catch (Exception ex) {
             log.error(
-                    "RMQ publish failed event={} correlationId={}",
+                    "RMQ publish failed correlationId={}",
                     correlationId,
                     ex
             );

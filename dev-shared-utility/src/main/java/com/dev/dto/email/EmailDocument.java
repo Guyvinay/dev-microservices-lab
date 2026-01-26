@@ -42,7 +42,7 @@ public class EmailDocument {
     private long lastUpdatedAt;             // Timestamp of last update (status change)
     private long deliveryTimeMs;            // Time taken to send (latency/metrics)
     private Instant dateCreated;            // Time taken to send (latency/metrics)
-    private String category;                // Email category like (APPLICATION | FOLLOWUP etc.)
+    private EmailCategory category;                // Email category like (APPLICATION | FOLLOWUP etc.)
     private boolean resendEligible;         // // flag to allow re-sending
 
     // ============================================================

@@ -17,8 +17,6 @@ public class EmailSendEvent {
 
     // ==== Message Identity ====
     private String eventId;           // UUID
-    private String tenantId;
-    private String correlationId;     // Trace across services
 
     // ==== Sender Info ====
     private String from;
@@ -44,13 +42,13 @@ public class EmailSendEvent {
     private List<AttachmentRef> attachments;
 
     // ==== Classification ====
-    private String category;          // INVITE, OTP, BILLING
+    private EmailCategory category;          // JOB_APPLICATION, PASSWORD_RESET
     private EmailPriority priority;   // HIGH, NORMAL, LOW
 
     // ==== Provider Hints (optional) ====
     private String preferredProvider; // SMTP, SES
 
     // ==== Audit ====
-    private Instant createdAt;
+    private long createdAt;
 
 }

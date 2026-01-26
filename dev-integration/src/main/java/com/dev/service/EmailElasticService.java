@@ -243,6 +243,9 @@ public class EmailElasticService {
             log.warn("Email ID list is empty, returning no results.");
             return Collections.emptyList();
         }
+        // Ensure index exists + mapping applied
+        ensureIndexAndMappingExists();
+
         TermsQueryBuilder termsQueryBuilder = new TermsQueryBuilder("emailTo.keyword", emailIds);
 
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder()
@@ -258,6 +261,44 @@ public class EmailElasticService {
 
         return processSearchResponse(esRestHighLevelClient.search(searchRequest));
     }
+
+    private void ensureIndexAndMappingExists() throws IOException {
+        if(esRestHighLevelClient.indexExists(_index())) return;
+
+        synchronized (this) {
+            if(esRestHighLevelClient.indexExists(_index())) return;
+            log.info("Creating index and alias: {}", _index());
+            createIndexWithAliasAdnMappingV2(_index());
+        }
+
+    }
+
+    public String createIndexWithAliasAdnMappingV2(String indexName) throws IOException {
+
+
+        String alias = aliasNameFromIndexNameV2(indexName);
+
+        Map<String, Object> mappings = ElasticUtility.getEmailDocumentMapping();
+
+
+
+        log.info("Index [{}] created with alias [{}]", indexName, alias);
+
+        return esRestHighLevelClient.createIndexWithAlias(indexName, alias, mappings, new HashMap<>(), true);
+    }
+
+    private String aliasNameFromIndexNameV2(String indexName) {
+
+
+        return indexName + "_alias";
+    }
+
+    private String indexNameV2(String logicalName) {
+
+        // Example output: email_v1
+        return logicalName.toLowerCase() + "_v1";
+    }
+
 
     private List<EmailDocument> processSearchResponse(SearchResponse searchResponse) {
         if (searchResponse == null || searchResponse.getHits() == null) {

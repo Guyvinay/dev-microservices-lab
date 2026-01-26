@@ -33,7 +33,8 @@ public class EmailElasticGrpcService extends EmailElasticServiceGrpc.EmailElasti
         List<EmailDocument> documents = null;
         try {
             documents = emailElasticService.getEmailDocumentFromEmailIds(emailIds);
-        } catch (IOException e) {
+        } catch (Exception e) {
+            log.error("Exception while fetching documents: {}", e.getMessage(), e);
             throw new RuntimeException(e);
         }
 
