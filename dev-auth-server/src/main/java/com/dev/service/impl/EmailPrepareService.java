@@ -157,7 +157,7 @@ public class EmailPrepareService {
         long cutoffTime = Instant.now().minus(HOURS_TO, ChronoUnit.HOURS).toEpochMilli();
 
         return !"DISABLED".equalsIgnoreCase(emailDocument.getStatus()) &&
-                emailDocument.getLastSentAt() <= cutoffTime &&
+                (emailDocument.getLastSentAt() <= cutoffTime || !"FAILED".equalsIgnoreCase(emailDocument.getStatus())) &&
                 emailDocument.isResendEligible() &&
                 emailDocument.getRetryCount() <= 15;
     }

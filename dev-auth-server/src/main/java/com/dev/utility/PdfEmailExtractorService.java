@@ -27,7 +27,7 @@ public class PdfEmailExtractorService {
             // HR / Recruitment
             "hr", "hrd", "hrteam", "hrdesk", "hrsupport",
             "recruit", "recruiter", "recruitment", "recruiting",
-            "talent", "talentacquisition", "ta", "hiring",
+            "talent", "talentacquisition", "hiring",
             "staffing", "placements", "placement",
             "careers", "career", "jobs", "job", "jobportal",
             "vacancy", "vacancies", "openings", "opportunity",
@@ -56,7 +56,7 @@ public class PdfEmailExtractorService {
             "operations", "ops",
 
             // Generic Aliases
-            "hello", "hi", "welcome", "feedback",
+            "hello", "welcome", "feedback",
             "care", "customersupport", "customerservice",
 
             // Regional Mailboxes
@@ -206,7 +206,7 @@ public class PdfEmailExtractorService {
                 return "your organization";
             }
 
-            return base;
+            return capitalize(base);
         }
 
         // Example: something.co.in | something.com.au
@@ -224,7 +224,7 @@ public class PdfEmailExtractorService {
                     return "your organization";
                 }
 
-                return base;
+                return capitalize(base);
             }
 
             // Normal domain (company.com)
@@ -234,12 +234,11 @@ public class PdfEmailExtractorService {
                 return "your organization";
             }
 
-            return base;
+            return capitalize(base);
         }
 
         return "your organization";
     }
-
 
     public static String extractName(String localPart) {
 
@@ -247,48 +246,48 @@ public class PdfEmailExtractorService {
             return "HR";
         }
 
-        String prefix = localPart
-                .trim()
-                .toLowerCase();
+        String prefix = localPart.trim().toLowerCase();
 
-        // Reject digits
-        if (prefix.matches(".*\\d.*")) {
+        // Allow only safe characters
+        if (!prefix.matches("[A-Za-z0-9._-]+")) {
             return "HR";
         }
 
-        // Allow only letters and separators
-        if (!prefix.matches("[a-z._-]+")) {
-            return "HR";
-        }
-
-        // Block role keywords anywhere in prefix
+        // Block role-based addresses completely
         for (String role : ROLE_PREFIXES) {
-            if (prefix.contains(role)) {
+            if (prefix.startsWith(role) || prefix.contains(role)) {
                 return "HR";
             }
         }
 
-        // Split tokens
+        // Split by common separators
         String[] tokens = prefix.split("[._-]");
 
-        // Must contain at least firstname.lastname
-        if (tokens.length < 2) {
-            return "HR";
+        for (String token : tokens) {
+
+            // Remove digits from token
+            String cleaned = token.replaceAll("\\d", "");
+
+            // Skip empty or single-letter tokens (like "s" in aftab.s)
+            if (cleaned.length() < 3) {
+                continue;
+            }
+
+            // Only alphabetic allowed
+            if (!cleaned.matches("[a-z]+")) {
+                continue;
+            }
+
+            // Length sanity check
+            if (cleaned.length() > 15) {
+                continue;
+            }
+
+            return capitalize(cleaned);
         }
 
-        String firstName = tokens[0];
-
-        // Length validation
-        if (firstName.length() < 3 || firstName.length() > 15) {
-            return "HR";
-        }
-
-        // Alphabet only validation
-        if (!firstName.matches("[a-z]+")) {
-            return "HR";
-        }
-
-        return capitalize(firstName);
+        // Fallback
+        return "HR";
     }
 
 
