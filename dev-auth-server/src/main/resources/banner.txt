@@ -1,0 +1,32 @@
+██╗   ██╗██╗███╗   ██╗ █████╗ ██╗   ██╗
+██║   ██║██║████╗  ██║██╔══██╗╚██╗ ██╔╝
+██║   ██║██║██╔██╗ ██║███████║ ╚████╔╝
+╚██╗ ██╔╝██║██║╚██╗██║██╔══██║  ╚██╔╝
+ ╚████╔╝ ██║██║ ╚████║██║  ██║   ██║
+  ╚═══╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝   ╚═╝
+
+:: MICROSERVICES-LAB ::
+
+============================================================
+ Service Name     : ${spring.application.name:APP-SERVICE}
+ Environment      : ${spring.profiles.active:default}
+ Server Port      : ${server.port:8080}
+
+ Hostname         : ${HOSTNAME:LOCALHOST}
+ Process ID       : ${PID}
+ Started By       : ${user.name}
+
+ Java Version     : ${java.version}
+ JVM Vendor       : ${java.vendor}
+ File Encoding    : ${file.encoding}
+
+ Max Heap         : ${JAVA_MAX_MEM:Not-Configured}
+ Initial Heap     : ${JAVA_INIT_MEM:Not-Configured}
+
+ Build Version    : ${build.version:DEV}
+ Build Time       : ${build.time:LOCAL}
+
+ Startup Mode     : ${spring.main.web-application-type:SERVLET}
+============================================================
+
+:: Application successfully initialized ::
