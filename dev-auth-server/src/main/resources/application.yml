@@ -149,8 +149,8 @@ security:
     audience:
       - dev-sandbox
       - dev-integration
-    access-expiry-minutes: 1440 # 1 day
-    refresh-expiry-minutes: 10080 # 7 days
+    access-expiry-minutes: 144000 # 1 day
+    refresh-expiry-minutes: 1008000 # 7 days
 
 
 ################################################################################
