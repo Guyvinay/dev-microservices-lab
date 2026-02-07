@@ -86,7 +86,7 @@ public class AuthContextUtil {
         return StringUtils.isNotBlank(tenantId) ? tenantId : defaultTenant;
     }
 
-    private static AccessJwtToken getJwtFromSecurityContext() {
+    private static JwtToken getJwtFromSecurityContext() {
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
 
@@ -95,13 +95,11 @@ public class AuthContextUtil {
         }
 
         Object details = authentication.getDetails();
-        if (!(details instanceof AccessJwtToken AccessJwtToken)) {
-            throw new AuthenticationException(
-                    "Authentication details do not contain AccessJwtToken"
-            );
-        }
-
-        return AccessJwtToken;
+        if (details instanceof AccessJwtToken accessJwtToken) return  accessJwtToken;
+        if (details instanceof ServiceJwtToken serviceJwtToken) return serviceJwtToken;
+        throw new AuthenticationException(
+                "Authentication details do not contain AccessJwtToken"
+        );
     }
 
     public static JwtToken getJwtFromSecurityContextOrNull() {

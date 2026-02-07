@@ -3,6 +3,7 @@ package com.dev.service.impl;
 import com.dev.dto.DatasetUploadedEvent;
 import com.dev.utility.AuthContextUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -20,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 
 @Service
+@Slf4j
 public class DatasetPublisherService {
 
     private static final int BATCH_SIZE = 10000;
@@ -35,8 +37,6 @@ public class DatasetPublisherService {
         String filePath = "/home/guyvinay/dev/repo/assets/123456_ds_001.csv";
         Path file = Path.of(filePath);
         String tenantId = AuthContextUtil.getTenantId();
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        authentication.getDetails();
         try (
                 FileReader fileReader = new FileReader(file.toFile());
                 CSVParser csvParser = new CSVParser(fileReader, CSVFormat.DEFAULT.withFirstRecordAsHeader());
@@ -66,7 +66,6 @@ public class DatasetPublisherService {
                     MessageProperties properties = new MessageProperties();
                     properties.setContentType("application/octet-stream");
                     properties.setHeader("metadata", objectMapper.writeValueAsString(event));
-                    properties.setHeader("Authorization", "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ7XCJ1c2VySWRcIjpudWxsLFwib3JnXCI6XCJiMzc4YjU4ZC1hYjAwLTQyMmQtOWYzOC0yZDFhZDkzN2U1OTNcIixcIm5hbWVcIjpudWxsLFwiZW1haWxcIjpcInZpa2FzQGdtYWlsLmNvbVwiLFwidGVuYW50SWRcIjpcIjY0MzQ2XCIsXCJjcmVhdGVkRGF0ZVwiOjE3NTg2NTM2MTY2MDEsXCJleHBpcnlEYXRlXCI6MTIxNzU4NjczNDE2NjAxLFwicm9sZXNcIjpbXCIyODc3NDcxMlwiLFwiNDk5NTAwMjRcIixcIjU0MjAwMDk5XCIsXCI2MTUyMDU4OFwiLFwiNjU3MzU5OTJcIixcIjg5NTcwNzEzXCIsXCI5NjMyNDY1N1wiXX0iLCJhdWQiOlsiZGV2LXRha2Vhd2F5IiwiZGV2LXJldmlzZWQiXSwibmJmIjoxNzU4NjczNDE2LCJpc3MiOiJkZXYtYXV0aCIsInBlcm1pc3Npb24iOlsiQURNSU4iLCJVU0VSIiwiTUFOQUdFUiJdLCJleHAiOjEyMTc1ODY3MzQxNiwiaWF0IjoxNzU4NjczNDE2LCJqdGkiOiJiMzY3MWIxZi04YmI1LTQ4NWMtOWZkOC1iYjVhZWM4Y2I5MGEifQ.4MYWXSEd4b7upGoqrdi2toZBIbSA4HGdAxA3XFpwhag");
 
                     byte[] csvByte = stringBuilder.toString().getBytes(StandardCharsets.UTF_8);
                     Message message = new Message(csvByte, properties);
@@ -76,7 +75,7 @@ public class DatasetPublisherService {
                             "tenantId.dataset.uploaded",
                             message
                     );
-                    System.out.println("TenantId: " + tenantId + ", Published batch: " + batchNumber );
+                    log.info("TenantId: {}  Published batch:" , tenantId , batchNumber );
                     stringBuilder.setLength(0);
                 }
             }

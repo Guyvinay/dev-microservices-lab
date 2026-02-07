@@ -170,18 +170,23 @@ public class PdfEmailExtractorService {
 
     public EmailRequest processEmailToGetNameAndCompany(String email) {
 
-        String trimmed = email.trim();
+        try {
+            String trimmed = email.trim();
 
-        String[] parts = trimmed.split("@");
+            String[] parts = trimmed.split("@");
 
-        String local = parts[0];
-        String domain = parts[1];
+            String local = parts[0];
+            String domain = parts[1];
 
-        String company = extractPrimaryDomain(domain);
+            String company = extractPrimaryDomain(domain);
 
-        String name = extractName(local);
+            String name = extractName(local);
 
-        return new EmailRequest(name, trimmed, company);
+            return new EmailRequest(name, trimmed, company);
+        } catch (Exception e) {
+            log.error("Error while converting email to EmailRequest: {}", e.getMessage(), e);
+            return null;
+        }
     }
 
     public static String extractPrimaryDomain(String domain) {
@@ -312,10 +317,15 @@ public class PdfEmailExtractorService {
 
             for (String email : emails) {
 
-                EmailRequest row = processEmailToGetNameAndCompany(email);
-
-                writer.write(formatRow(row));
-                writer.newLine();
+                try {
+                    EmailRequest row = processEmailToGetNameAndCompany(email);
+                    if(row != null) {
+                        writer.write(formatRow(row));
+                        writer.newLine();
+                    }
+                } catch (IOException e) {
+                    log.error("Erro while writing email to csv file");
+                }
             }
         }
     }

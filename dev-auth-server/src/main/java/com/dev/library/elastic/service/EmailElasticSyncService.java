@@ -102,11 +102,16 @@ public class EmailElasticSyncService {
         boolQueryBuilder.must(QueryBuilders.termQuery("resendEligible", true));
 
         // Retry count <= 5
-        RangeQueryBuilder retryRange = QueryBuilders.rangeQuery("retryCount").lte(15);
+        RangeQueryBuilder retryRange = QueryBuilders.rangeQuery("retryCount").gte(0).lte(5);
         boolQueryBuilder.must(retryRange);
 
+        RangeQueryBuilder emailSentTimesRange = QueryBuilders.rangeQuery("emailSentTimes").gte(0).lte(1);
+        boolQueryBuilder.must(emailSentTimesRange);
+
+
+
         // Status = READY
-        boolQueryBuilder.must(QueryBuilders.termsQuery("status.keyword", "FAILED"));
+        boolQueryBuilder.must(QueryBuilders.termsQuery("status.keyword", "SUCCESS"));
 
         // 3. MUST NOT condition.
         boolQueryBuilder.mustNot(QueryBuilders.termsQuery("status.keyword", "DISABLED"));

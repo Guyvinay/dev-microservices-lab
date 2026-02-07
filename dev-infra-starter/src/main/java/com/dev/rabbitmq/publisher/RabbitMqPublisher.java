@@ -85,8 +85,8 @@ public class RabbitMqPublisher {
             throw e;
         } finally {
             SimpleResourceHolder.unbind(rabbitTemplate.getConnectionFactory());
-            MDCLoggingUtility.removeVariablesFromMDCContext();
             log.info("Unbound tenant={} from connection factory after publish", resolvedTenant);
+            MDCLoggingUtility.removeVariablesFromMDCContext();
         }
     }
 
