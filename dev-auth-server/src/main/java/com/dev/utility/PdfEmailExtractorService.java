@@ -4,12 +4,15 @@ import com.dev.dto.email.EmailRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.HashSet;
 import java.util.List;
@@ -49,7 +52,7 @@ public class PdfEmailExtractorService {
 
             // Sales / Marketing (not real persons)
             "sales", "marketing", "business", "bd", "partnership",
-            "alliances", "growth",
+            "alliances", "growth","resume",
 
             // Finance / Ops
             "accounts", "billing", "finance", "payroll",
@@ -87,7 +90,9 @@ public class PdfEmailExtractorService {
             "comcast", "verizon", "att", "sbcglobal", "btinternet",
 
             // Old providers
-            "inbox", "fastmail", "rocketmail"
+            "inbox", "fastmail", "rocketmail","recruit",
+            "info", "support", "help", "helpdesk","careers", "career", "jobs", "job", "jobportal",
+            "vacancy", "vacancies", "openings", "opportunity"
     );
 
 
@@ -165,6 +170,58 @@ public class PdfEmailExtractorService {
 
         log.info("Total {} emails extracted",  emails.size());
         writeContacts(emails);
+        return emails;
+    }
+    public Set<String> extractEmailsFromHtmlFiles(List<MultipartFile> htmlFiles) throws IOException {
+
+        Set<String> emails = new HashSet<>();
+
+        for (MultipartFile file : htmlFiles) {
+
+            String fileName = file.getOriginalFilename();
+            Set<String> currentEmails = new HashSet<>();
+
+            log.info("Extracting emails from HTML file {}", fileName);
+
+            try (InputStream inputStream = file.getInputStream()) {
+
+                /**
+                 * Jsoup parses the HTML safely.
+                 * It tolerates broken HTML and avoids regex-based parsing issues.
+                 */
+                Document document = Jsoup.parse(inputStream, StandardCharsets.UTF_8.name(), "");
+
+                /**
+                 * Remove script and style content to reduce noise
+                 * and avoid extracting emails from JavaScript.
+                 */
+                document.select("script, style").remove();
+
+                /**
+                 * Extract visible text only.
+                 */
+                String text = document.text();
+
+                Matcher matcher = EMAIL_PATTERN.matcher(text);
+
+                while (matcher.find()) {
+                    String email = matcher.group();
+                    email = email.replaceAll("[\\.,;:]+$", "").trim();
+                    currentEmails.add(email);
+                }
+
+                log.info("Extracted {} emails from {}", currentEmails.size(), fileName);
+                emails.addAll(currentEmails);
+
+            } catch (IOException e) {
+                log.error("Error extracting emails from {}", fileName, e);
+                throw new RuntimeException("Failed to extract emails from HTML", e);
+            }
+        }
+
+        log.info("Total {} emails extracted", emails.size());
+        writeContacts(emails);
+
         return emails;
     }
 

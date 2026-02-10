@@ -43,4 +43,15 @@ public class PdfController {
                     .body(Collections.emptySet());
         }
     }
+
+    @PostMapping(value = "/extract-emails-html", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Set<String>> extractEmailsFromHtml(@RequestParam("files") List<MultipartFile> pdfFiles) {
+        try {
+            Set<String> emails = pdfEmailExtractorService.extractEmailsFromHtmlFiles(pdfFiles);
+            return ResponseEntity.ok(emails);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Collections.emptySet());
+        }
+    }
 }

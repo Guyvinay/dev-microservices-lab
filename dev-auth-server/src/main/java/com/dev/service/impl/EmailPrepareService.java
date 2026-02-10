@@ -77,10 +77,10 @@ public class EmailPrepareService {
 
             EmailDocument existingDoc = existingDocs.get(emailId);
             if(existingDoc != null) {
-//                if (!isEligibleToSend(existingDoc)) {
-//                    skippedEmails.add(emailId);
-//                    continue;
-//                }
+                if (!isEligibleToSend(existingDoc)) {
+                    skippedEmails.add(emailId);
+                    continue;
+                }
                 emailDocument = existingDoc;
                 if(StringUtils.isNotBlank(req.getName())) emailDocument.setRecipientName(req.getName());
                 if(StringUtils.isNotBlank(emailId)) emailDocument.setEmailTo(emailId);

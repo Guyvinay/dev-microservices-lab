@@ -31,8 +31,7 @@ public class EmailElasticGrpcService extends EmailElasticServiceGrpc.EmailElasti
         log.info("Received batch lookup for {} emails", emailIds.size());
 
         // IMPORTANT: Use ES multi-get or terms query
-        List<EmailDocument> documents =
-                null;
+        List<EmailDocument> documents = null;
         try {
             documents = emailElasticService.getEmailDocumentFromEmailIds(emailIds);
         } catch (IOException e) {
