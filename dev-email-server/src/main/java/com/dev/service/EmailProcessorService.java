@@ -1,6 +1,8 @@
 package com.dev.service;
 
 import com.dev.dto.email.EmailSendEvent;
+import com.dev.service.handler.EmailResultHandler;
+import com.dev.service.handler.EmailResultHandlerRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -9,28 +11,25 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class EmailProcessorService {
+
     private final EmailSender emailSender;
-    private final EmailStatusPublisher statusPublisher;
+    private final EmailResultHandlerRegistry handlerRegistry;
+
     public void sendEmail(EmailSendEvent event) {
         long startTime = System.currentTimeMillis();
+        EmailResultHandler handler =
+                handlerRegistry.getHandler(event.getCategory());
         try {
 
             emailSender.send(event);
 
             long latency = System.currentTimeMillis() - startTime;
 
-            statusPublisher.publishSuccess(event, latency);
-
+            handler.onSuccess(event);
 
         } catch (Exception ex) {
-
-            long latency = System.currentTimeMillis() - startTime;
-
-            statusPublisher.publishFailure(event, ex.getMessage(), latency);
-
             log.error("Email sending failed: to={} {}", event.getTo(), ex.getMessage());
-
-//            throw ex; // triggers RMQ retry
+            handler.onFailure(event, ex.getMessage());
         }
 
     }
