@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: dev-email-server
+server:
+  port: 8004
+  servlet.context-path: /dev-email-server
+
+################################################################################
+# ELASTICSEARCH (Custom index settings)
+################################################################################
+elastic:
+  index:
+    private: es_private_message_index
+    group: es_group_message_index
+    email: email_index
