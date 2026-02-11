@@ -19,8 +19,8 @@ import java.io.IOException;
         exchange = "email.server.exchange",
         routingKey = "email.send.server.q",
         type = "direct",
-        prefetch = 2,
-        concurrentConsumers = 5,
+        prefetch = 1,
+        concurrentConsumers = 1,
         maxConcurrentConsumers = 10
 )
 @RequiredArgsConstructor
