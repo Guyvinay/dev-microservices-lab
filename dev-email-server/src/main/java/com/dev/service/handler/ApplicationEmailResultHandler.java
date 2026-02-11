@@ -2,9 +2,11 @@ package com.dev.service.handler;
 
 import com.dev.dto.email.EmailCategory;
 import com.dev.dto.email.EmailSendEvent;
+import com.dev.dto.email.EmailStatusEvent;
 import com.dev.service.handler.email.ESIntegrationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -20,12 +22,37 @@ public class ApplicationEmailResultHandler implements EmailResultHandler {
     }
 
     @Override
-    public void onSuccess(EmailSendEvent event) {
+    public void onSuccess(EmailStatusEvent event) {
+        log.info("APPLICATION email indexed in ES: {}", event.getEventId());
         esIntegrationService.updateSuccessEvent(event);
     }
 
     @Override
-    public void onFailure(EmailSendEvent event, String errorMessage) {
-        esIntegrationService.updateFailedEvent(event, errorMessage);
+    public void onFailure(EmailStatusEvent event) {
+        log.warn("APPLICATION email failure indexed in ES: {}", event.getEventId());
+        esIntegrationService.updateFailedEvent(event);
+    }
+
+    @Override
+    public EmailStatusEvent buildSuccessEvent(EmailSendEvent event) {
+        return EmailStatusEvent.builder()
+                .eventId(event.getEventId())
+                .category(event.getCategory())
+                .to(event.getTo())
+                .status("SENT")
+                .processedAt(System.currentTimeMillis())
+                .build();
+    }
+
+    @Override
+    public EmailStatusEvent buildFailureEvent(EmailSendEvent event, String errorMessage) {
+        return EmailStatusEvent.builder()
+                .eventId(event.getEventId())
+                .category(event.getCategory())
+                .to(event.getTo())
+                .status("FAILED")
+                .errorMessage(errorMessage)
+                .processedAt(System.currentTimeMillis())
+                .build();
     }
 }

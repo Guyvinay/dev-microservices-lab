@@ -1,4 +1,4 @@
-package com.dev.library.rabbitmq.dto;
+package com.dev.dto.rmq;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

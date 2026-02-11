@@ -1,5 +1,6 @@
 package com.dev.rabbitmq.publisher;
 
+import com.dev.dto.rmq.RmqEvent;
 import com.dev.logging.MDCKeys;
 import com.dev.logging.MDCLoggingUtility;
 import com.dev.utility.AuthContextUtil;
@@ -36,6 +37,10 @@ public class RabbitMqPublisher {
 
     public RabbitMqPublisher(RabbitTemplate rabbitTemplate) {
         this.rabbitTemplate = rabbitTemplate;
+    }
+
+    public void publish(RmqEvent rmqEvent) {
+        this.publish(null, rmqEvent.getExchange(), rmqEvent.getRoutingKey(), rmqEvent.getPayload(), null);
     }
 
     /**

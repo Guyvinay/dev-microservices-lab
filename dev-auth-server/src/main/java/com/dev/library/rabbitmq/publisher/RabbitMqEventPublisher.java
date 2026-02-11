@@ -1,6 +1,6 @@
 package com.dev.library.rabbitmq.publisher;
 
-import com.dev.library.rabbitmq.dto.RmqEvent;
+import com.dev.dto.rmq.RmqEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
