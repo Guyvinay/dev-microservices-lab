@@ -69,7 +69,8 @@ public class AsyncEmailSendService {
                     if(file.exists()) {
                         messageHelper.addAttachment(attachmentName, file);
                     } else {
-                        log.warn("Attachment [{}] not found for recipient [{}]", attachmentName, to);
+                        log.error("Attachment [{}] not found for recipient [{}]", attachmentName, to);
+                        throw new RuntimeException("Attachment " + attachmentName + " not found for recipient " + to);
                     }
                 }
             }

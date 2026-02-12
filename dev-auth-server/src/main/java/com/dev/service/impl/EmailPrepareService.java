@@ -94,6 +94,7 @@ public class EmailPrepareService {
                 emailDocument.setAttachmentNames(
                         new ArrayList<>(List.of("Vinay_Singh_Java_Backend_Developer.pdf"))
                 );
+                emailDocument.setEmailSentTimes(emailDocument.getEmailSentTimes() + 1);
             } else {
                 emailDocument = prepareEmailDocument(
                         req.getName(),

@@ -67,7 +67,7 @@ public class PdfEmailExtractorService {
 
             // Other common garbage prefixes
             "test", "demo", "sample", "example",
-            "agency", "agencies", "agen"
+            "agency", "agencies", "agen","tag"
     );
 
 
@@ -92,7 +92,7 @@ public class PdfEmailExtractorService {
             // Old providers
             "inbox", "fastmail", "rocketmail","recruit",
             "info", "support", "help", "helpdesk","careers", "career", "jobs", "job", "jobportal",
-            "vacancy", "vacancies", "openings", "opportunity"
+            "vacancy", "vacancies", "openings", "opportunity","tag"
     );
 
 
