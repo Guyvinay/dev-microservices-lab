@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -358,7 +359,8 @@ public class PdfEmailExtractorService {
     }
 
 
-    public void writeContacts(Set<String> emails) throws IOException {
+    public String writeContacts(Set<String> emails) throws IOException {
+        StringBuilder emailRequests;
 
         Files.createDirectories(CSV_PATH.getParent());
 
@@ -371,19 +373,23 @@ public class PdfEmailExtractorService {
 
             writer.write(CSV_HEADER);
             writer.newLine();
+            emailRequests = new StringBuilder(CSV_HEADER + "\n");
 
             for (String email : emails) {
 
                 try {
                     EmailRequest row = processEmailToGetNameAndCompany(email);
                     if(row != null) {
-                        writer.write(formatRow(row));
+                        String rowStr = formatRow(row);
+                        emailRequests.append(rowStr).append("\n");
+                        writer.write(rowStr);
                         writer.newLine();
                     }
                 } catch (IOException e) {
-                    log.error("Erro while writing email to csv file");
+                    log.error("Error while writing email to csv file");
                 }
             }
+            return emailRequests.toString();
         }
     }
 
