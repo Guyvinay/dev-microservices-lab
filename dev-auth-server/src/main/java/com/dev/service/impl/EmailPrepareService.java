@@ -46,7 +46,7 @@ public class EmailPrepareService {
 
     private final TemplateEngine templateEngine;
     private final EmailElasticSyncService emailElasticSyncService;
-    private static final int HOURS_TO = 960;
+    private static final int HOURS_TO = 480;
     private final AsyncEmailSendService asyncEmailSendService;
     private final PdfEmailExtractorService pdfEmailExtractorService;
 
