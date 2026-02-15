@@ -2,6 +2,7 @@ package com.dev.service;
 
 import com.dev.dto.email.AttachmentRef;
 import com.dev.dto.email.EmailSendEvent;
+import com.dev.dto.email.EmailSendResult;
 import jakarta.activation.DataSource;
 import jakarta.activation.FileDataSource;
 import jakarta.mail.MessagingException;
@@ -13,6 +14,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -28,7 +30,8 @@ import java.util.List;
 public class EmailSender {
     private final JavaMailSender mailSender;
 
-    public void send(EmailSendEvent event) {
+    public EmailSendResult send(EmailSendEvent event) {
+        validateEvent(event);
         long start = System.currentTimeMillis();
         String threadName = Thread.currentThread().getName();
         try {
@@ -72,18 +75,27 @@ public class EmailSender {
             mailSender.send(message);
 
             long latency = System.currentTimeMillis() - start;
+            String smtpMessageId = message.getMessageID();
 
             log.info(
-                    "Email sent successfully to={} category={} priority={} latencyMs={} thread={}",
-                    event.getTo(),
-                    event.getCategory(),
-                    event.getPriority(),
-                    latency,
-                    threadName
+                    "Email sent successfully to={} category={} priority={} latencyMs={} thread={} messageId={}",
+                    event.getTo(), event.getCategory(), event.getPriority(), latency, threadName, smtpMessageId
             );
 
+            return EmailSendResult.builder()
+                    .to(event.getTo())
+                    .category(event.getCategory())
+                    .priority(event.getPriority())
+                    .success(true)
+                    .deliveryTimeMs(latency)
+                    .smtpMessageId(smtpMessageId)
+                    .threadName(threadName)
+                    .build();
+
+        } catch (MailSendException | MessagingException ex) {
+            return buildFailureResult(event, start, threadName, ex);
         } catch (Exception ex) {
-            throw new RuntimeException("SMTP send failed", ex);
+            return buildFailureResult(event, start, threadName, ex);
         }
     }
 
@@ -106,4 +118,53 @@ public class EmailSender {
         }
         return new FileDataSource(file);
     }
+
+    private void validateEvent(EmailSendEvent event) {
+
+        if (event == null) {
+            throw new IllegalArgumentException("EmailSendEvent cannot be null");
+        }
+
+        if (StringUtils.isBlank(event.getTo())) {
+            throw new IllegalArgumentException("Recipient (to) cannot be blank");
+        }
+
+        if (StringUtils.isBlank(event.getFrom())) {
+            throw new IllegalArgumentException("Sender (from) cannot be blank");
+        }
+
+        if (StringUtils.isBlank(event.getSubject())) {
+            throw new IllegalArgumentException("Subject cannot be blank");
+        }
+
+        if (event.getBody() == null) {
+            throw new IllegalArgumentException("Email body cannot be null");
+        }
+    }
+
+    private EmailSendResult buildFailureResult(
+            EmailSendEvent event,
+            long start,
+            String threadName,
+            Exception ex
+    ) {
+
+        long latency = System.currentTimeMillis() - start;
+
+        log.error(
+                "Email failed to={} category={} priority={} latencyMs={} thread={} reason={}", event.getTo(),
+                event.getCategory(), event.getPriority(), latency, threadName, ex.getMessage(), ex
+        );
+
+        return EmailSendResult.builder()
+                .to(event.getTo())
+                .category(event.getCategory())
+                .priority(event.getPriority())
+                .success(false)
+                .deliveryTimeMs(latency)
+                .errorMessage(ex.getMessage())
+                .threadName(threadName)
+                .build();
+    }
+
 }
