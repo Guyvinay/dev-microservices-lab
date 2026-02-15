@@ -1,5 +1,4 @@
 package com.dev.dto.email;
-/*
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,4 +19,3 @@ public class EmailStatusEvent {
     private long latency;
     private long processedAt;
 }
-*/

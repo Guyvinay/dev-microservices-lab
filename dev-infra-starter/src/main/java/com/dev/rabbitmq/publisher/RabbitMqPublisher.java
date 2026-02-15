@@ -3,6 +3,7 @@ package com.dev.rabbitmq.publisher;
 import com.dev.dto.rmq.RmqEvent;
 import com.dev.logging.MDCKeys;
 import com.dev.logging.MDCLoggingUtility;
+import com.dev.rabbitmq.configuration.RmqMessagePropertiesFactory;
 import com.dev.utility.AuthContextUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -34,55 +35,60 @@ import java.util.UUID;
 public class RabbitMqPublisher {
 
     private final RabbitTemplate rabbitTemplate;
+    private final RmqMessagePropertiesFactory propertiesFactory;
 
-    public RabbitMqPublisher(RabbitTemplate rabbitTemplate) {
+    public RabbitMqPublisher(RabbitTemplate rabbitTemplate, RmqMessagePropertiesFactory propertiesFactory) {
         this.rabbitTemplate = rabbitTemplate;
+        this.propertiesFactory = propertiesFactory;
     }
 
     public void publish(RmqEvent rmqEvent) {
+        verifyEvent(rmqEvent);
         this.publish(null, rmqEvent.getExchange(), rmqEvent.getRoutingKey(), rmqEvent.getPayload(), null);
     }
 
-    /**
-     * Publish a message to a specific exchange and routing key for a given tenant.
-     *
-     * @param tenantId   the tenant identifier; if null/blank, resolved from {@link AuthContextUtil}
-     * @param exchange   the exchange name; if blank, the default exchange ("") is used
-     * @param routingKey the routing key (or queue name if using default exchange)
-     * @param payload    the message payload (converted to JSON string)
-     */
     public void publish(String tenantId, String exchange, String routingKey, Object payload, Message message) {
         String resolvedTenant = resolveTenant(tenantId);
         String resolvedExchange = StringUtils.isNotBlank(exchange) ? exchange : "";
 
-        if(message == null) {
-            message = MessageBuilder.withBody((String.valueOf(payload)).getBytes(StandardCharsets.UTF_8))
-                    .setContentType(MessageProperties.CONTENT_TYPE_JSON)
-                    .setMessageId(UUID.randomUUID().toString())
-                    .build();
-        }
+        String correlationId = UUID.randomUUID().toString();
+        CorrelationData correlationData = new CorrelationData(correlationId);
 
-        CorrelationData correlationData = new CorrelationData(message.getMessageProperties().getMessageId());
-
-        log.info("Preparing to publish message [tenant={}, exchange={}, routingKey={}, correlationId={}]",
-                resolvedTenant, resolvedExchange, routingKey, correlationData.getId());
 
         try {
             SimpleResourceHolder.bind(rabbitTemplate.getConnectionFactory(), resolvedTenant);
+            if (message == null) {
 
-            MessageProperties props = message.getMessageProperties();
+                MessageProperties props =
+                        propertiesFactory.create(correlationId);
 
-            putIfPresent(props, MDCKeys.HEADER_TRACE_ID, String.valueOf(MDC.get(MDCKeys.TRACE_ID)));
-            putIfPresent(props, MDCKeys.HEADER_TENANT_ID, String.valueOf(MDC.get(MDCKeys.TENANT_ID)));
-            putIfPresent(props, MDCKeys.HEADER_USER_ID, String.valueOf(MDC.get(MDCKeys.USER_ID)));
+                message = rabbitTemplate
+                        .getMessageConverter()
+                        .toMessage(payload, props);
 
+            } else {
+
+                // Ensure correlationId is aligned with existing message
+                if (message.getMessageProperties().getMessageId() == null) {
+                    message.getMessageProperties().setMessageId(correlationId);
+                }
+
+                correlationId = message.getMessageProperties().getMessageId();
+                correlationData = new CorrelationData(correlationId);
+            }
+
+            log.info("Preparing to publish message [tenant={}, exchange={}, routingKey={}, correlationId={}]",
+                    resolvedTenant, resolvedExchange, routingKey, correlationId);
 
             rabbitTemplate.convertAndSend(
                     resolvedExchange,
-                    routingKey, message, correlationData);
+                    routingKey,
+                    message,
+                    correlationData
+            );
 
             log.info("Successfully published message [tenant={}, exchange={}, routingKey={}, correlationId={}]",
-                    resolvedTenant, resolvedExchange, routingKey, correlationData.getId());
+                    resolvedTenant, resolvedExchange, routingKey, correlationId);
 
         } catch (Exception e) {
             log.error("Failed to publish message [tenant={}, exchange={}, routingKey={}]",
@@ -93,6 +99,12 @@ public class RabbitMqPublisher {
             log.info("Unbound tenant={} from connection factory after publish", resolvedTenant);
             MDCLoggingUtility.removeVariablesFromMDCContext();
         }
+    }
+
+    private void verifyEvent(RmqEvent event) {
+        if(event == null) throw new IllegalArgumentException("Event cannot be null when sending message in RMQ.");
+        if (StringUtils.isBlank(event.getExchange())) event.setExchange("default.exchange");
+        if (StringUtils.isBlank(event.getRoutingKey())) event.setRoutingKey("default.routing");
     }
 
     private void putIfPresent(MessageProperties props, String key, String value) {

@@ -178,9 +178,14 @@ public class RabbitMqConfiguration {
      * Publisher bean for tenant-aware message publishing.
      */
     @Bean
-    public RabbitMqPublisher rabbitMqPublisher(RabbitTemplate rabbitTemplate) {
+    public RabbitMqPublisher rabbitMqPublisher(RabbitTemplate rabbitTemplate, RmqMessagePropertiesFactory propertiesFactory) {
         log.info("Creating RabbitMqPublisher for tenant-aware publishing");
-        return new RabbitMqPublisher(rabbitTemplate);
+        return new RabbitMqPublisher(rabbitTemplate, propertiesFactory);
+    }
+
+    @Bean
+    public RmqMessagePropertiesFactory rmqMessagePropertiesFactory() {
+        return new RmqMessagePropertiesFactory();
     }
 
     /**
