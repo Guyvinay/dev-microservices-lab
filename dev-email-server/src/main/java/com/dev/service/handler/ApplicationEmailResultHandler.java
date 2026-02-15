@@ -9,6 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -35,24 +38,26 @@ public class ApplicationEmailResultHandler implements EmailResultHandler {
 
     @Override
     public EmailStatusEvent buildSuccessEvent(EmailSendEvent event) {
+        Map<String, Object> updateFieldMap = new HashMap<>();
+        updateFieldMap.put("status", "SUCCESS");
+        updateFieldMap.put("lastUpdatedAt", System.currentTimeMillis());
         return EmailStatusEvent.builder()
                 .eventId(event.getEventId())
                 .category(event.getCategory())
-                .to(event.getTo())
-                .status("SENT")
-                .processedAt(System.currentTimeMillis())
+                .updateFieldMap(updateFieldMap)
                 .build();
     }
 
     @Override
     public EmailStatusEvent buildFailureEvent(EmailSendEvent event, String errorMessage) {
+        Map<String, Object> updateFieldMap = new HashMap<>();
+        updateFieldMap.put("status", "FAILED");
+        updateFieldMap.put("errorMessage", errorMessage);
+        updateFieldMap.put("lastUpdatedAt", System.currentTimeMillis());
         return EmailStatusEvent.builder()
                 .eventId(event.getEventId())
                 .category(event.getCategory())
-                .to(event.getTo())
-                .status("FAILED")
-                .errorMessage(errorMessage)
-                .processedAt(System.currentTimeMillis())
+                .updateFieldMap(updateFieldMap)
                 .build();
     }
 }

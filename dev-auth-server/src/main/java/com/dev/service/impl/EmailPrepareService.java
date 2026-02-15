@@ -27,12 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -59,6 +54,7 @@ public class EmailPrepareService {
         Map<String, EmailRequest> toSend = getEmailRequestsFromCSV(file);
         List<String> allEmails = new ArrayList<>(toSend.keySet());
         List<EmailDocument> docsToSave = new ArrayList<>();
+        List<EmailDocument> allEmailDocuments = new ArrayList<>();
         log.info("Total emails from CSV: {}", allEmails.size());
         Map<String, EmailDocument> existingDocs = esEmailDocumentService.fetchExistingDocuments(allEmails);
 
@@ -66,63 +62,66 @@ public class EmailPrepareService {
 
         for (String emailId : allEmails) {
             EmailRequest req = toSend.get(emailId);
-            EmailDocument emailDocument;
-
-            EmailDocument existingDoc = existingDocs.get(emailId);
-            if(existingDoc != null) {
-                if (!isEligibleToSend(existingDoc)) {
+            EmailDocument emailDocument = existingDocs.get(emailId);
+            if(emailDocument != null) {
+                if (!isEligibleToSend(emailDocument)) {
                     skippedEmails.add(emailId);
                     continue;
                 }
-                emailDocument = existingDoc;
-                if(StringUtils.isNotBlank(req.getName())) emailDocument.setRecipientName(req.getName());
-                if(StringUtils.isNotBlank(emailId)) emailDocument.setEmailTo(emailId);
-                if(StringUtils.isNotBlank(req.getCompany())) emailDocument.setCompany(req.getCompany());
-                Map<String, String> templateVariable = Map.of(
-                        "name", emailDocument.getRecipientName(),
-                        "company", emailDocument.getCompany()
-                );
-                emailDocument.setEmailTemplate(prepareEmailTemplate(templateVariable));
-                emailDocument.setTemplateVariables(templateVariable);
-                emailDocument.setAttachmentNames(
-                        new ArrayList<>(List.of("Vinay_Singh_Java_Backend_Developer.pdf"))
-                );
+                enrichExistingDocument(emailDocument, req);
             } else {
                 emailDocument = prepareEmailDocument(
                         req.getName(),
                         req.getCompany(),
                         emailId
                 );
+                docsToSave.add(emailDocument);
             }
-
-            docsToSave.add(emailDocument);
+            allEmailDocuments.add(emailDocument);
         }
 
         log.info("Total docs to save: {}", docsToSave.size());
+        List<String> failedToIndex =
+                esEmailDocumentService.bulkIndexNewDocuments(docsToSave);
 
-        // Step 3: Bulk save to dev-integration via gRPC
-        List<com.dev.utility.grpc.email.EmailDocument> grpcDocs =
-                docsToSave.stream()
-                        .map(GrpcMapper::toProto)
-                        .toList();
+        if (!failedToIndex.isEmpty()) {
+            log.info("Documents failed to save count={}", failedToIndex.size());
+            Set<String> failedSet = new HashSet<>(failedToIndex);
+            allEmailDocuments.removeIf(doc ->
+                    failedSet.contains(doc.getEmailTo()));
+        }
 
-        BulkIndexEmailRequest bulkRequest = BulkIndexEmailRequest.newBuilder()
-                .addAllDocuments(grpcDocs)
-                .build();
+        log.info("Total emails to send={}", allEmailDocuments.size());
 
-        BulkIndexEmailResponse bulkResponse = elasticServiceStub.bulkIndexEmails(bulkRequest);
-        log.info("Bulk save completed: indexed={} failed={}",
-                bulkResponse.getIndexedCount(),
-                bulkResponse.getFailedEmailIdsList());
-
-        log.info("Total docs to send: {}", docsToSave.size());
-        // Step 4: Send emails asynchronously
-        for (EmailDocument emailDocument : docsToSave) {
-            asyncEmailSendService.sendRmqEmailEvent(EmailEventMapper.toSendEventFromEmailDocuments(emailDocument));
+        for (EmailDocument emailDocument : allEmailDocuments) {
+            asyncEmailSendService.sendRmqEmailEvent(
+                    EmailEventMapper.toSendEventFromEmailDocuments(emailDocument)
+            );
         }
 
         log.info("{} Emails skipped=[{}]", skippedEmails.size(), skippedEmails);
     }
+
+    private void enrichExistingDocument(EmailDocument doc, EmailRequest req) {
+
+        if (StringUtils.isNotBlank(req.getName()))
+            doc.setRecipientName(req.getName());
+
+        if (StringUtils.isNotBlank(req.getCompany()))
+            doc.setCompany(req.getCompany());
+
+        Map<String, String> templateVariables = Map.of(
+                "name", doc.getRecipientName(),
+                "company", doc.getCompany()
+        );
+
+        doc.setTemplateVariables(templateVariables);
+        doc.setEmailTemplate(prepareEmailTemplate(templateVariables));
+        doc.setAttachmentNames(
+                new ArrayList<>(List.of("Vinay_Singh_Java_Backend_Developer.pdf"))
+        );
+    }
+
 
     private Map<String, EmailRequest> getEmailRequestsFromCSV(MultipartFile file) {
 
@@ -189,18 +188,7 @@ public class EmailPrepareService {
         for (EmailDocument emailDocument : emailDocuments) {
             try {
                 EmailRequest emailRequest = pdfEmailExtractorService.processEmailToGetNameAndCompany(emailDocument.getEmailTo());
-                if(StringUtils.isNotBlank(emailRequest.getName())) emailDocument.setRecipientName(emailRequest.getName());
-                if(StringUtils.isNotBlank(emailRequest.getCompany())) emailDocument.setCompany(emailRequest.getCompany());
-                Map<String, String> templateVariable = Map.of(
-                        "name", emailDocument.getRecipientName(),
-                        "company", emailDocument.getCompany()
-                );
-                emailDocument.setSubject("Java Full Stack Developer Application Immediate joiner");
-                emailDocument.setTemplateVariables(templateVariable);
-                emailDocument.setEmailTemplate(prepareEmailTemplate(templateVariable));
-                emailDocument.setAttachmentNames(
-                        new ArrayList<>(List.of("Vinay_Singh_Java_Backend_Developer.pdf"))
-                );
+                enrichExistingDocument(emailDocument, emailRequest);
                 // @Async non-blocking parallel send
                 asyncEmailSendService.sendEmail(emailDocument);
                 Thread.sleep(2000);

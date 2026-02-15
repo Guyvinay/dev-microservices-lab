@@ -69,7 +69,7 @@ public class EmailElasticGrpcService extends EmailElasticServiceGrpc.EmailElasti
 
             // Call your existing bulk index method
             try {
-                emailElasticService.bulkIndexEmail(internalDocs);
+                failedEmailIds = emailElasticService.bulkIndexEmail(internalDocs);
                 indexedCount = internalDocs.size();
             } catch (Exception e) {
                 log.error("Bulk index failed", e);

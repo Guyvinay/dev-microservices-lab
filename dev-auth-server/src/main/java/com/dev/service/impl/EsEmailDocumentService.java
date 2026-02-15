@@ -8,10 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.dev.utils.GRPCConstant.DEV_INTEGRATION;
 
@@ -60,9 +57,9 @@ public class EsEmailDocumentService {
     // BULK INDEX
     // ==============================
 
-    public void bulkIndexNewDocuments(List<EmailDocument> newDocs) {
+    public List<String> bulkIndexNewDocuments(List<EmailDocument> newDocs) {
 
-        if (newDocs.isEmpty()) return;
+        if (newDocs.isEmpty()) return Collections.emptyList();
 
         List<com.dev.utility.grpc.email.EmailDocument> grpcDocs =
                 newDocs.stream()
@@ -77,14 +74,11 @@ public class EsEmailDocumentService {
         BulkIndexEmailResponse response =
                 elasticServiceStub.bulkIndexEmails(bulkRequest);
 
-        if (!response.getFailedEmailIdsList().isEmpty()) {
-            log.error("Bulk indexing failed for: {}",
-                    response.getFailedEmailIdsList());
-            throw new IllegalStateException("Bulk indexing failed");
-        }
-
         log.info("Bulk indexed {} new documents",
                 response.getIndexedCount());
+
+        return response.getFailedEmailIdsList();
+
     }
 
     public static <T> List<List<T>> partition(List<T> list, int size) {

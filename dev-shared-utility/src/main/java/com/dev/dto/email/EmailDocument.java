@@ -34,7 +34,7 @@ public class EmailDocument {
     // ============================================================
     // 3. DELIVERY TRACKING & STATUS
     // ============================================================
-    private String status;                  // READY | SENT | DELIVERED | FAILED | BOUNCED | DISABLED
+    private String status;                  // READY | SENT | DELIVERED | SUCCESS | FAILED | BOUNCED | DISABLED
     private String errorMessage;            // Failure reason, if any
     private int retryCount;                 // Number of resend attempts
     private int emailSentTimes;             // Number of total send attempts

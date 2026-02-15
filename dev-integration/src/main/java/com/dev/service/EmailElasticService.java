@@ -30,19 +30,13 @@ import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.elasticsearch.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -98,8 +92,9 @@ public class EmailElasticService {
         log.info("Email synced to elastic: {}, {}", emailDocument.getEmailTo(), indexResponse.status());
     }
 
-    public void bulkIndexEmail(List<EmailDocument> emailDocuments) throws IOException {
-        if (emailDocuments == null || emailDocuments.isEmpty()) return;
+    public List<String> bulkIndexEmail(List<EmailDocument> emailDocuments) throws IOException {
+        if (emailDocuments == null || emailDocuments.isEmpty()) return Collections.emptyList();
+        List<String> failedToIndex = new ArrayList<>();
 
         String index = _index(); // your index name logic
 
@@ -119,7 +114,7 @@ public class EmailElasticService {
             bulkRequest.add(indexRequest);
         }
 
-        if (bulkRequest.numberOfActions() == 0) return;
+        if (bulkRequest.numberOfActions() == 0) return Collections.emptyList();
 
         BulkResponse bulkResponse = esRestHighLevelClient.bulkIndexDocument(bulkRequest);
 
@@ -132,8 +127,10 @@ public class EmailElasticService {
         for (BulkItemResponse itemResponse : bulkResponse) {
             if (itemResponse.isFailed()) {
                 log.error("Failed to index {}: {}", itemResponse.getId(), itemResponse.getFailureMessage());
+                failedToIndex.add(itemResponse.getId());
             }
         }
+        return failedToIndex;
     }
 
 
@@ -255,7 +252,7 @@ public class EmailElasticService {
 
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder()
                 .query(termsQueryBuilder)
-                .sort(SortBuilders.fieldSort("lastSentAt").order(SortOrder.DESC))
+//                .sort(SortBuilders.fieldSort("lastSentAt").order(SortOrder.DESC))
                 .size(Math.min(emailIds.size(), 1000))
                 .trackTotalHits(true); // ensure accurate total count if needed
 
@@ -354,20 +351,12 @@ public class EmailElasticService {
 
     public void updateFromEvent(EmailStatusEvent event) throws IOException {
 
-        Map<String, Object> fieldsToUpdate = new HashMap<>();
-
-        fieldsToUpdate.put("status", event.getStatus());
-        fieldsToUpdate.put("errorMessage", event.getErrorMessage());
-        fieldsToUpdate.put("deliveryTimeMs", event.getLatency());
-        fieldsToUpdate.put("lastUpdatedAt", System.currentTimeMillis());
-        fieldsToUpdate.put("lastSentAt", event.getProcessedAt());
-
         try {
 
             UpdateRequest updateRequest = new UpdateRequest(
                     _index(),
                     event.getEventId()   // document id
-            ).doc(fieldsToUpdate);
+            ).doc(event.getUpdateFieldMap());
 
             UpdateResponse response = esRestHighLevelClient.updateDocument(updateRequest);
 

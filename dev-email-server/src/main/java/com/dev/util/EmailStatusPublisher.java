@@ -27,8 +27,7 @@ public class EmailStatusPublisher {
                         .build()
         );
 
-        log.info("Published EmailStatusEvent: id={}, status={}",
-                event.getEventId(),
-                event.getStatus());
+        log.info("Published EmailStatusEvent: id={}",
+                event.getEventId());
     }
 }

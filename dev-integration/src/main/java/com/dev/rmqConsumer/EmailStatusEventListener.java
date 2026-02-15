@@ -40,9 +40,8 @@ public class EmailStatusEventListener implements MessageListener {
 
             emailElasticService.updateFromEvent(event);
 
-            log.info("Processed EmailStatusEvent id={}, status={}",
-                    event.getEventId(),
-                    event.getStatus());
+            log.info("Processed EmailStatusEvent id={}",
+                    event.getEventId());
 
         } catch (Exception ex) {
 
