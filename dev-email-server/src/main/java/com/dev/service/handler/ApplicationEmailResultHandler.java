@@ -1,12 +1,9 @@
 package com.dev.service.handler;
 
-import com.dev.dto.email.EmailCategory;
-import com.dev.dto.email.EmailSendEvent;
-import com.dev.dto.email.EmailStatusEvent;
+import com.dev.dto.email.*;
 import com.dev.service.handler.email.ESIntegrationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -37,11 +34,13 @@ public class ApplicationEmailResultHandler implements EmailResultHandler {
     }
 
     @Override
-    public EmailStatusEvent buildSuccessEvent(EmailSendEvent event) {
+    public EmailStatusEvent buildSuccessEvent(EmailSendEvent event, EmailSendResult result) {
         Map<String, Object> updateFieldMap = new HashMap<>();
         updateFieldMap.put("status", "SUCCESS");
         updateFieldMap.put("lastUpdatedAt", System.currentTimeMillis());
         updateFieldMap.put("errorMessage", "");
+        updateFieldMap.put("deliveryTimeMs", result.getDeliveryTimeMs());
+        updateFieldMap.put("threadName", result.getThreadName());
         return EmailStatusEvent.builder()
                 .eventId(event.getEventId())
                 .category(event.getCategory())
@@ -50,11 +49,12 @@ public class ApplicationEmailResultHandler implements EmailResultHandler {
     }
 
     @Override
-    public EmailStatusEvent buildFailureEvent(EmailSendEvent event, String errorMessage) {
+    public EmailStatusEvent buildFailureEvent(EmailSendEvent event, EmailSendResult result) {
         Map<String, Object> updateFieldMap = new HashMap<>();
         updateFieldMap.put("status", "FAILED");
-        updateFieldMap.put("errorMessage", errorMessage);
+        updateFieldMap.put("errorMessage", result.getErrorMessage());
         updateFieldMap.put("lastUpdatedAt", System.currentTimeMillis());
+        updateFieldMap.put("threadName", result.getThreadName());
         return EmailStatusEvent.builder()
                 .eventId(event.getEventId())
                 .category(event.getCategory())
