@@ -13,6 +13,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -82,8 +83,17 @@ public class EmailSender {
                     threadName
             );
 
+        } catch (MailSendException ex) {
+            // SMTP level failure (connection, auth, timeout)
+            log.error("SMTP send failure for to={} : {}", event.getTo(), ex.getMessage(), ex);
+            throw ex;
+        } catch (MessagingException ex) {
+            // Message construction failure
+            log.error("Message construction failure for to={} : {}", event.getTo(), ex.getMessage(), ex);
+            throw new RuntimeException("Failed to construct email", ex);
         } catch (Exception ex) {
-            throw new RuntimeException("SMTP send failed", ex);
+            log.error("Unexpected email failure for to={} : {}", event.getTo(), ex.getMessage(), ex);
+            throw new RuntimeException("Unexpected email failure", ex);
         }
     }
 
