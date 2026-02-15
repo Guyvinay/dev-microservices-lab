@@ -41,6 +41,7 @@ public class ApplicationEmailResultHandler implements EmailResultHandler {
         Map<String, Object> updateFieldMap = new HashMap<>();
         updateFieldMap.put("status", "SUCCESS");
         updateFieldMap.put("lastUpdatedAt", System.currentTimeMillis());
+        updateFieldMap.put("errorMessage", "");
         return EmailStatusEvent.builder()
                 .eventId(event.getEventId())
                 .category(event.getCategory())
