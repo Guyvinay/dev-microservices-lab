@@ -49,27 +49,18 @@ public class EmailPrepareService {
     private static final int HOURS_TO = 960;
     private final AsyncEmailSendService asyncEmailSendService;
     private final PdfEmailExtractorService pdfEmailExtractorService;
+    private final EsEmailDocumentService esEmailDocumentService;
 
     @GrpcClient(DEV_INTEGRATION)
     private EmailElasticServiceGrpc.EmailElasticServiceBlockingStub elasticServiceStub;
-
 
     public void sendEmailFromCSVFile(MultipartFile file) throws IOException {
         List<String> skippedEmails = new ArrayList<>();
         Map<String, EmailRequest> toSend = getEmailRequestsFromCSV(file);
         List<String> allEmails = new ArrayList<>(toSend.keySet());
-        log.info("Total emails from CSV: {}", allEmails.size());
-        Map<String, EmailDocument> existingDocs = new HashMap<>();
         List<EmailDocument> docsToSave = new ArrayList<>();
-
-        for (List<String> batch : partition(allEmails, 200)) {
-            EmailLookupRequest emailLookupRequest = EmailLookupRequest.newBuilder().addAllEmailIds(batch).build();
-            EmailLookupResponse emailLookupResponse = elasticServiceStub.getEmailDocumentsByEmailIds(emailLookupRequest);
-
-            emailLookupResponse.getDocumentsList()
-                    .forEach(doc -> existingDocs.put(doc.getEmailTo(), GrpcMapper.fromProto(doc)));
-
-        }
+        log.info("Total emails from CSV: {}", allEmails.size());
+        Map<String, EmailDocument> existingDocs = esEmailDocumentService.fetchExistingDocuments(allEmails);
 
         log.info("Existing doc found: {}", existingDocs.size());
 
@@ -79,10 +70,10 @@ public class EmailPrepareService {
 
             EmailDocument existingDoc = existingDocs.get(emailId);
             if(existingDoc != null) {
-//                if (!isEligibleToSend(existingDoc)) {
-//                    skippedEmails.add(emailId);
-//                    continue;
-//                }
+                if (!isEligibleToSend(existingDoc)) {
+                    skippedEmails.add(emailId);
+                    continue;
+                }
                 emailDocument = existingDoc;
                 if(StringUtils.isNotBlank(req.getName())) emailDocument.setRecipientName(req.getName());
                 if(StringUtils.isNotBlank(emailId)) emailDocument.setEmailTo(emailId);

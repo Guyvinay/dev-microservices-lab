@@ -1,6 +1,7 @@
 package com.dev.service;
 
 import com.dev.dto.email.EmailDocument;
+import com.dev.dto.email.EmailStatusEvent;
 import com.dev.elastic.client.EsRestHighLevelClient;
 import com.dev.utility.AuthContextUtil;
 import com.dev.utils.ElasticUtility;
@@ -8,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.DocWriteRequest;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -18,10 +20,13 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.update.UpdateRequest;
+import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.index.query.TermsQueryBuilder;
+import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -345,6 +350,48 @@ public class EmailElasticService {
             return indexName.substring(0, vIndex);
         }
         return indexName + "_read";
+    }
+
+    public void updateFromEvent(EmailStatusEvent event) throws IOException {
+
+        Map<String, Object> fieldsToUpdate = new HashMap<>();
+
+        fieldsToUpdate.put("status", event.getStatus());
+        fieldsToUpdate.put("errorMessage", event.getErrorMessage());
+        fieldsToUpdate.put("deliveryTimeMs", event.getLatency());
+        fieldsToUpdate.put("lastUpdatedAt", System.currentTimeMillis());
+        fieldsToUpdate.put("lastSentAt", event.getProcessedAt());
+
+        try {
+
+            UpdateRequest updateRequest = new UpdateRequest(
+                    _index(),
+                    event.getEventId()   // document id
+            ).doc(fieldsToUpdate);
+
+            UpdateResponse response = esRestHighLevelClient.updateDocument(updateRequest);
+
+            log.info("Updated EmailDocument id={}, result={}",
+                    event.getEventId(),
+                    response.getResult());
+        }  catch (ElasticsearchException e) {
+
+            if (e.status() == RestStatus.NOT_FOUND) {
+                log.error("EmailDocument not found for id={}", event.getEventId());
+            } else {
+                log.error("Failed to update EmailDocument id={}",
+                        event.getEventId(), e);
+            }
+
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+
+            log.error("IO failure updating EmailDocument id={}",
+                    event.getEventId(), e);
+
+            throw new RuntimeException(e);
+        }
+
     }
 
 }
