@@ -87,7 +87,7 @@ public class EmailSender {
                     .category(event.getCategory())
                     .priority(event.getPriority())
                     .success(true)
-                    .latencyMs(latency)
+                    .deliveryTimeMs(latency)
                     .smtpMessageId(smtpMessageId)
                     .threadName(threadName)
                     .build();
@@ -161,8 +161,8 @@ public class EmailSender {
                 .category(event.getCategory())
                 .priority(event.getPriority())
                 .success(false)
-                .latencyMs(latency)
-                .failureReason(ex.getMessage())
+                .deliveryTimeMs(latency)
+                .errorMessage(ex.getMessage())
                 .threadName(threadName)
                 .build();
     }
