@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.dev</groupId>
     <artifactId>dev-sandbox</artifactId>
-    <version>1.1.1</version>
+    <version>2.0.0-SNAPSHOT</version>
     <name>dev-sandbox</name>
     <description>Demo project for Spring Boot</description>
 
@@ -147,7 +147,7 @@
         <dependency>
             <groupId>com.dev</groupId>
             <artifactId>dev-infra-starter</artifactId>
-            <version>4.0.0</version>
+            <version>2.0.0-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.dev</groupId>
@@ -159,7 +159,7 @@
         <dependency>
             <groupId>com.dev</groupId>
             <artifactId>dev-auth-starter</artifactId>
-            <version>4.0.0</version>
+            <version>2.0.0-SNAPSHOT</version>
         </dependency>
 
     </dependencies>

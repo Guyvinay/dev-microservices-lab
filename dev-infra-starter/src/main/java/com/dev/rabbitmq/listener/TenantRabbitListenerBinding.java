@@ -119,12 +119,14 @@ public class TenantRabbitListenerBinding {
         String exchangeName = (String) attributes.getOrDefault("exchange", "");
         String routingKey = (String) attributes.getOrDefault("routingKey", "");
         String type = (String) attributes.getOrDefault("type", "direct");
-        int maxConsumers = (Integer) attributes.getOrDefault("maxConcurrentConsumers", 10);
+        int maxConcurrentConsumers = (Integer) attributes.getOrDefault("maxConcurrentConsumers", 10);
+        int concurrentConsumers = (Integer) attributes.getOrDefault("concurrentConsumers", 1);
+
         int prefetch = (Integer) attributes.getOrDefault("prefetch", 1);
         boolean quorum = (Boolean) attributes.getOrDefault("quorum", true);
         log.info(
-                "Registering listener [beanName={}, queue={}, exchangeName={}, routingKey={}, type={}, maxConsumers={}, prefetch={}, quorum={}] for tenant {}",
-                beanName, queueName, exchangeName, routingKey, type, maxConsumers, prefetch, quorum, tenantId
+                "Registering listener [beanName={}, queue={}, exchangeName={}, routingKey={}, type={}, concurrentConsumers={} maxConcurrentConsumers={}, prefetch={}, quorum={}] for tenant {}",
+                beanName, queueName, exchangeName, routingKey, type, concurrentConsumers, maxConcurrentConsumers, prefetch, quorum, tenantId
         );
 
         Queue queue = quorum ?
@@ -174,14 +176,10 @@ public class TenantRabbitListenerBinding {
             ConnectionFactory connectionFactory = RabbitMqConfiguration.TENANT_CONNECTION_MAP.get(tenantId);
             SimpleMessageListenerContainer messageListenerContainer = new SimpleMessageListenerContainer(connectionFactory);
             messageListenerContainer.setQueueNames(queueName);
-            messageListenerContainer.setMessageListener((MessageListener) (message)-> {
-                message.getMessageProperties().setUserId(tenantId);
-                ((MessageListener) listenerBean).onMessage(message);
-            });
             messageListenerContainer.setMessageListener(new CustomMessageListener((MessageListener) listenerBean, jwtTokenProviderManager, tenantId));
             messageListenerContainer.setMessageAckListener(new CustomMessageAckListener());
-            messageListenerContainer.setConcurrentConsumers(1);
-            messageListenerContainer.setMaxConcurrentConsumers(maxConsumers);
+            messageListenerContainer.setConcurrentConsumers(concurrentConsumers);
+            messageListenerContainer.setMaxConcurrentConsumers(maxConcurrentConsumers);
             messageListenerContainer.setAcknowledgeMode(AcknowledgeMode.AUTO);
             messageListenerContainer.setMissingQueuesFatal(false);
             messageListenerContainer.setShutdownTimeout(20000L);
@@ -189,8 +187,8 @@ public class TenantRabbitListenerBinding {
             messageListenerContainer.setRecoveryInterval(50000L);
 
             messageListenerContainer.start();
-            log.info("Started listener container={} for tenant={} [queue={}, maxConsumers={}, prefetch={}]",
-                    containerName, tenantId, queueName, maxConsumers, prefetch);
+            log.info("Started listener container={} for tenant={} [queue={}, maxConcurrentConsumers={}, prefetch={}]",
+                    containerName, tenantId, queueName, maxConcurrentConsumers, prefetch);
 
             return messageListenerContainer;
         });

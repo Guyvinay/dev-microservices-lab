@@ -17,7 +17,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class RmqMessagePropertiesFactory {
 
-    private final JwtTokenProviderManager jwtTokenProviderManager;
 
     public MessageProperties create(String correlationId)
             throws JOSEException, JsonProcessingException {
@@ -26,17 +25,9 @@ public class RmqMessagePropertiesFactory {
         props.setContentType(MessageProperties.CONTENT_TYPE_JSON);
         props.setMessageId(correlationId);
 
-        UserBaseInfo userBaseInfo = AuthContextUtil.getUserBaseInfo();
-
-        ServiceJwtToken serviceJwtToken = jwtTokenProviderManager.createServiceJwtToken(userBaseInfo, 200);
-
-        String token = jwtTokenProviderManager.createJwtToken(serviceJwtToken);
-
         putIfPresent(props, MDCKeys.HEADER_TRACE_ID, MDC.get(MDCKeys.TRACE_ID));
         putIfPresent(props, MDCKeys.HEADER_TENANT_ID, MDC.get(MDCKeys.TENANT_ID));
         putIfPresent(props, MDCKeys.HEADER_USER_ID, MDC.get(MDCKeys.USER_ID));
-
-        props.setHeader("Authorization", token);
 
         return props;
     }

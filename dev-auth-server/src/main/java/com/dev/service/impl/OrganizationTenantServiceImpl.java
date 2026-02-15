@@ -1,10 +1,10 @@
 package com.dev.service.impl;
 
 import com.dev.dto.OrganizationTenantDTO;
+import com.dev.dto.rmq.RmqEvent;
 import com.dev.entity.OrganizationTenantMapping;
 import com.dev.exception.DuplicateResourceException;
 import com.dev.exception.ResourceNotFoundException;
-import com.dev.library.rabbitmq.dto.RmqEvent;
 import com.dev.library.rabbitmq.publisher.RabbitMqEventPublisher;
 import com.dev.repository.OrganizationTenantMappingRepository;
 import com.dev.service.OrganizationTenantService;

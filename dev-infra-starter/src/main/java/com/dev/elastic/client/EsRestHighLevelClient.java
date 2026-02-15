@@ -21,6 +21,8 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
+import org.elasticsearch.action.update.UpdateRequest;
+import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.GetAliasesResponse;
 import org.elasticsearch.client.IndicesClient;
 import org.elasticsearch.client.RequestOptions;
@@ -140,6 +142,10 @@ public class EsRestHighLevelClient {
 
     public AcknowledgedResponse deleteIndex(DeleteIndexRequest request) throws IOException {
         return restHighLevelClient.indices().delete(request, RequestOptions.DEFAULT);
+    }
+
+    public UpdateResponse updateDocument(UpdateRequest updateRequest) throws IOException {
+         return restHighLevelClient.update(updateRequest, RequestOptions.DEFAULT);
     }
 
     public String createIndexWithAlias(String indexName, String aliasName, Map<String, Object> mappings, Map<String, Object> settings, Boolean makeWriteIndex) throws IOException {

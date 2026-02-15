@@ -1,6 +1,7 @@
 package com.dev.service;
 
 import com.dev.dto.email.EmailDocument;
+import com.dev.dto.email.EmailStatusEvent;
 import com.dev.elastic.client.EsRestHighLevelClient;
 import com.dev.utility.AuthContextUtil;
 import com.dev.utils.ElasticUtility;
@@ -8,7 +9,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.DocWriteRequest;
+import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.get.GetRequest;
@@ -17,26 +20,23 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.update.UpdateRequest;
+import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.index.query.TermsQueryBuilder;
+import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.elasticsearch.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -91,6 +91,48 @@ public class EmailElasticService {
         IndexResponse indexResponse = esRestHighLevelClient.indexDocument(indexRequest);
         log.info("Email synced to elastic: {}, {}", emailDocument.getEmailTo(), indexResponse.status());
     }
+
+    public List<String> bulkIndexEmail(List<EmailDocument> emailDocuments) throws IOException {
+        if (emailDocuments == null || emailDocuments.isEmpty()) return Collections.emptyList();
+        List<String> failedToIndex = new ArrayList<>();
+
+        String index = _index(); // your index name logic
+
+        BulkRequest bulkRequest = new BulkRequest();
+
+        for (EmailDocument emailDocument : emailDocuments) {
+            if (emailDocument == null) continue;
+
+            String emailId = emailDocument.getEmailTo(); // use unique ID
+            String jsonValue = objectMapper.writeValueAsString(emailDocument);
+
+            IndexRequest indexRequest = new IndexRequest(index)
+                    .id(emailId)
+                    .source(jsonValue, XContentType.JSON)
+                    .opType(DocWriteRequest.OpType.INDEX); // upsert behavior
+
+            bulkRequest.add(indexRequest);
+        }
+
+        if (bulkRequest.numberOfActions() == 0) return Collections.emptyList();
+
+        BulkResponse bulkResponse = esRestHighLevelClient.bulkIndexDocument(bulkRequest);
+
+        if (bulkResponse.hasFailures()) {
+            log.error("Bulk indexing completed with failures: {}", bulkResponse.buildFailureMessage());
+        } else {
+            log.info("Bulk indexing successful: {} documents", emailDocuments.size());
+        }
+
+        for (BulkItemResponse itemResponse : bulkResponse) {
+            if (itemResponse.isFailed()) {
+                log.error("Failed to index {}: {}", itemResponse.getId(), itemResponse.getFailureMessage());
+                failedToIndex.add(itemResponse.getId());
+            }
+        }
+        return failedToIndex;
+    }
+
 
     private BoolQueryBuilder boolQueryBuilder(long gte, long lte) {
         // 1. Create BoolQueryBuilder
@@ -203,11 +245,14 @@ public class EmailElasticService {
             log.warn("Email ID list is empty, returning no results.");
             return Collections.emptyList();
         }
+        // Ensure index exists + mapping applied
+        ensureIndexAndMappingExists();
+
         TermsQueryBuilder termsQueryBuilder = new TermsQueryBuilder("emailTo.keyword", emailIds);
 
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder()
                 .query(termsQueryBuilder)
-                .sort(SortBuilders.fieldSort("lastSentAt").order(SortOrder.DESC))
+//                .sort(SortBuilders.fieldSort("lastSentAt").order(SortOrder.DESC))
                 .size(Math.min(emailIds.size(), 1000))
                 .trackTotalHits(true); // ensure accurate total count if needed
 
@@ -218,6 +263,44 @@ public class EmailElasticService {
 
         return processSearchResponse(esRestHighLevelClient.search(searchRequest));
     }
+
+    private void ensureIndexAndMappingExists() throws IOException {
+        if(esRestHighLevelClient.indexExists(_index())) return;
+
+        synchronized (this) {
+            if(esRestHighLevelClient.indexExists(_index())) return;
+            log.info("Creating index and alias: {}", _index());
+            createIndexWithAliasAdnMappingV2(_index());
+        }
+
+    }
+
+    public String createIndexWithAliasAdnMappingV2(String indexName) throws IOException {
+
+
+        String alias = aliasNameFromIndexNameV2(indexName);
+
+        Map<String, Object> mappings = ElasticUtility.getEmailDocumentMapping();
+
+
+
+        log.info("Index [{}] created with alias [{}]", indexName, alias);
+
+        return esRestHighLevelClient.createIndexWithAlias(indexName, alias, mappings, new HashMap<>(), true);
+    }
+
+    private String aliasNameFromIndexNameV2(String indexName) {
+
+
+        return indexName + "_alias";
+    }
+
+    private String indexNameV2(String logicalName) {
+
+        // Example output: email_v1
+        return logicalName.toLowerCase() + "_v1";
+    }
+
 
     private List<EmailDocument> processSearchResponse(SearchResponse searchResponse) {
         if (searchResponse == null || searchResponse.getHits() == null) {
@@ -264,6 +347,40 @@ public class EmailElasticService {
             return indexName.substring(0, vIndex);
         }
         return indexName + "_read";
+    }
+
+    public void updateFromEvent(EmailStatusEvent event) throws IOException {
+
+        try {
+
+            UpdateRequest updateRequest = new UpdateRequest(
+                    _index(),
+                    event.getEventId()   // document id
+            ).doc(event.getUpdateFieldMap());
+
+            UpdateResponse response = esRestHighLevelClient.updateDocument(updateRequest);
+
+            log.info("Updated EmailDocument id={}, result={}",
+                    event.getEventId(),
+                    response.getResult());
+        }  catch (ElasticsearchException e) {
+
+            if (e.status() == RestStatus.NOT_FOUND) {
+                log.error("EmailDocument not found for id={}", event.getEventId());
+            } else {
+                log.error("Failed to update EmailDocument id={}",
+                        event.getEventId(), e);
+            }
+
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+
+            log.error("IO failure updating EmailDocument id={}",
+                    event.getEventId(), e);
+
+            throw new RuntimeException(e);
+        }
+
     }
 
 }

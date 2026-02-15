@@ -33,6 +33,7 @@ public class CustomMessageListener implements MessageListener {
         try {
             Authentication authentication = jwtTokenProviderManager.getAuthenticatedServiceToken(tenantId);
             SecurityContextHolder.getContext().setAuthentication(authentication);
+            message.getMessageProperties().setUserId(tenantId);
             listenerBean.onMessage(message);
             log.info("Message processed successfully. messageId={}", messageId);
         } catch (JsonProcessingException e) {

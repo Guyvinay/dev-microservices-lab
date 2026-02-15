@@ -1,12 +1,12 @@
 package com.dev.service.impl;
 
+import com.dev.dto.email.EmailCategory;
 import com.dev.dto.email.EmailDocument;
 import com.dev.dto.email.EmailRequest;
 import com.dev.library.elastic.service.EmailElasticSyncService;
+import com.dev.utility.grpc.email.*;
+import com.dev.utils.EmailEventMapper;
 import com.dev.utility.PdfEmailExtractorService;
-import com.dev.utility.grpc.email.EmailElasticServiceGrpc;
-import com.dev.utility.grpc.email.EmailLookupRequest;
-import com.dev.utility.grpc.email.EmailLookupResponse;
 import com.dev.utils.GrpcMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,12 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -49,6 +44,7 @@ public class EmailPrepareService {
     private static final int HOURS_TO = 480;
     private final AsyncEmailSendService asyncEmailSendService;
     private final PdfEmailExtractorService pdfEmailExtractorService;
+    private final EsEmailDocumentService esEmailDocumentService;
 
     @GrpcClient(DEV_INTEGRATION)
     private EmailElasticServiceGrpc.EmailElasticServiceBlockingStub elasticServiceStub;
@@ -57,43 +53,22 @@ public class EmailPrepareService {
         List<String> skippedEmails = new ArrayList<>();
         Map<String, EmailRequest> toSend = getEmailRequestsFromCSV(file);
         List<String> allEmails = new ArrayList<>(toSend.keySet());
+        List<EmailDocument> docsToSave = new ArrayList<>();
+        List<EmailDocument> allEmailDocuments = new ArrayList<>();
         log.info("Total emails from CSV: {}", allEmails.size());
-        Map<String, EmailDocument> existingDocs = new HashMap<>();
-
-        for (List<String> batch : partition(allEmails, 100)) {
-            EmailLookupRequest emailLookupRequest = EmailLookupRequest.newBuilder().addAllEmailIds(batch).build();
-            EmailLookupResponse emailLookupResponse = elasticServiceStub.getEmailDocumentsByEmailIds(emailLookupRequest);
-
-            emailLookupResponse.getDocumentsList()
-                    .forEach(doc -> existingDocs.put(doc.getEmailTo(), GrpcMapper.fromProto(doc)));
-
-        }
+        Map<String, EmailDocument> existingDocs = esEmailDocumentService.fetchExistingDocuments(allEmails);
 
         log.info("Existing doc found: {}", existingDocs.size());
 
         for (String emailId : allEmails) {
             EmailRequest req = toSend.get(emailId);
-            EmailDocument emailDocument;
-
-            EmailDocument existingDoc = existingDocs.get(emailId);
-            if(existingDoc != null) {
-                if (!isEligibleToSend(existingDoc)) {
+            EmailDocument emailDocument = existingDocs.get(emailId);
+            if(emailDocument != null) {
+                if (!isEligibleToSend(emailDocument)) {
                     skippedEmails.add(emailId);
                     continue;
                 }
-                emailDocument = existingDoc;
-                if(StringUtils.isNotBlank(req.getName())) emailDocument.setRecipientName(req.getName());
-                if(StringUtils.isNotBlank(emailId)) emailDocument.setEmailTo(emailId);
-                if(StringUtils.isNotBlank(req.getCompany())) emailDocument.setCompany(req.getCompany());
-                Map<String, String> templateVariable = Map.of(
-                        "name", emailDocument.getRecipientName(),
-                        "company", emailDocument.getCompany()
-                );
-                emailDocument.setEmailTemplate(prepareEmailTemplate(templateVariable));
-                emailDocument.setTemplateVariables(templateVariable);
-                emailDocument.setAttachmentNames(
-                        new ArrayList<>(List.of("Vinay_Singh_Java_Backend_Developer.pdf"))
-                );
+                enrichExistingDocument(emailDocument, req);
                 emailDocument.setEmailSentTimes(emailDocument.getEmailSentTimes() + 1);
             } else {
                 emailDocument = prepareEmailDocument(
@@ -101,17 +76,53 @@ public class EmailPrepareService {
                         req.getCompany(),
                         emailId
                 );
+                docsToSave.add(emailDocument);
             }
-            try {
-                asyncEmailSendService.sendEmail(emailDocument);
-                Thread.sleep(2500);
-            } catch (IOException | InterruptedException e) {
-                log.error("Failed to send email to: {}", emailId, e);
-                throw new RuntimeException(e);
-            }
+            allEmailDocuments.add(emailDocument);
         }
+
+        log.info("Total docs to save: {}", docsToSave.size());
+        List<String> failedToIndex =
+                esEmailDocumentService.bulkIndexNewDocuments(docsToSave);
+
+        if (!failedToIndex.isEmpty()) {
+            log.info("Documents failed to save count={}", failedToIndex.size());
+            Set<String> failedSet = new HashSet<>(failedToIndex);
+            allEmailDocuments.removeIf(doc ->
+                    failedSet.contains(doc.getEmailTo()));
+        }
+
+        log.info("Total emails to send={}", allEmailDocuments.size());
+
+        for (EmailDocument emailDocument : allEmailDocuments) {
+            asyncEmailSendService.sendRmqEmailEvent(
+                    EmailEventMapper.toSendEventFromEmailDocuments(emailDocument)
+            );
+        }
+
         log.info("{} Emails skipped=[{}]", skippedEmails.size(), skippedEmails);
     }
+
+    private void enrichExistingDocument(EmailDocument doc, EmailRequest req) {
+
+        if (StringUtils.isNotBlank(req.getName()))
+            doc.setRecipientName(req.getName());
+
+        if (StringUtils.isNotBlank(req.getCompany()))
+            doc.setCompany(req.getCompany());
+
+        Map<String, String> templateVariables = Map.of(
+                "name", doc.getRecipientName(),
+                "company", doc.getCompany()
+        );
+
+        doc.setTemplateVariables(templateVariables);
+        doc.setEmailTemplate(prepareEmailTemplate(templateVariables));
+        doc.setAttachmentNames(
+                new ArrayList<>(List.of("Vinay_Singh_Java_Backend_Developer.pdf"))
+        );
+    }
+
 
     private Map<String, EmailRequest> getEmailRequestsFromCSV(MultipartFile file) {
 
@@ -178,18 +189,7 @@ public class EmailPrepareService {
         for (EmailDocument emailDocument : emailDocuments) {
             try {
                 EmailRequest emailRequest = pdfEmailExtractorService.processEmailToGetNameAndCompany(emailDocument.getEmailTo());
-                if(StringUtils.isNotBlank(emailRequest.getName())) emailDocument.setRecipientName(emailRequest.getName());
-                if(StringUtils.isNotBlank(emailRequest.getCompany())) emailDocument.setCompany(emailRequest.getCompany());
-                Map<String, String> templateVariable = Map.of(
-                        "name", emailDocument.getRecipientName(),
-                        "company", emailDocument.getCompany()
-                );
-                emailDocument.setSubject("Java Full Stack Developer Application Immediate joiner");
-                emailDocument.setTemplateVariables(templateVariable);
-                emailDocument.setEmailTemplate(prepareEmailTemplate(templateVariable));
-                emailDocument.setAttachmentNames(
-                        new ArrayList<>(List.of("Vinay_Singh_Java_Backend_Developer.pdf"))
-                );
+                enrichExistingDocument(emailDocument, emailRequest);
                 // @Async non-blocking parallel send
                 asyncEmailSendService.sendEmail(emailDocument);
                 Thread.sleep(2000);
@@ -284,7 +284,7 @@ public class EmailPrepareService {
 
         // --- Status & tracking ---
         emailDocument.setStatus("READY");
-        emailDocument.setCategory("APPLICATION");
+        emailDocument.setCategory(EmailCategory.APPLICATION);
         emailDocument.setResendEligible(true);
         emailDocument.setValidEmail(validateEmailFormat(emailTo));
         emailDocument.setRetryCount(0);

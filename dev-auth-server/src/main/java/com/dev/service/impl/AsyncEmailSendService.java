@@ -2,8 +2,9 @@ package com.dev.service.impl;
 
 
 import com.dev.dto.email.EmailDocument;
+import com.dev.dto.email.EmailSendEvent;
+import com.dev.dto.rmq.RmqEvent;
 import com.dev.library.elastic.service.EmailElasticSyncService;
-import com.dev.library.rabbitmq.dto.RmqEvent;
 import com.dev.library.rabbitmq.publisher.RabbitMqEventPublisher;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -136,6 +137,17 @@ public class AsyncEmailSendService {
                     .exchange("integration.exchange")
                     .payload(emailDocument)
                 .build());
+    }
+
+    public void sendRmqEmailEvent(EmailSendEvent emailSendEvent) {
+
+        tenantPublisher.publish(
+                RmqEvent.builder()
+                        .routingKey("email.send.server.q")
+                        .exchange("email.server.exchange")
+                        .payload(emailSendEvent)
+                        .build()
+        );
     }
 
     @Async("threadPoolTaskExecutor")
