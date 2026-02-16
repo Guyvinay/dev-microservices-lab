@@ -49,6 +49,12 @@ public class EmailEventMapper {
                 // Audit
                 .createdAt(doc.getLastSentAt())
 
+                .metadata(
+                        Map.of(
+                                "emailSentTimes", doc.getEmailSentTimes()
+                        )
+                )
+
                 .build();
     }
 

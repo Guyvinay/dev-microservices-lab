@@ -64,10 +64,10 @@ public class EmailPrepareService {
             EmailRequest req = toSend.get(emailId);
             EmailDocument emailDocument = existingDocs.get(emailId);
             if(emailDocument != null) {
-//                if (!isEligibleToSend(emailDocument)) {
-//                    skippedEmails.add(emailId);
-//                    continue;
-//                }
+                if (!isEligibleToSend(emailDocument)) {
+                    skippedEmails.add(emailId);
+                    continue;
+                }
                 enrichExistingDocument(emailDocument, req);
                 emailDocument.setEmailSentTimes(emailDocument.getEmailSentTimes() + 1);
             } else {
