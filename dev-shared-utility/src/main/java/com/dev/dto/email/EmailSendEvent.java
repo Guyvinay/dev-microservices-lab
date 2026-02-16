@@ -51,4 +51,7 @@ public class EmailSendEvent {
     // ==== Audit ====
     private long createdAt;
 
+    // ==== Some extra fields that could be specific to email type ====
+    private Map<String, Object> metadata;
+
 }

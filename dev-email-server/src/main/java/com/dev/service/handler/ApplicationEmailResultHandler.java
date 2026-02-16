@@ -41,6 +41,7 @@ public class ApplicationEmailResultHandler implements EmailResultHandler {
         updateFieldMap.put("errorMessage", "");
         updateFieldMap.put("deliveryTimeMs", result.getDeliveryTimeMs());
         updateFieldMap.put("threadName", result.getThreadName());
+        updateFieldMap.put("emailSentTimes", event.getMetadata().getOrDefault("emailSentTimes", 1));
         return EmailStatusEvent.builder()
                 .eventId(event.getEventId())
                 .category(event.getCategory())
