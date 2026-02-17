@@ -3,6 +3,7 @@ package com.dev.utils;
 
 import com.dev.dto.email.EmailCategory;
 import com.dev.dto.email.EmailDocument;
+import org.springframework.util.StringUtils;
 
 import java.time.Instant;
 import java.util.List;
@@ -68,7 +69,7 @@ public class GrpcMapper {
             doc.setDateCreated(Instant.ofEpochMilli(proto.getDateCreatedEpochMs()));
         }
 
-        doc.setCategory(EmailCategory.valueOf(proto.getCategory()));
+        doc.setCategory(StringUtils.hasLength(proto.getCategory()) ? EmailCategory.valueOf(proto.getCategory()): null);
         doc.setEmailTemplate(proto.getEmailTemplate());
         doc.setSentBy(proto.getSentBy());
         doc.setThreadName(proto.getThreadName());

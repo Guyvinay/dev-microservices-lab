@@ -160,7 +160,7 @@ elastic:
   index:
     private: es_private_message_index
     group: es_group_message_index
-    email: email_index_test_1
+    email: email_index
 
 
 

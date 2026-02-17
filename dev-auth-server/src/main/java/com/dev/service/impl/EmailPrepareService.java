@@ -89,7 +89,10 @@ public class EmailPrepareService {
             log.info("Documents failed to save count={}", failedToIndex.size());
             Set<String> failedSet = new HashSet<>(failedToIndex);
             allEmailDocuments.removeIf(doc ->
-                    failedSet.contains(doc.getEmailTo()));
+                    failedSet.contains(
+                            doc.getEmailTo()
+                    )
+            );
         }
 
         log.info("Total emails to send={}", allEmailDocuments.size());
