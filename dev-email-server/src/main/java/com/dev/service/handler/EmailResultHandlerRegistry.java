@@ -29,9 +29,8 @@ public class EmailResultHandlerRegistry {
     }
 
     public EmailResultHandler getHandler(EmailCategory category) {
-        if (category == null) return handlerMap.get(EmailCategory.APPLICATION);
-        if (category == EmailCategory.JOB_APPLICATION) return handlerMap.get(EmailCategory.APPLICATION);
-        return handlerMap.get(category);
+        if (handlerMap.containsKey(category)) return handlerMap.get(category);
+        return handlerMap.get(EmailCategory.APPLICATION);
     }
 
 }
