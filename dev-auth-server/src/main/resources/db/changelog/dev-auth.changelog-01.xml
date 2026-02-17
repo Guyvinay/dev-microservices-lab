@@ -199,8 +199,6 @@
         </createTable>
     </changeSet>
 
-
-
     <changeSet id="2025.11.23-13.02" author="vinay">
         <preConditions onFail="MARK_RAN">
             <not>
@@ -259,6 +257,13 @@
             <column name="created_at" type="BIGINT"/>
             <column name="revoked_at" type="BIGINT"/>
         </createTable>
+    </changeSet>
+
+    <changeSet id="2026.02.17-13.21" author="vinay">
+        <addUniqueConstraint
+                tableName="OAUTH_PROVIDERS"
+                columnNames="USER_ID, PROVIDER, PROVIDER_ID"
+                constraintName="UK_OAUTH_PROVIDERS_USER_PROVIDER_PROVIDERID"/>
     </changeSet>
 
 

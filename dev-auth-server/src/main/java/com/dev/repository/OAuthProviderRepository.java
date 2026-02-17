@@ -1,6 +1,6 @@
 package com.dev.repository;
 
-import com.dev.library.oauth2.dto.OAuthProvider;
+import com.dev.library.oauth2.model.OAuthProvider;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -10,4 +10,5 @@ public interface OAuthProviderRepository extends JpaRepository<OAuthProvider, Lo
     List<OAuthProvider> findByUserId(String userId);
     Optional<OAuthProvider> findByProviderAndProviderId(String provider, String providerId);
     Optional<OAuthProvider> findByUserIdAndProviderId(String userId, String providerId);
+    Optional<OAuthProvider> findByUserIdAndProviderIdAndProvider(String userId, String providerId, String provider);
 }
