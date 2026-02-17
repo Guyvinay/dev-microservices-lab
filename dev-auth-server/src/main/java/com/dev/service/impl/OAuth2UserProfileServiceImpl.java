@@ -6,7 +6,7 @@ import com.dev.entity.UserProfileModel;
 import com.dev.entity.UserProfileRoleMapping;
 import com.dev.entity.UserProfileRoleModel;
 import com.dev.entity.UserProfileTenantMapping;
-import com.dev.library.oauth2.dto.OAuthProvider;
+import com.dev.library.oauth2.model.OAuthProvider;
 import com.dev.repository.OAuthProviderRepository;
 import com.dev.repository.OrganizationTenantMappingRepository;
 import com.dev.repository.UserProfileModelRepository;
@@ -16,6 +16,7 @@ import com.dev.repository.UserProfileTenantMappingRepository;
 import com.dev.service.OAuth2UserProfileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -116,7 +117,7 @@ public class OAuth2UserProfileServiceImpl implements OAuth2UserProfileService {
             String providerId) {
 
         Optional<OAuthProvider> existing =
-                oAuthProviderRepository.findByProviderAndProviderId(provider, providerId);
+                oAuthProviderRepository.findByUserIdAndProviderIdAndProvider(String.valueOf(user.getId()), providerId, provider);
 
         if (existing.isPresent()) {
             if (!existing.get().getUserId().equals(String.valueOf(user.getId()))) {
@@ -132,8 +133,13 @@ public class OAuth2UserProfileServiceImpl implements OAuth2UserProfileService {
                 .providerId(providerId)
                 .build();
 
-        oAuthProviderRepository.save(oauth);
-        log.info("OAuth linked: userId={}, provider={}", user.getId(), provider);
+        try {
+            oAuthProviderRepository.saveAndFlush(oauth);
+            log.info("OAuth linked: userId={}, provider={}", user.getId(), provider);
+        } catch (DataIntegrityViolationException ex) {
+            throw new IllegalStateException(
+                    "OAuth provider already linked to another user", ex);
+        }
     }
 
     private UserProfileDetailsDto buildUserProfileDetails(

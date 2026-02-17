@@ -26,7 +26,7 @@ public class GithubOAuth2UserInfo implements OAuth2UserInfo {
 
     @Override
     public String getAttributeByKey(String key) {
-        return attributes != null && !attributes.isEmpty() ? (String) attributes.get(key) : null;
+        return attributes != null && !attributes.isEmpty() ? String.valueOf(attributes.get(key)) : null;
     }
 
 }

@@ -1,4 +1,4 @@
-package com.dev.library.oauth2.dto;
+package com.dev.library.oauth2.model;
 
 import jakarta.persistence.*;
 import lombok.*;
