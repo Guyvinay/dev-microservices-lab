@@ -40,7 +40,7 @@ public class CustomSchemaInitializer implements SchemaInitializer {
     }
 
     public List<String> getAllTenants() throws SQLException {
-        List<String> allTenants = datasourceService.getAllTenanats();
+        List<String> allTenants = datasourceService.getAllTenants();
         log.info("all tenants: [{}]", allTenants);
         return allTenants;
     }

@@ -46,11 +46,6 @@ public class RabbitMqConfiguration {
         TENANT_IDS.addAll(rabbitTenantProvider.getAllTenants());
         log.info("Loaded tenant IDs: {}", TENANT_IDS);
 
-        // Default "public" vhost connection
-        CachingConnectionFactory publicCcf = createTenantConnectionFactory("public");
-        TENANT_CONNECTION_MAP.put("public", publicCcf);
-        log.info("Registered public RabbitMQ connection");
-
         // Tenant-specific connections
         TENANT_IDS.forEach(tenantId -> {
             CachingConnectionFactory ccf = createTenantConnectionFactory(tenantId);
@@ -60,7 +55,7 @@ public class RabbitMqConfiguration {
 
         SimpleRoutingConnectionFactory routingConnectionFactory = new SimpleRoutingConnectionFactory();
         routingConnectionFactory.setTargetConnectionFactories(TENANT_CONNECTION_MAP);
-        routingConnectionFactory.setDefaultTargetConnectionFactory(publicCcf);
+        routingConnectionFactory.setDefaultTargetConnectionFactory(TENANT_CONNECTION_MAP.get("public"));
 
         log.info("RabbitMQ routing connection factory initialized successfully");
         return routingConnectionFactory;

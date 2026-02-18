@@ -26,7 +26,7 @@ public class TenantProvider implements RabbitTenantProvider {
         Set<String> tenants = new HashSet<>();
         List<String> excludeSchema = datasourceService.getExcludeSchema();
         try {
-            for (String tenant: datasourceService.getAllTenanats()) {
+            for (String tenant: datasourceService.getAllTenants()) {
                 if(!excludeSchema.contains(tenant)) {
                     tenants.add(tenant);
                 }

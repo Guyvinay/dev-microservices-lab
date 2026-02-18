@@ -119,19 +119,19 @@ public class DatasourceService {
         return sanitizedInput;
     }
 
-    public List<String> getAllTenanats() throws SQLException {
-        List<String> alltenants = new ArrayList<>();
+    public List<String> getAllTenants() throws SQLException {
+        List<String> tenants = new ArrayList<>();
         try (Connection connection = dataSource.getConnection()) {
             try(ResultSet dataSources = connection.getMetaData().getSchemas()){
                 while (dataSources.next()) {
                     String schema = dataSources.getString("TABLE_SCHEM").toLowerCase();
-                    alltenants.add(schema);
+                    tenants.add(schema);
                 }
             } catch (Exception e) {
                 log.error("Error in getting tenants [{}] ", e);
                 connection.close();
             }
-            return alltenants;
+            return tenants;
         }
     }
 
