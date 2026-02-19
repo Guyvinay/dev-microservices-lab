@@ -72,7 +72,7 @@ public class EmailSender {
                 helper.setReplyTo(event.getReplyTo());
             }
 
-            mailSender.send(message);
+//            mailSender.send(message);
 
             long latency = System.currentTimeMillis() - start;
             String smtpMessageId = message.getMessageID();

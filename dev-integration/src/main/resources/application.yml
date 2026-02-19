@@ -13,3 +13,10 @@ elastic:
     private: es_private_message_index
     group: es_group_message_index
     email: email_index
+
+rmq:
+  host: localhost
+  port: 5672
+  username: guest
+  password: guest
+  addresses: localhost:15672

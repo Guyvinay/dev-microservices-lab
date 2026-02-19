@@ -1,14 +1,14 @@
 # Use a base image with JDK 17
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:21-jdk-alpine
 
 # Set the working directory in the container
 WORKDIR /app
 
 # Copy the jar file (replace 'your-application.jar' with your jar file's name)
-COPY target/dev-revised-0.0.1-SNAPSHOT.jar dev-revised.jar
+COPY target/dev-integration-*.jar /app/dev-integration.jar
 
 # Expose the port your Spring Boot app runs on (default is 8080)
-EXPOSE 8081
+EXPOSE 8000
 
 # Run the jar file
-ENTRYPOINT ["java", "-jar", "dev-revised.jar"]
+ENTRYPOINT ["java", "-jar", "/app/dev-integration.jar"]

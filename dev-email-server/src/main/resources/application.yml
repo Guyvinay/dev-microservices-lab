@@ -12,7 +12,7 @@ elastic:
   index:
     private: es_private_message_index
     group: es_group_message_index
-    email: email_index
+    email: email_index_test_1
 
 
 app:
@@ -36,3 +36,10 @@ app:
     pool-size: 10
 
     default-encoding: UTF-8
+
+rmq:
+  host: localhost
+  port: 5672
+  username: guest
+  password: guest
+  addresses: localhost:15672
