@@ -1,7 +1,9 @@
 package com.dev.service.impl;
 
 
+import com.dev.dto.email.EmailCategory;
 import com.dev.dto.email.EmailDocument;
+import com.dev.dto.email.EmailPriority;
 import com.dev.dto.email.EmailSendEvent;
 import com.dev.dto.rmq.RmqEvent;
 import com.dev.library.elastic.service.EmailElasticSyncService;
@@ -153,10 +155,19 @@ public class AsyncEmailSendService {
     @Async("threadPoolTaskExecutor")
     public void sendPasswordResetEmail(String to, String resetLink, String name, String token) throws MessagingException {
 
+        tenantPublisher.publish(
+                RmqEvent.builder()
+                        .routingKey("email.send.server.q")
+                        .exchange("email.server.exchange")
+                        .payload(forgetPasswordEmailSendEvent(to, resetLink, name, token))
+                        .build()
+        );
+/*
+
         // =============================================
         // 1️ Prepare email template variables
         // =============================================
-        Map<String, String> templateVars = new HashMap<>();
+        Map<String, Object> templateVars = new HashMap<>();
         templateVars.put("resetLink", resetLink);
         templateVars.put("email", to);
         templateVars.put("name", name);
@@ -175,11 +186,33 @@ public class AsyncEmailSendService {
         helper.setSubject("Password reset request");
         helper.setText(htmlBody, true);    // true = HTML
         mailSender.send(message);
+*/
     }
 
-    private String prepareEmailTemplate(Map<String, String> templateVariables) {
+    private EmailSendEvent forgetPasswordEmailSendEvent(String to, String resetLink, String name, String token) {
+        Map<String, Object> templateVars = new HashMap<>();
+        templateVars.put("resetLink", resetLink);
+        templateVars.put("email", to);
+        templateVars.put("name", name);
+        templateVars.put("token", token);
+        String htmlBody = prepareEmailTemplate(templateVars);
+        return EmailSendEvent.builder()
+                .from("mrsinghvinay563@gmail.com")
+                .to(to)
+                .metadata(templateVars)
+                .senderName(name)
+                .createdAt(System.currentTimeMillis())
+                .priority(EmailPriority.HIGH)
+                .subject("Password reset request")
+                .category(EmailCategory.PASSWORD_RESET)
+                .html(true)
+                .body(htmlBody)
+                .build();
+    }
+
+    private String prepareEmailTemplate(Map<String, Object> templateVariables) {
         Context context = new Context();
-        for (Map.Entry<String, String> entry: templateVariables.entrySet()) {
+        for (Map.Entry<String, Object> entry: templateVariables.entrySet()) {
             context.setVariable(entry.getKey(), entry.getValue());
         }
         return templateEngine.process("password-reset-email.html", context);
