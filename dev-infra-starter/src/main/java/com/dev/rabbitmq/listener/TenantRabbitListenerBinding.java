@@ -123,7 +123,7 @@ public class TenantRabbitListenerBinding {
         int concurrentConsumers = (Integer) attributes.getOrDefault("concurrentConsumers", 1);
 
         int prefetch = (Integer) attributes.getOrDefault("prefetch", 1);
-        boolean quorum = (Boolean) attributes.getOrDefault("quorum", true);
+        boolean quorum = (Boolean) attributes.getOrDefault("quorum", false);
         log.info(
                 "Registering listener [beanName={}, queue={}, exchangeName={}, routingKey={}, type={}, concurrentConsumers={} maxConcurrentConsumers={}, prefetch={}, quorum={}] for tenant {}",
                 beanName, queueName, exchangeName, routingKey, type, concurrentConsumers, maxConcurrentConsumers, prefetch, quorum, tenantId
