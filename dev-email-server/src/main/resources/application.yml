@@ -15,6 +15,31 @@ elastic:
     email: email_index_test_1
 
 
+management:
+  server:
+    port: 8091   # separate management port (recommended)
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+      probes:
+        enabled: true
+  health:
+    db:
+      enabled: true
+    redis:
+      enabled: true
+    elasticsearch:
+      enabled: true
+    rabbit:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
 app:
   mail:
     host: smtp.gmail.com
