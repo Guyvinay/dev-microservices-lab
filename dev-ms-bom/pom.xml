@@ -176,12 +176,8 @@
 			<dependency>
 				<groupId>org.ehcache</groupId>
 				<artifactId>ehcache</artifactId>
+				<version>3.10.8</version>
 			</dependency>
-			<dependency>
-				<groupId>org.jooq</groupId>
-				<artifactId>jooq</artifactId>
-			</dependency>
-
 			<dependency>
 				<groupId>org.projectlombok</groupId>
 				<artifactId>lombok</artifactId>
@@ -219,7 +215,11 @@
 				<artifactId>jsoup</artifactId>
 				<version>1.17.2</version>
 			</dependency>
-
+			<dependency>
+				<groupId>org.jooq</groupId>
+				<artifactId>jooq</artifactId>
+				<version>3.19.10</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
