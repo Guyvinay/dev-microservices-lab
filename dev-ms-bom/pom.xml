@@ -6,8 +6,8 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.3.8</version>
-		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
+
 	<groupId>com.dev</groupId>
 	<artifactId>dev-ms-bom</artifactId>
 	<version>1.0.0</version>
@@ -47,9 +47,9 @@
 
 
 		<!-- Starters -->
-		<dev.infra.starter.version>3.0.0</dev.infra.starter.version>
-		<dev.auth.starter.version>3.0.0</dev.auth.starter.version>
-		<dev.shared.utility.version>3.0.0</dev.shared.utility.version>
+		<dev.infra.starter.version>1.0.0</dev.infra.starter.version>
+		<dev.auth.starter.version>1.0.0</dev.auth.starter.version>
+		<dev.shared.utility.version>1.0.0</dev.shared.utility.version>
 	</properties>
 
 	<dependencyManagement>
@@ -171,25 +171,62 @@
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-starter-graphql</artifactId>
+				<version>3.3.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ehcache</groupId>
 				<artifactId>ehcache</artifactId>
+				<version>3.10.8</version>
+			</dependency>
+			<dependency>
+				<groupId>org.projectlombok</groupId>
+				<artifactId>lombok</artifactId>
+				<version>1.18.36</version>
+				<scope>provided</scope>
+			</dependency>
+
+
+			<dependency>
+				<groupId>com.nimbusds</groupId>
+				<artifactId>nimbus-jose-jwt</artifactId>
+				<version>9.10.1</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.graphql-java</groupId>
+				<artifactId>graphql-java-tools</artifactId>
+				<version>5.2.4</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.graphql-java</groupId>
+				<artifactId>graphql-spring-boot-starter</artifactId>
+				<version>5.0.2</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.pdfbox</groupId>
+				<artifactId>pdfbox</artifactId>
+				<version>2.0.30</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.jsoup</groupId>
+				<artifactId>jsoup</artifactId>
+				<version>1.17.2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jooq</groupId>
 				<artifactId>jooq</artifactId>
+				<version>3.19.10</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
-
+	<distributionManagement>
+		<repository>
+			<id>nexus</id> <!-- Match this ID with your server entry in settings.xml -->
+			<url>http://localhost:8081/repository/dev-maven-package-releases/</url>
+		</repository>
+	</distributionManagement>
 </project>

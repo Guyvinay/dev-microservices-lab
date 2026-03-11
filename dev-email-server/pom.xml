@@ -3,19 +3,15 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.3.1</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<groupId>com.dev</groupId>
+		<artifactId>dev-ms-bom</artifactId>
+		<version>1.0.0</version>
 	</parent>
 	<groupId>com.dev</groupId>
 	<artifactId>dev-email-server</artifactId>
 	<version>2.0.0-SNAPSHOT</version>
 	<name>dev-email-server</name>
 	<description>dev-email-server</description>
-	<properties>
-		<java.version>21</java.version>
-	</properties>
 	<dependencies>
 
 		<dependency>
@@ -41,7 +37,6 @@
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>42.7.3</version>
 		</dependency>
 
 		<dependency>
@@ -58,13 +53,11 @@
 		<dependency>
 			<groupId>net.logstash.logback</groupId>
 			<artifactId>logstash-logback-encoder</artifactId>
-			<version>7.4</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.codehaus.janino</groupId>
 			<artifactId>janino</artifactId>
-			<version>3.1.2</version>
 		</dependency>
 
 		<!-- Mail support -->
@@ -76,7 +69,6 @@
 		<dependency>
 			<groupId>com.dev</groupId>
 			<artifactId>dev-infra-starter</artifactId>
-			<version>1.0.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.dev</groupId>
@@ -88,7 +80,6 @@
 		<dependency>
 			<groupId>com.dev</groupId>
 			<artifactId>dev-auth-starter</artifactId>
-			<version>1.0.0</version>
 		</dependency>
 
 	</dependencies>
