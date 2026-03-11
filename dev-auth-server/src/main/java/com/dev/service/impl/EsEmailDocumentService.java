@@ -60,25 +60,28 @@ public class EsEmailDocumentService {
     public List<String> bulkIndexNewDocuments(List<EmailDocument> newDocs) {
 
         if (newDocs.isEmpty()) return Collections.emptyList();
+        List<String> failedDocs = new ArrayList<>();
 
-        List<com.dev.utility.grpc.email.EmailDocument> grpcDocs =
-                newDocs.stream()
-                        .map(GrpcMapper::toProto)
-                        .toList();
+        for (List<EmailDocument> batch : partition(newDocs, LOOKUP_BATCH_SIZE)) {
 
-        BulkIndexEmailRequest bulkRequest =
-                BulkIndexEmailRequest.newBuilder()
-                        .addAllDocuments(grpcDocs)
-                        .build();
+            List<com.dev.utility.grpc.email.EmailDocument> grpcDocs =
+                    batch.stream()
+                            .map(GrpcMapper::toProto)
+                            .toList();
 
-        BulkIndexEmailResponse response =
-                elasticServiceStub.bulkIndexEmails(bulkRequest);
+            BulkIndexEmailRequest bulkRequest =
+                    BulkIndexEmailRequest.newBuilder()
+                            .addAllDocuments(grpcDocs)
+                            .build();
 
-        log.info("Bulk indexed {} new documents",
-                response.getIndexedCount());
+            BulkIndexEmailResponse response =
+                    elasticServiceStub.bulkIndexEmails(bulkRequest);
 
-        return response.getFailedEmailIdsList();
-
+            log.info("Bulk indexed {} new documents",
+                    response.getIndexedCount());
+            failedDocs.addAll(response.getFailedEmailIdsList());
+        }
+        return failedDocs;
     }
 
     public static <T> List<List<T>> partition(List<T> list, int size) {
