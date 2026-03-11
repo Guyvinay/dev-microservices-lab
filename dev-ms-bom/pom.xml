@@ -247,16 +247,4 @@
 
 		</dependencies>
 	</dependencyManagement>
-
-	<!-- ========================================================= -->
-	<!-- Distribution (Nexus)                                      -->
-	<!-- ========================================================= -->
-
-	<distributionManagement>
-		<repository>
-			<id>nexus</id>
-			<url>http://localhost:8081/repository/dev-maven-package-releases/</url>
-		</repository>
-	</distributionManagement>
-
 </project>
