@@ -1,0 +1,91 @@
+{
+  "space": {
+    "id": "1234",
+    "name": "HR Forms",
+    "description": "All HR related forms",
+    "createdAt": "2026-01-01T00:00:00Z"
+  },
+  "field_type": {
+    "id": "FIELD_TEXT",
+    "type": "TEXT",
+    "createdAt": "2026-01-01T00:00:00Z"
+  },
+  "field_definition": {
+    "id": "UUID",
+    "spaceId": "1234",
+    "fieldTypeId": "FIELD_TEXT",
+    "label": "Email Address",
+    "description": "Primary contact email",
+    "ui": {},
+    "validation": {},
+    "createdAt": "2026-01-01T10:00:00Z"
+  },
+  "form": {
+    "id": "UUID",
+    "spaceId": "1234",
+    "title": "Job Application",
+    "description": "Apply for backend engineer role",
+    "status": "ACTIVE",
+    "createdAt": "2025-12-01T09:00:00Z"
+  },
+  "form_field_definition": {
+    "id": "FLD_123456",
+    "form_id": "UUID",
+    "fieldDefinitionId": "UUID",
+
+    "label_override": "Email Address",
+    "description_override": "Primary contact email",
+
+    "ui_override": {
+      "component": "input",
+      "placeholder": "example@company.com",
+      "width": 12,
+      "icon": "email",
+      "readonly": false,
+      "hidden": false
+    },
+
+    "validation": {
+      "required": true,
+      "regex": "^[A-Za-z0-9+_.-]+@(.+)$",
+      "minLength": 5,
+      "maxLength": 100
+    },
+
+    "status": "ACTIVE"
+  },
+  "schema_json": {
+    "id": "job_application_form",
+    "spaceId": "1234",
+    "title": "Job Application",
+    "description": "Apply for backend engineer role",
+    "status": "ACTIVE",
+
+    "fields": [
+      {
+        "id": "FLD_123456",
+        "type": "TEXT",
+
+        "label": "Email Address",
+        "description": "Primary contact email",
+
+        "ui": {
+          "component": "input",
+          "subType": "email",
+          "placeholder": "example@company.com",
+          "width": 12,
+          "icon": "email",
+          "readonly": false,
+          "hidden": false
+        },
+
+        "validation": {
+          "required": true,
+          "regex": "^[A-Za-z0-9+_.-]+@(.+)$",
+          "minLength": 5,
+          "maxLength": 100
+        }
+      }
+    ]
+  }
+}

@@ -46,7 +46,7 @@ public class SchemaMultiTenantConnectionProvider extends AbstractDataSourceBased
         }
         try {
             String schema = connection.getSchema();// get the schema if exist in the database
-            log.info("schema: {}", schema);
+            log.debug("schema: {}", schema);
             if (schema == null) {
                 initializer.initialize(tenantId);
             }
