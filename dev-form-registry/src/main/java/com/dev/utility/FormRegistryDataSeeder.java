@@ -26,10 +26,9 @@ public class FormRegistryDataSeeder implements ApplicationRunner {
     private final FieldDefinitionRepository fieldDefinitionRepository;
     private final SpaceFormRepository spaceFormRepository;
     private final FormFieldDefinitionRepository formFieldDefinitionRepository;
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public void run(ApplicationArguments args) throws JsonProcessingException {
+    public void run(ApplicationArguments args) {
         log.info("Starting default data seeding...");
 
         seedFieldTypes();
@@ -111,7 +110,7 @@ public class FormRegistryDataSeeder implements ApplicationRunner {
                 });
     }
 
-    private void seedFormFieldDefinitions(SpaceForm form, FieldDefinition fieldDef) throws JsonProcessingException {
+    private void seedFormFieldDefinitions(SpaceForm form, FieldDefinition fieldDef) {
         boolean exists = formFieldDefinitionRepository.existsByFormIdAndFieldDefinitionId(form.getId(), fieldDef.getId());
         if (!exists) {
             Map<String, Object> uiOverride = new HashMap<>();
