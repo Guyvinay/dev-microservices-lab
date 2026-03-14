@@ -1,19 +1,21 @@
 package com.dev.utility;
 
+import com.dev.dto.FieldSeedDefinition;
 import com.dev.entity.*;
 import com.dev.repo.*;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -33,7 +35,7 @@ public class FormRegistryDataSeeder implements ApplicationRunner {
 
         seedFieldTypes();
         Space hrSpace = seedSpaces();
-        FieldDefinition emailField = seedFieldDefinitions(hrSpace);
+        List<FieldDefinition> emailField = seedFieldDefinitions(hrSpace, columns);
         SpaceForm jobForm = seedForms(hrSpace);
         seedFormFieldDefinitions(jobForm, emailField);
 
@@ -67,35 +69,30 @@ public class FormRegistryDataSeeder implements ApplicationRunner {
         });
     }
 
-    private FieldDefinition seedFieldDefinitions(Space space) {
-        // Email field example
-        return fieldDefinitionRepository.findByLabelAndSpaceId("Email Address", space.getId())
-                .orElseGet(() -> {
-                    Map<String, Object> ui = new HashMap<>();
-                    ui.put("component", "input");
-                    ui.put("placeholder", "example@company.com");
-                    ui.put("width", 12);
-                    ui.put("icon", "email");
+    private List<FieldDefinition> seedFieldDefinitions(
+            Space space,
+            List<FieldSeedDefinition> fields
+    ) {
 
-                    Map<String, Object> validation = new HashMap<>();
-                    validation.put("required", true);
-                    validation.put("regex", "^[A-Za-z0-9+_.-]+@(.+)$");
-                    validation.put("minLength", 5);
-                    validation.put("maxLength", 100);
+        return fields.stream()
+                .map(def -> fieldDefinitionRepository
+                        .findByLabelAndSpaceId(def.getLabel(), space.getId())
+                        .orElseGet(() -> {
 
-                    FieldDefinition field = FieldDefinition.builder()
-                            .spaceId(space.getId())
-                            .fieldTypeId(FieldTypeEnum.EMAIL)
-                            .label("Email Address")
-                            .description("Primary contact email")
-                            .ui(ui)
-                            .validation(validation)
-                            .createdAt(Instant.now())
-                            .build();
-                    return fieldDefinitionRepository.save(field);
-                });
+                            FieldDefinition field = FieldDefinition.builder()
+                                    .spaceId(space.getId())
+                                    .fieldTypeId(def.getFieldTypeId())
+                                    .label(def.getLabel())
+                                    .description(def.getDescription())
+                                    .ui(def.getUi())
+                                    .validation(def.getValidation())
+                                    .db(def.getDb())
+                                    .createdAt(Instant.now())
+                                    .build();
+
+                            return fieldDefinitionRepository.save(field);
+                        })).collect(Collectors.toList());
     }
-
     private SpaceForm seedForms(Space space) {
         return spaceFormRepository.findByTitleAndSpaceId("Job Application", space.getId())
                 .orElseGet(() -> {
@@ -109,35 +106,119 @@ public class FormRegistryDataSeeder implements ApplicationRunner {
                     return spaceFormRepository.save(form);
                 });
     }
+    private void seedFormFieldDefinitions(
+            SpaceForm form,
+            List<FieldDefinition> fields
+    ) {
 
-    private void seedFormFieldDefinitions(SpaceForm form, FieldDefinition fieldDef) {
-        boolean exists = formFieldDefinitionRepository.existsByFormIdAndFieldDefinitionId(form.getId(), fieldDef.getId());
-        if (!exists) {
-            Map<String, Object> uiOverride = new HashMap<>();
-            uiOverride.put("placeholder", "example@company.com");
-            uiOverride.put("width", 12);
-            uiOverride.put("icon", "email");
+        for (FieldDefinition field : fields) {
 
-            Map<String, Object> validationOverride = new HashMap<>();
-            validationOverride.put("required", true);
-            validationOverride.put("regex", "^[A-Za-z0-9+_.-]+@(.+)$");
-            validationOverride.put("minLength", 5);
-            validationOverride.put("maxLength", 100);
+            formFieldDefinitionRepository
+                    .findByFormIdAndFieldDefinitionId(form.getId(), field.getId())
+                    .orElseGet(() -> {
 
-            FormFieldDefinition formField = FormFieldDefinition.builder()
-                    .id(UUID.randomUUID())
-                    .formId(form.getId())
-                    .fieldDefinitionId(fieldDef.getId())
-                    .displayOrder(1)
-                    .labelOverride("Email Address")
-                    .descriptionOverride("Primary contact email")
-                    .uiOverride(uiOverride)
-                    .validationOverride(validationOverride)
-                    .status("ACTIVE")
-                    .createdAt(Instant.now())
-                    .build();
-            formFieldDefinitionRepository.save(formField);
+                        FormFieldDefinition mapping = FormFieldDefinition.builder()
+                                .formId(form.getId())
+                                .fieldDefinitionId(field.getId())
+                                .createdAt(Instant.now())
+                                .labelOverride(field.getLabel())
+                                .descriptionOverride(field.getDescription())
+                                .dbOverride(field.getDb())
+                                .uiOverride(field.getUi())
+                                .validationOverride(field.getValidation())
+                                .status("DFRAT")
+                                .build();
+
+                        return formFieldDefinitionRepository.save(mapping);
+                    });
         }
     }
 
+    private List<FieldSeedDefinition> columns = List.of(
+
+            FieldSeedDefinition.builder()
+                    .label("First Name")
+                    .fieldTypeId(FieldTypeEnum.TEXT)
+                    .description("Candidate first name")
+                    .displayOrder(1)
+                    .ui(Map.of(
+                            "component", "input",
+                            "placeholder", "Enter first name",
+                            "width", 6
+                    ))
+                    .validation(Map.of(
+                            "required", true,
+                            "minLength", 2,
+                            "maxLength", 50
+                    ))
+                    .db(Map.of(
+                            "nullable", false,
+                            "indexed", true
+                    ))
+                    .build(),
+
+            FieldSeedDefinition.builder()
+                    .label("Last Name")
+                    .fieldTypeId(FieldTypeEnum.TEXT)
+                    .description("Candidate last name")
+                    .displayOrder(1)
+                    .ui(Map.of(
+                            "component", "input",
+                            "placeholder", "Enter last name",
+                            "width", 6
+                    ))
+                    .validation(Map.of(
+                            "required", true,
+                            "minLength", 2,
+                            "maxLength", 50
+                    ))
+                    .db(Map.of(
+                            "nullable", false,
+                            "indexed", true
+                    ))
+                    .build(),
+
+            FieldSeedDefinition.builder()
+                    .label("Email Address")
+                    .fieldTypeId(FieldTypeEnum.EMAIL)
+                    .description("Primary contact email")
+                    .displayOrder(2)
+                    .ui(Map.of(
+                            "component", "input",
+                            "placeholder", "example@company.com",
+                            "icon", "email",
+                            "width", 12
+                    ))
+                    .validation(Map.of(
+                            "required", true,
+                            "regex", "^[A-Za-z0-9+_.-]+@(.+)$"
+                    ))
+                    .db(Map.of(
+                            "nullable", false,
+                            "unique", true,
+                            "indexed", true
+                    ))
+                    .build(),
+
+            FieldSeedDefinition.builder()
+                    .label("Phone Number")
+                    .fieldTypeId(FieldTypeEnum.TEXT)
+                    .description("Candidate contact number")
+                    .displayOrder(3)
+                    .ui(Map.of(
+                            "component", "input",
+                            "placeholder", "+91 XXXXX XXXXX",
+                            "icon", "phone",
+                            "width", 12
+                    ))
+                    .validation(Map.of(
+                            "required", true,
+                            "regex", "^[0-9+\\- ]{10,15}$"
+                    ))
+                    .db(Map.of(
+                            "nullable", false,
+                            "indexed", true
+                    ))
+                    .build()
+    );
 }

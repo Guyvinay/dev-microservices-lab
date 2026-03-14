@@ -27,9 +27,6 @@ public class FormFieldDefinition {
     @Column(name = "field_definition_id", nullable = false)
     private UUID fieldDefinitionId;
 
-    @Column(name = "display_order", nullable = false)
-    private Integer displayOrder;
-
     @Column(name = "label_override", length = 255)
     private String labelOverride;
 
@@ -43,6 +40,10 @@ public class FormFieldDefinition {
     @Column(name = "validation_override", columnDefinition = "TEXT")
     @Convert(converter = JpaJsonConverter.class)
     private Map<String,Object> validationOverride;
+
+    @Column(name = "db_override",columnDefinition = "TEXT")
+    @Convert(converter = JpaJsonConverter.class)
+    private Map<String, Object> dbOverride;
 
     @Column(nullable = false, length = 50)
     private String status;
