@@ -43,6 +43,10 @@ public class FieldDefinition {
     @Convert(converter = JpaJsonConverter.class)
     private Map<String, Object> validation;
 
+    @Column(columnDefinition = "TEXT")
+    @Convert(converter = JpaJsonConverter.class)
+    private Map<String, Object> db;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
