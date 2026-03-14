@@ -21,6 +21,8 @@ public class FieldSeedDefinition {
 
     private Map<String, Object> validation;
 
+    private Map<String, Object> db;
+
 
     private int displayOrder;
 

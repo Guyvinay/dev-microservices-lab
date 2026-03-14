@@ -14,11 +14,8 @@ import java.util.List;
 @AllArgsConstructor
 public class FormPublishedEvent {
 
-    private String tenantId;
     private Long spaceId;
     private Long formId;
-
-    private int version;
 
     private String tableName;
 

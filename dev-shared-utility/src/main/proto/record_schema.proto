@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package record.schema.v1;
+
+option java_multiple_files = true;
+option java_package = "com.dev.utility.grpc.form";
+option java_outer_classname = "RecordSchemaProto";
+
+service RecordSchemaService {
+
+  // Creates table for a published form
+  rpc CreateDynamicTable(CreateTableRequest)
+      returns (CreateTableResponse);
+
+}
+
+message CreateTableRequest {
+
+  int64 spaceId = 1;
+  int64 formId = 2;
+  string tableName = 3;
+  repeated FieldSchema fields = 4;
+
+}
+
+message FieldSchema {
+
+  string name = 1;
+  string type = 2;
+  bool nullable = 3;
+  bool unique = 4;
+  bool indexed = 5;
+
+}
+
+message CreateTableResponse {
+
+  bool success = 1;
+  string message = 2;
+
+}
