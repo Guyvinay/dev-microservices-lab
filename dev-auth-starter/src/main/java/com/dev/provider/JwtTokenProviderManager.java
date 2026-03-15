@@ -306,8 +306,9 @@ public class JwtTokenProviderManager {
                 .build();
     }
 
-    public AccessJwtToken getJwtTokenDTOFromToken(String token, TokenType access) throws JsonProcessingException, JOSEException, ParseException {
-        return OM.readValue(getSubjectPayload(token, access), AccessJwtToken.class);
+    public JwtToken getJwtTokenDTOFromToken(String token, TokenType access) throws JsonProcessingException, JOSEException, ParseException {
+        if(access == TokenType.ACCESS) return OM.readValue(getSubjectPayload(token, access), AccessJwtToken.class);
+        return OM.readValue(getSubjectPayload(token, access), ServiceJwtToken.class);
     }
 
 }
